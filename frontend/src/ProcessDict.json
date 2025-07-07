@@ -1,0 +1,28 @@
+[
+    {
+        "processName": "order management",
+        "rules": [
+            {
+                "ruleName": "rule1",
+                "includeOT": {
+                    "entities": ["order", "item"],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": ["order cancelled"],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": [],
+                    "condition": []
+                }
+            }
+        ],
+        "relations": [],
+        "relationTree": {}
+    }
+]

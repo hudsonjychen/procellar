@@ -1,0 +1,339 @@
+{
+    "eventTypes": [
+        {
+            "name": "create-order",
+            "attributes": [
+                {
+                    "name": "total-items",
+                    "type": "integer"
+                }
+            ]
+        },
+        {
+            "name": "order-confirmation",
+            "attributes": [
+                {
+                    "name": "confirmation-code",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "create-order",
+            "attributes": [
+                {
+                    "name": "total-items",
+                    "type": "integer"
+                }
+            ]
+        },
+        {
+            "name": "order-cancelled",
+            "attributes": [
+                {
+                    "name": "reason",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "package-prepared",
+            "attributes": [
+                {
+                    "name": "warehouse-id",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "shipment-started",
+            "attributes": [
+                {
+                    "name": "logistics-provider",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "shipment-delivered",
+            "attributes": [
+                {
+                    "name": "recipient",
+                    "type": "string"
+                }
+            ]
+        }
+    ],
+    "objectTypes": [
+        {
+            "name": "order",
+            "attributes": [
+                {
+                    "name": "order-id",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "item",
+            "attributes": [
+                {
+                    "name": "product-name",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "shipment",
+            "attributes": [
+                {
+                    "name": "tracking-number",
+                    "type": "string"
+                }
+            ]
+        }
+    ],
+    "events": [
+        {
+            "id": "e1",
+            "type": "create-order",
+            "time": "2025-02-01T09:00:00Z",
+            "attributes": [
+                {
+                    "name": "total-items",
+                    "value": 3
+                }
+            ],
+            "relationships": [
+                {
+                    "objectId": "o1",
+                    "qualifier": "order"
+                },
+                {
+                    "objectId": "i1",
+                    "qualifier": "item"
+                },
+                {
+                    "objectId": "i2",
+                    "qualifier": "item"
+                },
+                {
+                    "objectId": "i3",
+                    "qualifier": "item"
+                }
+            ]
+        },
+        {
+            "id": "e2",
+            "type": "order-confirmation",
+            "time": "2025-02-01T09:02:00Z",
+            "attributes": [
+                {
+                    "name": "confirmation-code",
+                    "value": "CONF6034X"
+                }
+            ],
+            "relationships": [
+                {
+                    "objectId": "o1",
+                    "qualifier": "order"
+                }
+            ]
+        },
+        {
+            "id": "e3",
+            "type": "package-prepared",
+            "time": "2025-02-01T15:00:00Z",
+            "attributes": [
+                {
+                    "name": "warehouse-id",
+                    "value": "WH-77"
+                }
+            ],
+            "relationships": [
+                {
+                    "objectId": "o1",
+                    "qualifier": "order"
+                },
+                {
+                    "objectId": "i1",
+                    "qualifier": "item"
+                },
+                {
+                    "objectId": "i2",
+                    "qualifier": "item"
+                },
+                {
+                    "objectId": "i3",
+                    "qualifier": "item"
+                }
+            ]
+        },
+        {
+            "id": "e4",
+            "type": "shipment-started",
+            "time": "2025-02-02T10:20:00Z",
+            "attributes": [
+                {
+                    "name": "logistics-provider",
+                    "value": "FastExpress"
+                }
+            ],
+            "relationships": [
+                {
+                    "objectId": "s1",
+                    "qualifier": "shipment"
+                }
+            ]
+        },
+        {
+            "id": "e5",
+            "type": "shipment-delivered",
+            "time": "2025-02-03T15:45:00Z",
+            "attributes": [
+                {
+                    "name": "recipient",
+                    "value": "Erik"
+                }
+            ],
+            "relationships": [
+                {
+                    "objectId": "s1",
+                    "qualifier": "shipment"
+                }
+            ]
+        },
+        {
+            "id": "e6",
+            "type": "create-order",
+            "time": "2025-02-01T12:00:00Z",
+            "attributes": [
+                {
+                    "name": "total-items",
+                    "value": 2
+                }
+            ],
+            "relationships": [
+                {
+                    "objectId": "o2",
+                    "qualifier": "order"
+                },
+                {
+                    "objectId": "i4",
+                    "qualifier": "item"
+                },
+                {
+                    "objectId": "i5",
+                    "qualifier": "item"
+                }
+            ]
+        },
+        {
+            "id": "e7",
+            "type": "order-cancelled",
+            "time": "2025-02-01T12:30:00Z",
+            "attributes": [
+                {
+                    "name": "reason",
+                    "value": "Customer requested cancellation"
+                }
+            ],
+            "relationships": [
+                {
+                    "objectId": "o2",
+                    "qualifier": "order"
+                }
+            ]
+        }
+    ],
+    "objects": [
+        {
+            "id": "o1",
+            "type": "order",
+            "attributes": [
+                {
+                    "name": "order-id",
+                    "time": "2025-02-01T09:00:00Z",
+                    "value": "20250201-9801"
+                }
+            ]
+        },
+        {
+            "id": "o2",
+            "type": "order",
+            "attributes": [
+                {
+                    "name": "order-id",
+                    "time": "2025-02-01T12:00:00Z",
+                    "value": "20250201-6034"
+                }
+            ]
+        },
+        {
+            "id": "i1",
+            "type": "item",
+            "attributes": [
+                {
+                    "name": "product-name",
+                    "time": "2025-02-01T09:00:00Z",
+                    "value": "Laptop"
+                }
+            ]
+        },
+        {
+            "id": "i2",
+            "type": "item",
+            "attributes": [
+                {
+                    "name": "product-name",
+                    "time": "2025-02-01T09:00:00Z",
+                    "value": "Smart-phone"
+                }
+            ]
+        },
+        {
+            "id": "i3",
+            "type": "item",
+            "attributes": [
+                {
+                    "name": "product-name",
+                    "time": "2025-02-01T09:00:00Z",
+                    "value": "Headphone"
+                }
+            ]
+        },
+        {
+            "id": "i4",
+            "type": "item",
+            "attributes": [
+                {
+                    "name": "product-name",
+                    "time": "2025-02-01T12:00:00Z",
+                    "value": "Laptop"
+                }
+            ]
+        },
+        {
+            "id": "i5",
+            "type": "item",
+            "attributes": [
+                {
+                    "name": "product-name",
+                    "time": "2025-02-01T12:00:00Z",
+                    "value": "Tablet"
+                }
+            ]
+        },
+        {
+            "id": "s1",
+            "type": "shipment",
+            "attributes": [
+                {
+                    "name": "tracking-number",
+                    "time": "2025-02-02T10:00:00Z",
+                    "value": "TRK974208"
+                }
+            ]
+        }
+    ]
+}
