@@ -181,6 +181,26 @@ export default function Editor() {
                 ]
             }})
             setOpen1(false)
+            setRuleData({
+                ruleName: '',
+                parentProcess: '',
+                includeOT: {
+                    entities: [],
+                    condition: []
+                },
+                includeAct: {
+                    entities: [],
+                    condition: []
+                },
+                excludeOT: {
+                    entities: [],
+                    condition: []
+                },
+                excludeAct: {
+                    entities: [],
+                    condition: []
+                }
+            })
         }        
     }
 
