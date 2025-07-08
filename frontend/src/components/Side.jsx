@@ -3,10 +3,10 @@ import { useGlobal } from "../GlobalContext"
 import { useState } from "react";
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import { Collapse } from "@mui/material";
-import { ObjectIcon, ProcessIcon } from "../CustomIcons";
+import { NewIcon, ObjectIcon, ProcessIcon } from "../CustomIcons";
 
 export default function Side() {
-    const { objectTypeList } = useGlobal()
+    const { objectTypeList, processes } = useGlobal()
     const [open1, setOpen1] = useState(false)
     const [open2, setOpen2] = useState(false)
 
@@ -96,6 +96,39 @@ export default function Side() {
                         />
                     </ListItemButton>
                 </ListItem>
+                <Collapse in={open2}>
+                    <List sx={{ ml: 4.5 }}>
+                        {processes.length ? processes.map((item, index) => (
+                            <Box>
+                                <ListItem 
+                                    key={item}
+                                    sx={{ display: 'flex', justifyContent: 'space-between', pr: 2.4}} 
+                                >
+                                    <Typography>
+                                        {item.name}
+                                    </Typography>
+                                    {item.justCreated ?
+                                        <Box sx={{ mr: '1px' }}>
+                                            <NewIcon />
+                                        </Box> :
+                                        <Box sx={{ visibility: 'hidden' }}>
+                                            <NewIcon />
+                                        </Box>
+                                    }
+                                </ListItem>
+                                {index != processes.length-1 && 
+                                    <ListDivider inset="gutter"/>
+                                }
+                            </Box>
+                        )) :
+                            <ListItem>
+                                <Typography>
+                                    No entities
+                                </Typography>
+                            </ListItem>
+                        }
+                    </List>
+                </Collapse>
             </List>
         </Sheet>
     )

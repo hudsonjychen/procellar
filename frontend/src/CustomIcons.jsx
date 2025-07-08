@@ -47,3 +47,11 @@ export function LogicIcon(props) {
         </SvgIcon>
     )
 }
+
+export function NewIcon(props) {
+    return (
+        <SvgIcon {...props} viewBox="0 -960 960 960" style={{ width: '10px', height: '10px' }}>
+            <path d="M435.93-104.17v-270.02L245-183.49l-62.07-62.07 189.94-189.8h-268.7v-88.52h270.68L183.49-715.1 245-777.74l190.93 190.7V-856.2h88.14v268.69l190.47-190.23 62.63 62.64-191.36 191.22H856.2v88.52H587.61l189.56 189.8-62.07 62.07-191.03-190.8v270.12h-88.14Z"/>
+        </SvgIcon>
+    )
+}

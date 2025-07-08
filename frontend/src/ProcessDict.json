@@ -1,9 +1,11 @@
 [
     {
         "processName": "order management",
+        "justCreated": true,
         "rules": [
             {
                 "ruleName": "rule1",
+                "parentProcess": "order management",
                 "includeOT": {
                     "entities": ["order", "item"],
                     "condition": []

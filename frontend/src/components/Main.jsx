@@ -4,127 +4,151 @@ import LogicEditor from "./LogicEditor";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { grey } from '@mui/material/colors';
+import { useGlobal } from '../GlobalContext';
+
+const demoProcessData = [
+    {
+        "processName": "order management",
+        "justCreated": true,
+        "rules": [
+            {
+                "ruleName": "rule1",
+                "parentProcess": "order management",
+                "includeOT": {
+                    "entities": ["order", "item"],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": ["shipment"],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": ["order cancelled"],
+                    "condition": []
+                }
+            },
+            {
+                "ruleName": "rule2",
+                "parentProcess": "order management",
+                "includeOT": {
+                    "entities": ["order", "shipment"],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": ["shipment delayed"],
+                    "condition": []
+                }
+            },
+            {
+                "ruleName": "rule3",
+                "parentProcess": "order management",
+                "includeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": ["order placed"],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": [],
+                    "condition": []
+                }
+            }
+        ],
+        "relations": [],
+        "relationTree": {}
+    },
+    {
+        "processName": "shipment management",
+        "rules": [
+            {
+                "ruleName": "rule1",
+                "parentProcess": "shipment management",
+                "includeOT": {
+                    "entities": ["shipment"],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": ["order cancelled"],
+                    "condition": []
+                }
+            },
+            {
+                "ruleName": "rule2",
+                "parentProcess": "shipment management",
+                "includeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": ["shipment delayed"],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": [],
+                    "condition": []
+                }
+            }
+        ],
+        "relations": [],
+        "relationTree": {}
+    }
+]
 
 export default function Main() {
+    const { processData, setProcessData } = useGlobal()
 
-    const processes = [
-        {
-            "processName": "order management",
-            "rules": [
-                {
-                    "ruleName": "rule1",
-                    "parentProcess": "order management",
-                    "includeOT": {
-                        "entities": ["order", "item"],
-                        "condition": []
-                    },
-                    "includeAct": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "excludeOT": {
-                        "entities": ["shipment"],
-                        "condition": []
-                    },
-                    "excludeAct": {
-                        "entities": ["order cancelled"],
-                        "condition": []
+    const handleDelete = ({ ruleName, parentProcess }) => {
+        setProcessData(prev => {
+            return prev.map(process => {
+                if (process.processName === parentProcess) {
+                    return {
+                        ...process,
+                        rules: process.rules.filter(rule => rule.ruleName != ruleName),
                     }
-                },
-                {
-                    "ruleName": "rule2",
-                    "parentProcess": "order management",
-                    "includeOT": {
-                        "entities": ["order", "shipment"],
-                        "condition": []
-                    },
-                    "includeAct": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "excludeOT": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "excludeAct": {
-                        "entities": ["shipment delayed"],
-                        "condition": []
-                    }
-                },
-                {
-                    "ruleName": "rule3",
-                    "parentProcess": "order management",
-                    "includeOT": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "includeAct": {
-                        "entities": ["order placed"],
-                        "condition": []
-                    },
-                    "excludeOT": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "excludeAct": {
-                        "entities": [],
-                        "condition": []
-                    }
+                } else {
+                    return process
                 }
-            ],
-            "relations": [],
-            "relationTree": {}
-        },
-        {
-            "processName": "shipment management",
-            "rules": [
-                {
-                    "ruleName": "rule1",
-                    "parentProcess": "shipment management",
-                    "includeOT": {
-                        "entities": ["shipment"],
-                        "condition": []
-                    },
-                    "includeAct": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "excludeOT": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "excludeAct": {
-                        "entities": ["order cancelled"],
-                        "condition": []
-                    }
-                },
-                {
-                    "ruleName": "rule2",
-                    "parentProcess": "shipment management",
-                    "includeOT": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "includeAct": {
-                        "entities": ["shipment delayed"],
-                        "condition": []
-                    },
-                    "excludeOT": {
-                        "entities": [],
-                        "condition": []
-                    },
-                    "excludeAct": {
-                        "entities": [],
-                        "condition": []
-                    }
-                }
-            ],
-            "relations": [],
-            "relationTree": {}
-        }
-    ]
+            })
+        })
+    }
 
-    const ButtonBar = () => {
+    const cleanEmptyProcess = (setProcessData) => {
+        setProcessData(prev => {
+            return prev.filter(process => process.rules.length != 0)
+        })
+    }
+
+    const ButtonBar = ({ ruleName, parentProcess }) => {
         return (
             <ButtonGroup 
                 orientation="vertical"
@@ -133,7 +157,12 @@ export default function Main() {
                 <IconButton>
                     <EditIcon sx={{ color: grey[600] }}/>
                 </IconButton>
-                <IconButton>
+                <IconButton 
+                    onClick={() => {
+                        handleDelete({ ruleName: ruleName, parentProcess: parentProcess });
+                        cleanEmptyProcess(setProcessData)
+                    }}
+                >
                     <DeleteIcon sx={{ color: grey[600] }}/>
                 </IconButton>
             </ButtonGroup>
@@ -288,7 +317,7 @@ export default function Main() {
                         </Stack>
                     )}
                 </Card>
-                <ButtonBar />
+                <ButtonBar ruleName={rule.ruleName} parentProcess={rule.parentProcess}/>
             </Box>
         )
     }
@@ -346,7 +375,7 @@ export default function Main() {
             </Box>
             <Box sx={{ p: 1.2, width: '100%' }}>
                 {
-                    processes.map((process) => (
+                    processData.map((process) => (
                         <ProcessCard key={process.processName} process={process} />
                     ))
                 }

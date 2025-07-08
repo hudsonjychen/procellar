@@ -3,6 +3,11 @@ import { createContext, useState, useContext } from "react";
 const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
+    {/* process data for display and backend data processing */}
+    const [processData, setProcessData] = useState([]);
+    {/* a process dict specifically used for auto complete component */}
+    const [processAcList, setProcessAcList] = useState([]);
+    {/* a generic process list */}
     const [processes, setProcesses] = useState([]);
     const [objectTypes, setObjectTypes] = useState([]);
     const [activities, setActivities] = useState([]);
@@ -10,7 +15,9 @@ export const GlobalProvider = ({ children }) => {
 
     return (
         <GlobalContext.Provider 
-            value={{ 
+            value={{
+                processData, setProcessData,
+                processAcList, setProcessAcList,
                 processes, setProcesses,
                 objectTypes, setObjectTypes,
                 activities, setActivities,
