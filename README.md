@@ -1,6 +1,6 @@
 # OCPV (Object-centric Process Viewer)
 
-![logo](./resources/ocpv-logo-fullsize.png)
+![logo](./resources/ocpv-logo-resized.png)
 
 OCPV is a user-freindly and powerful web app that allows users to define processes on event logs.
 
