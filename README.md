@@ -1,4 +1,4 @@
-# OCPV (Object-centric Process Viewer)
+# OCPV (Object-centric Process View)
 
 ![logo](./resources/ocpv-logo-resized.png)
 
