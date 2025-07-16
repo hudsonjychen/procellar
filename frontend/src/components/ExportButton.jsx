@@ -39,7 +39,7 @@ export default function ExportButton() {
             
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'processes_log.json';
+            a.download = 'procel.json';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

@@ -65,6 +65,7 @@ class Process:
             })
     
     def update(self, event_log, object_type_map):
+        print(object_type_map)
         for event in event_log["events"]:
             context = self.apply_rules(object_type_map=object_type_map, event=event)
             self.update_event(context=context, event=event)

@@ -25,7 +25,7 @@ class Rule:
                 f"exclude activities = {self.exclude_act})")
     
     def check_event(self, object_type_map, event):
-        rel_oid = [rel['objectId'] for rel in event['relationships']]
+        rel_oid = [rel['objectId'] for rel in event['relationships'] if rel['qualifier'] != 'process']
         rel_ot = [object_type_map[oid] for oid in rel_oid]
 
         if self.parent_process in rel_oid:
