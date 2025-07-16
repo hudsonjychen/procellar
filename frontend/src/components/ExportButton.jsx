@@ -1,11 +1,14 @@
 import IosShareIcon from '@mui/icons-material/IosShare';
 import { Box, Button } from '@mui/joy';
 import { useGlobal } from '../GlobalContext';
+import JSZip from "jszip"
 
 export default function ExportButton() {
     const { processData } = useGlobal();
 
     const handleClick = async () => {
+
+        console.log(processData)
 
         try {
             const response = await fetch("http://localhost:5001/process_data", {
@@ -33,18 +36,21 @@ export default function ExportButton() {
                 throw new Error("No exported file data received");
             }
 
-            const exportData = JSON.stringify(data.exportedFile, null, 2);
-            const downloadBlob = new Blob([exportData], { type: 'application/json' });
-            const url = URL.createObjectURL(downloadBlob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'procel.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            URL.revokeObjectURL(url);
+            const zip = new JSZip();
+
+            zip.file('procel.json', JSON.stringify(data.exportedFile, null, 2));
+            zip.file('definition-file.json', JSON.stringify(processData, null, 2));
+
+            zip.generateAsync({ type: 'blob' }).then(content => {
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'exported_data.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
         
         } catch (err) {
             console.error("Fail", err);

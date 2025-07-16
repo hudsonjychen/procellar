@@ -72,8 +72,7 @@ const demoProcessData = [
                 }
             }
         ],
-        "relations": [],
-        "relationTree": {}
+        "relations": {}
     },
     {
         "processName": "shipment management",
@@ -119,8 +118,7 @@ const demoProcessData = [
                 }
             }
         ],
-        "relations": [],
-        "relationTree": {}
+        "relations": {}
     }
 ]
 

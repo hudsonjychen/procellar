@@ -58,7 +58,7 @@ class Process:
             raise ValueError(f'Invalid operator: {op}')
         
     def update_event(self, context, event):
-        if self.temp_evaluate(context):
+        if self.evaluate(context):
             event['relationships'].append({
                 'objectId': self.process_name,
                 "qualifier": 'process'

@@ -5,73 +5,26 @@ import { useGlobal } from '../GlobalContext';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 
 export default function LogicEditor({ rules, processName }) {
-    const { setRelations } = useGlobal()
+    const { relations, setRelations, setProcessData, ops, setOps } = useGlobal()
     const [open, setOpen] = useState(false)
-    const [ops, setOps] = useState({})
-    const [rel, setRel] = useState([])
-
-    useEffect(() => {
-        if (rules.length > 1) {
-            setOps(prevOps => {
-                const newOps = { ...prevOps };
-                for (let i = 0; i < rules.length - 1; i++) {
-                    if (!(i in newOps)) {
-                        newOps[i] = 'or';
-                    }
-                }
-                Object.keys(newOps).forEach(i => {
-                    if (i >= rules.length - 1) {
-                        delete newOps[i];
-                    }
-                });
-                return newOps;
-            });
-
-            setRel(prevRel => {
-                const newRel = [];
-
-                for (let i = 0; i < rules.length - 1; i++) {
-                    const rule1 = rules[i].ruleName;
-                    const rule2 = rules[i + 1].ruleName;
-
-                    const existing = prevRel.find(r => r.rule1 === rule1 && r.rule2 === rule2);
-
-                    if (existing) {
-                        newRel.push(existing);
-                    } else {
-                        newRel.push({ rule1, rule2, op: 'or' });
-                    }
-                }
-
-                return newRel;
-            });
-        } else {
-            setOps({});
-            setRel([]);
-        }
-    }, [rules]);
+    const [tempOps, setTempOps] = useState(ops)
 
     const handleSubmit = (e) => {
         e.preventDefault()
     }
 
-    const LogicSelect = ({ rule1, rule2, index }) => {
+    const LogicSelect = ({ index }) => {
         return (<Select
             sx={{ width: '6rem' }}
-            value={ops[index] || 'or'}
+            value={tempOps[processName][index] || 'or'}
             onChange={(e, newValue) => {
-                setOps(prev => ({...prev, [index]: newValue}))
-                setRel(prev => {
-                    const existing = prev.find(r => r.rule1 === rule1 && r.rule2 === rule2);
-                    if (existing) {
-                        return prev.map(r =>
-                            r.rule1 === rule1 && r.rule2 === rule2
-                                ? { ...r, op: newValue }
-                                : r
-                        );
-                    } else {
-                        return [...prev, { rule1, rule2, op: newValue }];
-                    }
+                setTempOps(prev => {
+                    const updated = { ...prev };
+                    const currentArray = [...(prev[processName] || [])];
+                    currentArray[index] = newValue;
+                    updated[processName] = currentArray;
+                    console.log(tempOps)
+                    return updated;
                 });
             }}
         >
@@ -80,47 +33,53 @@ export default function LogicEditor({ rules, processName }) {
         </Select>)
     }
 
-    const buildExpressionTree = (rel) => {
-        const precedence = { and: 2, or: 1 };
+    const buildExpressionTree = ({ ops, rules }) => {
+        
+        const precedence = { and: 2, or: 1 }
+        const ruleNames = rules.map(rule => rule.ruleName);
+        const opStack = []
+        const nodeStack = []
 
-        const outputStack = [];
-        const operatorStack = [];
-
-        const applyOp = () => {
-            const { op, rule1, rule2 } = operatorStack.pop();
-            const left = typeof rule1 === 'string' ? rule1 : outputStack.pop();
-            const right = typeof rule2 === 'string' ? rule2 : outputStack.pop();
-
-            outputStack.push({
-                op,
-                left,
-                right,
-            });
-        };
-
-        for (const r of rel) {
-            while (
-                operatorStack.length > 0 &&
-                precedence[operatorStack[operatorStack.length - 1].op] >= precedence[r.op]
-            ) {
-                applyOp();
+        for(let i = 0; i < ruleNames.length; i++){
+            nodeStack.push(ruleNames[i])
+            if(i < ops.length) {
+                while (
+                    opStack.length &&
+                    precedence[opStack[opStack.length - 1]] >= precedence[ops[i]]
+                ) {
+                    const right = nodeStack.pop()
+                    const left = nodeStack.pop()
+                    const op = opStack.pop()
+                    nodeStack.push({ op, left, right })
+                }
+                opStack.push(ops[i])
             }
-            operatorStack.push(r);
         }
 
-        while (operatorStack.length > 0) {
-            applyOp();
+        while (opStack.length) {
+            const right = nodeStack.pop()
+            const left = nodeStack.pop()
+            const op = opStack.pop()
+            nodeStack.push({ op, left, right })
         }
-
-        return outputStack[0];
+        
+        return nodeStack[0]
     }
 
     const handleSave = (processName) => {
         setOpen(false)
+        setOps(tempOps)
         setRelations(prev => ({
             ...prev,
-            [processName]: buildExpressionTree(rel)
+            [processName]: buildExpressionTree({ ops: tempOps[processName], rules })
         }))
+        setProcessData(prev =>
+            prev.map(item => ({
+                ...item,
+                relations: buildExpressionTree({ ops: tempOps[processName], rules })
+            }))
+        )
+        console.log(relations)
     }
 
     return (
@@ -170,8 +129,6 @@ export default function LogicEditor({ rules, processName }) {
                                             rules.length - 1 !== index ? (
                                                 <LogicSelect
                                                     key={index}
-                                                    rule1={rule.ruleName} 
-                                                    rule2={rules[index+1].ruleName}
                                                     index={index}
                                                 />
                                             ) : (

@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 
 const GlobalContext = createContext();
 
@@ -9,11 +9,31 @@ export const GlobalProvider = ({ children }) => {
     const [processAcList, setProcessAcList] = useState([]);
     {/* a generic process list */}
     const [processes, setProcesses] = useState([]);
+
     const [objectTypes, setObjectTypes] = useState([]);
     const [activities, setActivities] = useState([]);
     const [objectTypeList, setObjectTypeList] = useState([]);
 
+    {/* relations for logic editor */}
     const [relations, setRelations] = useState({});
+    const [ops, setOps] = useState({});
+
+    useEffect(() => {
+
+        setOps(prevOps => {
+            const updatedOps = { ...prevOps };
+
+            processData.forEach(process => {
+                const key = process.processName;
+
+                if (!prevOps[key] || prevOps[key].length !== process.rules.length - 1) {
+                    updatedOps[key] = Array.from({ length: process.rules.length - 1 }, () => 'or');
+                }
+            });
+
+            return updatedOps;
+        });
+    }, [processData])
 
     return (
         <GlobalContext.Provider 
@@ -24,7 +44,8 @@ export const GlobalProvider = ({ children }) => {
                 objectTypes, setObjectTypes,
                 activities, setActivities,
                 objectTypeList, setObjectTypeList,
-                relations, setRelations
+                relations, setRelations,
+                ops, setOps
             }}>
             {children}
         </GlobalContext.Provider>

@@ -163,23 +163,24 @@ export default function Editor() {
                     p => p.processName === title
                 )
                 if (existingIndex !== -1) {
-                const updatedProcesses = [...prev]
-                const existingProcess = updatedProcesses[existingIndex];
-                updatedProcesses[existingIndex] = {
-                    ...existingProcess,
-                    rules: [...existingProcess.rules, updatedRuleData],
-                }
-                return updatedProcesses;
-            } else {
-                return [
-                    ...prev,
-                    {
-                        processName: title,
-                        justCreated: true,
-                        rules: [updatedRuleData]
+                    const updatedProcesses = [...prev]
+                    const existingProcess = updatedProcesses[existingIndex];
+                    updatedProcesses[existingIndex] = {
+                        ...existingProcess,
+                        rules: [...existingProcess.rules, updatedRuleData],
                     }
-                ]
-            }})
+                    return updatedProcesses;
+                } else {
+                    return [
+                        ...prev,
+                        {
+                            processName: title,
+                            justCreated: true,
+                            rules: [updatedRuleData]
+                        }
+                    ]
+                }
+            })
             setOpen1(false)
             setRuleData({
                 ruleName: '',
