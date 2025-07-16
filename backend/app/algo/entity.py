@@ -58,7 +58,7 @@ def get_processes(ocel: OCEL) -> Set[str]:
     """
     return _filter_column_values(
         ocel.relations,
-        target_column=ocel.object_type_column,
+        target_column=ocel.object_id_column,
         qualifier_value="process"
     )
 

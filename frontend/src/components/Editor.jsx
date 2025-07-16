@@ -167,7 +167,7 @@ export default function Editor() {
                 const existingProcess = updatedProcesses[existingIndex];
                 updatedProcesses[existingIndex] = {
                     ...existingProcess,
-                    rules: [...existingProcess.rules, updatedRuleData]
+                    rules: [...existingProcess.rules, updatedRuleData],
                 }
                 return updatedProcesses;
             } else {

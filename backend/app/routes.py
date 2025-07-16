@@ -4,10 +4,10 @@ import pm4py
 import json
 import traceback
 
-from app.src.rule.rule import Rule
-from app.src.algo.entity import get_activities, get_object_list, get_object_types, get_processes
-from app.src.algo.map import map_object_id_to_type
-from .cache import cachedFile, cachedProcessList, cachedObjectTypeList, cachedProcesses, cachedObjectTypes, cachedActivities, cachedObjectTypeMap
+from app.algo.entity import get_activities, get_object_list, get_object_types, get_processes
+from app.algo.map import map_object_id_to_type
+from app.algo.update import update
+from .cache import cachedFile, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap
 
 main = Blueprint('main', __name__)
 
@@ -59,40 +59,26 @@ def get_data():
 
 @main.route('/process_data', methods=['POST'])
 def process_data():
-    if "processes" not in request.files:
-        return jsonify({"error": "No File"}), 400
-    file = request.files["processes"]
 
     try:
-        data = json.load(file)
-
+        if not request.is_json:
+            return jsonify({"error": "Request must contain JSON data"}), 400
+        
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+        
+        print("Received data:", data)
+        
         if not isinstance(data, list):
             return jsonify({"error": "Expected a list of objects"}), 400
-
-        for item in data:
-            if not isinstance(item, dict) or 'processName' not in item or 'ruleName' not in item:
-                return jsonify({"error": "Invalid format in uploaded file"}), 400
-
-        rules = []
-
-        for rule in data:
-            instance = Rule(
-                process_name=rule["processName"],
-                rule_name=rule["ruleName"],
-                include_object=rule.get("includeObjects", []),
-                exclude_object=rule.get("excludeObjects", []),
-                include_activity=rule.get("includeActivities", []),
-                exclude_activity=rule.get("excludeActivities", [])
-            )
-            rules.append(instance)
         
-        for instance in rules:
-            object_types, objects = cachedFile['json']['objectTypes'], cachedFile['json']['objects']
-            instance.check_object_types(object_types)
-            instance.check_objects(objects)
-            for event in cachedFile['json']['events']:
-                instance.check_event(cachedObjectTypeMap, event)
-
+        for item in data:
+            if not isinstance(item, dict) or 'processName' not in item:
+                return jsonify({"error": "Invalid format in data"}), 400
+        
+        update(object_type_map=cachedObjectTypeMap, event_log=cachedFile['json'], process_data=data)
         return jsonify({"status": "success"}), 200
 
     except Exception as e:

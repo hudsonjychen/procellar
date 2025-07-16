@@ -340,6 +340,7 @@ export default function Main() {
                 >
                     <LogicEditor 
                         rules={process.rules}
+                        processName={process.processName}
                     />
                     <Typography level='h4' sx={{ pl: 1, mb: 1 }}>
                         Process: {process.processName}

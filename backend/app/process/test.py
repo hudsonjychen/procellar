@@ -1,4 +1,4 @@
-from rule import Rule
+from backend.app.src.algo.rule import Rule
 import json
 
 with open(r"C:\Users\Hudson Chen\Desktop\Thesis\simulated_data\example_data.json", "r", encoding="utf-8") as f:

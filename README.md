@@ -1,8 +1,6 @@
-# OCPV (Object-centric Process View)
+# Procellar (POCEL Stellar)
 
-![logo](./resources/ocpv-logo-resized.png)
-
-OCPV is a user-freindly and powerful web app that allows users to define processes on event logs.
+Procellar is a user-freindly and powerful web app that allows users to define processes on event logs.
 
 ---
 

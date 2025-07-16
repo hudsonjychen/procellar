@@ -1,0 +1,77 @@
+[
+    {
+        "processName": "order management",
+        "justCreated": true,
+        "rules": [
+            {
+                "ruleName": "rule1",
+                "parentProcess": "order management",
+                "includeOT": {
+                    "entities": ["order", "item"],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": ["order cancelled"],
+                    "condition": []
+                }
+            },
+            {
+                "ruleName": "rule2",
+                "parentProcess": "order management",
+                "includeOT": {
+                    "entities": ["shipment", "item"],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": [],
+                    "condition": []
+                }
+            },
+            {
+                "ruleName": "rule3",
+                "parentProcess": "order management",
+                "includeOT": {
+                    "entities": [],
+                    "condition": []
+                },
+                "includeAct": {
+                    "entities": [],
+                    "condition": []
+                },
+                "excludeOT": {
+                    "entities": ["order", "shipment"],
+                    "condition": []
+                },
+                "excludeAct": {
+                    "entities": [],
+                    "condition": []
+                }
+            }
+        ],
+        "relations": {
+            "op": "and",
+            "left": "rule1",
+            "right": {
+                "op": "or",
+                "left": "rule2",
+                "right": "rule3"
+            }
+        }
+    }
+]

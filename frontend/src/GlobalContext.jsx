@@ -13,6 +13,8 @@ export const GlobalProvider = ({ children }) => {
     const [activities, setActivities] = useState([]);
     const [objectTypeList, setObjectTypeList] = useState([]);
 
+    const [relations, setRelations] = useState({});
+
     return (
         <GlobalContext.Provider 
             value={{
@@ -21,7 +23,8 @@ export const GlobalProvider = ({ children }) => {
                 processes, setProcesses,
                 objectTypes, setObjectTypes,
                 activities, setActivities,
-                objectTypeList, setObjectTypeList
+                objectTypeList, setObjectTypeList,
+                relations, setRelations
             }}>
             {children}
         </GlobalContext.Provider>

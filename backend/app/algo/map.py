@@ -1,4 +1,3 @@
-import pm4py
 from typing import Dict
 from pm4py.objects.ocel.obj import OCEL
 

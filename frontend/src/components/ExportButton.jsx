@@ -3,19 +3,25 @@ import { Box, Button } from '@mui/joy';
 import { useGlobal } from '../GlobalContext';
 
 export default function ExportButton() {
-    const { processes } = useGlobal();
+    const { processData } = useGlobal();
 
     const handleClick = async () => {
-        const formData = new FormData();
-        const processBlob = new Blob([JSON.stringify(processes)], { type: 'application/json' });
-        formData.append("processes", processBlob);
 
         try {
             const response = await fetch("http://localhost:5001/process_data", {
                 method: "POST",
-                body: formData,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(processData),
                 mode: 'cors'
             });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Response error:", errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
         
             const result = await response.json();
             console.log("Succeed", result);
