@@ -4,10 +4,16 @@ Procellar is a user-freindly and powerful web app that allows users to define pr
 
 ---
 
+## Notes
+
+- This project is currently under development. 
+- The **Advanced Rule Editor** is not functional yet. 
+- For demonstratio purpose, it's recommended to use `example_data_3` from the `example-data/` directory.
+
 ## Table of Contents
 
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
 
 ---
 
@@ -40,12 +46,12 @@ Procellar is a user-freindly and powerful web app that allows users to define pr
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/hudsonjychen/ocpv.git
-cd ocpv
+git clone https://github.com/hudsonjychen/procellar.git
+cd procellar
 ```
 
 ### 2. Set Up the Backend
-Windows
+#### Windows
 ```bash
 cd backend
 python -m venv venv
@@ -53,7 +59,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 python run.py
 ```
-macOS
+#### macOS
 ```bash
 cd backend
 python -m venv venv
