@@ -14,10 +14,13 @@ export const GlobalProvider = ({ children }) => {
     const [activities, setActivities] = useState([]);
     const [objectTypeList, setObjectTypeList] = useState([]);
 
-    {/* relations for logic editor */}
+    {/* not used */}
     const [relations, setRelations] = useState({});
+
+    {/* operators for logic editor */}
     const [ops, setOps] = useState({});
 
+    {/* innitialization for ops {processName: []} */}
     useEffect(() => {
 
         setOps(prevOps => {

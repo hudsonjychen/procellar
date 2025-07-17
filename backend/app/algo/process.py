@@ -4,16 +4,21 @@ class Process:
     def __init__(self, process_name, rules, relations):
         self.process_name = process_name
         self.rules = rules
-        self.relations = relations
+        self.relations = relations or {}
     
-    @classmethod
-    def update_object_types(cls, objectTypes):
+    @staticmethod
+    def update_object_types(objectTypes):
+        if any(ot.get('name') == 'process' for ot in objectTypes):
+            return
+        
         objectTypes.append({
             'name': 'process',
             'attributes': []
         })
 
     def update_objects(self, objects):
+        if any(o.get('id') == self.process_name and o.get('type') == 'process' for o in objects):
+            return
         objects.append({
             'id': self.process_name,
             'type': 'process',
@@ -40,7 +45,10 @@ class Process:
         return any(context.values())
 
     def evaluate(self, context):
-        return self._evaluate_node(self.relations, context)
+        if self.relations:
+            return self._evaluate_node(self.relations, context)
+        else:
+            return any(context.values())
 
     def _evaluate_node(self, node, context):
         if isinstance(node, str):

@@ -49,10 +49,12 @@ export default function Editor() {
     const [open2, setOpen2] = useState(false)
     const [items1, setItems1] = useState([0])
     const [items2, setItems2] = useState([0])
+    
     const [selectedEntity1, setSelectedEntity1] = useState(null)
     const [selectedAttribute1, setSelectedAttribute1] = useState(null)
     const [selectedEntity2, setSelectedEntity2] = useState(null)
     const [selectedAttribute2, setSelectedAttribute2] = useState(null)
+
     const [processAcName, setProcessAcName] = useState(null)
 
     const [ruleData, setRuleData] = useState({
@@ -176,7 +178,7 @@ export default function Editor() {
                         {
                             processName: title,
                             justCreated: true,
-                            rules: [updatedRuleData]
+                            rules: [updatedRuleData],
                         }
                     ]
                 }
@@ -430,7 +432,7 @@ export default function Editor() {
                 Add New
             </Button>
 
-            {/* standard process editor */}
+            {/* basic process editor */}
             <Modal open={open1} onClose={() => setOpen1(false)}>
                 <ModalDialog sx={{ display: 'flex', width: '576px', overflowY: 'auto' }}>
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>

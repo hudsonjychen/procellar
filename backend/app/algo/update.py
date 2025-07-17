@@ -20,7 +20,7 @@ def _update_event_log(object_type_map, event_log, process_data):
     Process.update_object_types(event_log["objectTypes"])
 
     for p in process_data:
-        process = Process(process_name=p["processName"], rules=p["rules"], relations=p["relations"])
+        process = Process(process_name=p.get("processName"), rules=p.get("rules"), relations=p.get("relations"))
         
         process.update(event_log, object_type_map)
 

@@ -34,6 +34,10 @@ export default function LogicEditor({ rules, processName }) {
     }
 
     const buildExpressionTree = ({ ops, rules }) => {
+
+        if (ops.length === 0) {
+            return {}
+        }
         
         const precedence = { and: 2, or: 1 }
         const ruleNames = rules.map(rule => rule.ruleName);
@@ -69,10 +73,13 @@ export default function LogicEditor({ rules, processName }) {
     const handleSave = (processName) => {
         setOpen(false)
         setOps(tempOps)
+
+        {/* not used */}
         setRelations(prev => ({
             ...prev,
             [processName]: buildExpressionTree({ ops: tempOps[processName], rules })
         }))
+
         setProcessData(prev =>
             prev.map(item => ({
                 ...item,
