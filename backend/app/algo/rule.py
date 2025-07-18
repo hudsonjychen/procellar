@@ -37,10 +37,16 @@ class Rule:
         if self.include_act and event['type'] in self.include_act:
             return True
 
-        if self.exclude_ot and all(obj in rel_ot for obj in self.exclude_ot):
-            return False
+        if self.exclude_ot:
+            if all(ot in rel_ot for ot in self.exclude_ot):
+                return False
+            else:
+                if self.include_ot and all(ot in rel_ot for ot in self.include_ot):
+                    return True
+                elif not self.include_ot:
+                    return True
 
-        if self.include_ot and all(obj in rel_ot for obj in self.include_ot):
+        if self.include_ot and all(ot in rel_ot for ot in self.include_ot):
             return True
             
         return False

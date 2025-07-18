@@ -41,7 +41,7 @@ class Process:
             print(bool_value)
         return context
     
-    def temp_evaluate(self, context):
+    def _temp_evaluate(self, context):
         return any(context.values())
 
     def evaluate(self, context):
@@ -66,14 +66,16 @@ class Process:
             raise ValueError(f'Invalid operator: {op}')
         
     def update_event(self, context, event):
-        if self.evaluate(context):
-            event['relationships'].append({
-                'objectId': self.process_name,
-                "qualifier": 'process'
-            })
+        if not self.evaluate(context):
+            return 
+        if any(o.get('objectId') == self.process_name and o.get('qualifier') == 'process' for o in event['relationships']):
+            return
+        event['relationships'].append({
+            'objectId': self.process_name,
+            "qualifier": 'process'
+        })
     
     def update(self, event_log, object_type_map):
-        print(object_type_map)
         for event in event_log["events"]:
             context = self.apply_rules(object_type_map=object_type_map, event=event)
             self.update_event(context=context, event=event)

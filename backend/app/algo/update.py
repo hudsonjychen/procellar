@@ -15,13 +15,10 @@ def _get_map(path):
     return map_object_id_to_type(pm4py.read_ocel2_json(path))
 
 def _update_event_log(object_type_map, event_log, process_data):
-    event_log = event_log.copy()
-
     Process.update_object_types(event_log["objectTypes"])
 
     for p in process_data:
         process = Process(process_name=p.get("processName"), rules=p.get("rules"), relations=p.get("relations"))
-        
         process.update(event_log, object_type_map)
 
 def update(object_type_map, event_log, process_data):
