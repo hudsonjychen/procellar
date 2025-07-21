@@ -5,3 +5,4 @@ cachedProcesses = {}
 cachedObjectTypes = []
 cachedActivities = []
 cachedObjectTypeMap = None
+cachedAttrMap = []

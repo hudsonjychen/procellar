@@ -20,6 +20,8 @@ export const GlobalProvider = ({ children }) => {
     {/* operators for logic editor */}
     const [ops, setOps] = useState({});
 
+    const [attrMap, setAttrMap] = useState([]);
+
     {/* innitialization for ops {processName: []} */}
     useEffect(() => {
 
@@ -48,7 +50,8 @@ export const GlobalProvider = ({ children }) => {
                 activities, setActivities,
                 objectTypeList, setObjectTypeList,
                 relations, setRelations,
-                ops, setOps
+                ops, setOps,
+                attrMap, setAttrMap
             }}>
             {children}
         </GlobalContext.Provider>

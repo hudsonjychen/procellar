@@ -5,7 +5,7 @@ import { useGlobal } from '../GlobalContext';
 import { Box, Button } from '@mui/joy';
 
 export default function ImportButton() {
-    const { setObjectTypes, setActivities, setObjectTypeList } = useGlobal();
+    const { setObjectTypes, setActivities, setObjectTypeList, setAttrMap } = useGlobal();
     const fileInputRef = useRef(null);
 
     const VisuallyHiddenInput = styled('input')({
@@ -45,6 +45,7 @@ export default function ImportButton() {
             setObjectTypes(data.objectTypes);
             setActivities(data.activities);
             setObjectTypeList(data.objectTypeList);
+            setAttrMap(data.attributes)
         
         } 
         catch (err) {

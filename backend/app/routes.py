@@ -7,7 +7,7 @@ import traceback
 from app.algo.entity import get_activities, get_object_list, get_object_types, get_processes
 from app.algo.map import map_object_id_to_type
 from app.algo.update import update
-from .cache import cachedFile, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap
+from .cache import cachedFile, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedAttrMap
 
 main = Blueprint('main', __name__)
 
@@ -41,7 +41,10 @@ def upload():
         
         global cachedObjectTypeMap
         cachedObjectTypeMap = map_object_id_to_type(log)
-        print(cachedObjectTypeMap)
+
+        ocel = cachedFile['json']
+        cachedAttrMap.clear()
+        cachedAttrMap.extend(ocel['eventTypes'] + ocel['objectTypes'])
 
         return jsonify({"status": "success"}), 200
     
@@ -55,7 +58,8 @@ def get_data():
         'objectTypeList': cachedObjectTypeList,
         'processList': cachedProcessList,
         'objectTypes': cachedObjectTypes,
-        'activities': cachedActivities
+        'activities': cachedActivities,
+        'attributes': cachedAttrMap
     })
 
 @main.route('/process_data', methods=['POST'])

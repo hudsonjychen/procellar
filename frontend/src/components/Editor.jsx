@@ -43,14 +43,29 @@ const demoAttributeMap = [
     }
 ]
 
+const placeholderMap = {
+    objectTypes: 'Object Types...',
+    activities: 'Activities...',
+    entity: 'Entity...',
+    attribute: 'Attribute...',
+    operator: 'Operator...'
+}
+
 export default function Editor() {
-    const { setProcessData, processAcList, setProcessAcList, setProcesses, objectTypes, activities } = useGlobal()
+    const { setProcessData, processAcList, setProcessAcList, setProcesses, objectTypes, activities, attrMap } = useGlobal()
     const [open1, setOpen1] = useState(false)
     const [open2, setOpen2] = useState(false)
     const [items1, setItems1] = useState([0])
     const [items2, setItems2] = useState([0])
 
     const [processAcName, setProcessAcName] = useState(null)
+
+    const [selectedEntities, setSelectedEntities] = useState({
+        includeOT: [],
+        includeAct: [],
+        excludeOT: [],
+        excludeAct: []
+    })
 
     const [ruleData, setRuleData] = useState({
         ruleName: '',
@@ -81,20 +96,11 @@ export default function Editor() {
 
     const filter = createFilterOptions();
 
-    const placeholderMap = {
-        objectTypes: 'Object Types...',
-        activities: 'Activities...',
-        entity: 'Entity...',
-        attribute: 'Attribute...',
-        operator: 'Operator...'
-    }
-
     const handleSubmit = (e) => {
         e.preventDefault()
     }
 
-    const handleCancel1 = () => {
-        setOpen1(false)
+    const clearEditor = () => {
         setRuleData({
             ruleName: '',
             parentProcess: '',
@@ -115,6 +121,18 @@ export default function Editor() {
                 condition: []
             }
         })
+
+        setSelectedEntities({
+            includeOT: [],
+            includeAct: [],
+            excludeOT: [],
+            excludeAct: []
+        })
+    }
+
+    const handleCancel1 = () => {
+        setOpen1(false)
+        clearEditor()
     }
 
     const handleSave1 = () => {
@@ -156,26 +174,7 @@ export default function Editor() {
                 }
             })
             setOpen1(false)
-            setRuleData({
-                ruleName: '',
-                parentProcess: '',
-                includeOT: {
-                    entities: [],
-                    condition: []
-                },
-                includeAct: {
-                    entities: [],
-                    condition: []
-                },
-                excludeOT: {
-                    entities: [],
-                    condition: []
-                },
-                excludeAct: {
-                    entities: [],
-                    condition: []
-                }
-            })
+            clearEditor()
         }        
     }
 
@@ -282,7 +281,7 @@ export default function Editor() {
         )
     }
 
-    const ConditionEditor = ({ onDelete }) => {
+    const ConditionEditor = ({ onDelete, action, index }) => {
         return (
             <Stack
                 direction='row' 
@@ -296,16 +295,18 @@ export default function Editor() {
                 </Box>
                 {/* entity select */}
                 <Select
-                    multiple
                     placeholder={placeholderMap['entity'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
                 >
-                    
+                    {action === 'include' ? [...selectedEntities.includeOT, ...selectedEntities.includeAct].map((item) => (
+                        <Option key={item} value={item}>{item}</Option>
+                    )) : [...selectedEntities.excludeOT, ...selectedEntities.excludeAct].map((item) => (
+                        <Option key={item} value={item}>{item}</Option>
+                    ))}
                 </Select>
                 {/* attribute select */}
                 <Select
-                    multiple
                     placeholder={placeholderMap['attribute'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
@@ -314,7 +315,6 @@ export default function Editor() {
                 </Select>
                 {/* operator select */}
                 <Select
-                    multiple
                     placeholder={placeholderMap['operator'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
@@ -322,7 +322,7 @@ export default function Editor() {
                     
                 </Select>
                 <Input 
-                    placeholder="Complete the condition..."
+                    placeholder="value..."
                     name="condition"
                     sx={{ width: '8rem'}}
                 />
@@ -340,7 +340,7 @@ export default function Editor() {
         )
     }
 
-    const ConditionList = ({ items, setItems }) => {
+    const ConditionList = ({ items, setItems, action }) => {
         const handleDelete = (index) => {
             setItems(prev => prev.filter((_, i) => i !== index));
         };
@@ -351,6 +351,8 @@ export default function Editor() {
                     <ConditionEditor
                         key={id}
                         onDelete={() => handleDelete(index)}
+                        action={action}
+                        index={index}
                     />
                 ))}
             </Box>
@@ -430,8 +432,10 @@ export default function Editor() {
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
                                     sx={{ width: '12rem' }}
+                                    value={selectedEntities['includeOT']}
                                     onChange={
                                         (e, newValue) => {
+                                            setSelectedEntities(prev => ({ ...prev, includeOT: newValue}))
                                             setRuleData(prev => ({ ...prev, includeOT: {...prev.includeOT, entities: newValue}}))
                                         }
                                     }
@@ -444,8 +448,10 @@ export default function Editor() {
                                     multiple
                                     placeholder={placeholderMap['activities'] || 'Select...'}
                                     sx={{ width: '12rem' }}
+                                    value={selectedEntities['includeAct']}
                                     onChange={
                                         (e, newValue) => {
+                                            setSelectedEntities(prev => ({ ...prev, includeAct: newValue}))
                                             setRuleData(prev => ({ ...prev, includeAct: {...prev.includeAct, entities: newValue}}))
                                         }
                                     }
@@ -469,8 +475,10 @@ export default function Editor() {
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
                                     sx={{ width: '12rem' }}
+                                    value={selectedEntities['excludeOT']}
                                     onChange={
                                         (e, newValue) => {
+                                            setSelectedEntities(prev => ({ ...prev, excludeOT: newValue}))
                                             setRuleData(prev => ({ ...prev, excludeOT: {...prev.excludeOT, entities: newValue}}))
                                         }
                                     }
@@ -483,8 +491,10 @@ export default function Editor() {
                                     multiple
                                     placeholder={placeholderMap['activities'] || 'Select...'}
                                     sx={{ width: '12rem' }}
+                                    value={selectedEntities['excludeAct']}
                                     onChange={
                                         (e, newValue) => {
+                                            setSelectedEntities(prev => ({ ...prev, excludeAct: newValue}))
                                             setRuleData(prev => ({ ...prev, excludeAct: {...prev.excludeAct, entities: newValue}}))
                                         }
                                     }
@@ -595,8 +605,10 @@ export default function Editor() {
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
                                     sx={{ width: '16rem' }}
+                                    value={selectedEntities['includeOT']}
                                     onChange={
                                         (e, newValue) => {
+                                            setSelectedEntities(prev => ({ ...prev, includeOT: newValue}))
                                             setRuleData(prev => ({ ...prev, ['includeObjectTypes']: newValue}))
                                         }
                                     }
@@ -609,8 +621,10 @@ export default function Editor() {
                                     multiple
                                     placeholder={placeholderMap['activities'] || 'Select...'}
                                     sx={{ width: '16rem' }}
+                                    value={selectedEntities['includeAct']}
                                     onChange={
                                         (e, newValue) => {
+                                            setSelectedEntities(prev => ({ ...prev, includeAct: newValue}))
                                             setRuleData(prev => ({ ...prev, ['includeActivities']: newValue}))
                                         }
                                     }
@@ -625,6 +639,7 @@ export default function Editor() {
                             <ConditionList 
                                 items={items1} 
                                 setItems={setItems1} 
+                                action={'include'}
                             />
                             <Stack 
                                 direction='row' 
@@ -640,8 +655,10 @@ export default function Editor() {
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
                                     sx={{ width: '16rem' }}
+                                    value={selectedEntities['excludeOT']}
                                     onChange={
                                         (e, newValue) => {
+                                            setSelectedEntities(prev => ({ ...prev, excludeOT: newValue}))
                                             setRuleData(prev => ({ ...prev, ['excludeObjectTypes']: newValue}))
                                         }
                                     }
@@ -654,8 +671,10 @@ export default function Editor() {
                                     multiple
                                     placeholder={placeholderMap['activities'] || 'Select...'}
                                     sx={{ width: '16rem' }}
+                                    value={selectedEntities['excludeAct']}
                                     onChange={
                                         (e, newValue) => {
+                                            setSelectedEntities(prev => ({ ...prev, excludeAct: newValue}))
                                             setRuleData(prev => ({ ...prev, ['excludeActivities']: newValue}))
                                         }
                                     }
@@ -670,6 +689,7 @@ export default function Editor() {
                             <ConditionList 
                                 items={items2} 
                                 setItems={setItems2}
+                                action={'exclude'}
                             />
                         </Box>
                         <Divider sx={{ m: 2 }}/>
