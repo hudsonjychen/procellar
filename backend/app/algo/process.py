@@ -36,9 +36,7 @@ class Process:
                         exclude_act=r["excludeAct"]["entities"])
             bool_value = rule.check_event(object_type_map, event)
             context[rule.rule_name] = bool_value
-            print(event["id"])
-            print(rule)
-            print(bool_value)
+        print(context)
         return context
     
     def _temp_evaluate(self, context):

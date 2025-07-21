@@ -1,6 +1,6 @@
 import { Sheet } from "@mui/joy";
-import ExportButton from "./ExportButton";
-import ImportButton from "./ImportButton";
+import ExportButton from "./Export";
+import ImportButton from "./Import";
 
 export default function Top() {
     return (

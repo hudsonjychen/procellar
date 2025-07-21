@@ -17,6 +17,7 @@
     "@mui/joy": "^5.0.0-beta.52",
     "@mui/material": "^7.1.1",
     "@mui/system": "^7.2.0",
+    "depcheck": "^1.4.7",
     "jszip": "^3.10.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

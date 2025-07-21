@@ -41,6 +41,7 @@ def upload():
         
         global cachedObjectTypeMap
         cachedObjectTypeMap = map_object_id_to_type(log)
+        print(cachedObjectTypeMap)
 
         return jsonify({"status": "success"}), 200
     

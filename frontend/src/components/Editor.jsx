@@ -4,7 +4,7 @@ import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlin
 import Add from '@mui/icons-material/Add';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useGlobal } from '../GlobalContext';
 import Select from '@mui/joy/Select'
 import Option from '@mui/joy/Option'
@@ -49,11 +49,6 @@ export default function Editor() {
     const [open2, setOpen2] = useState(false)
     const [items1, setItems1] = useState([0])
     const [items2, setItems2] = useState([0])
-    
-    const [selectedEntity1, setSelectedEntity1] = useState(null)
-    const [selectedAttribute1, setSelectedAttribute1] = useState(null)
-    const [selectedEntity2, setSelectedEntity2] = useState(null)
-    const [selectedAttribute2, setSelectedAttribute2] = useState(null)
 
     const [processAcName, setProcessAcName] = useState(null)
 
@@ -77,29 +72,6 @@ export default function Editor() {
             condition: []
         }
     })
-
-    const includeEntities = ruleData.includeOT.entities.concat(ruleData.includeAct.entities)
-    const excludeEntities = ruleData.excludeOT.entities.concat(ruleData.excludeAct.entities)
-    const correspondingInAttributes = demoAttributeMap.map(entity => {
-        if (entity.entityName === selectedEntity1) {
-            return entity.attributes
-        } else {
-            return []
-        }
-    })
-    const correspondingExAttributes = demoAttributeMap.map(entity => {
-        if (entity.entityName === selectedEntity2) {
-            return entity.attributes
-        } else {
-            return []
-        }
-    })
-    const corInAttrList = correspondingInAttributes.map(att => att.attributeName)
-    const corExAttrList = correspondingExAttributes.map(att => att.attributeName)
-    const corInAttType = correspondingInAttributes.find(att => att.attributeName === selectedAttribute1)?.corInAttType
-    const corExAttType = correspondingExAttributes.find(att => att.attributeName === selectedAttribute2)?.corExAttType
-    const corInOp = corInAttType ? operatorMap[corInAttType] : []
-    const corExOp = corExAttType ? operatorMap[corExAttType] : []
 
     const allEmpty =
         ruleData.includeOT.entities.length === 0 &&
@@ -310,15 +282,7 @@ export default function Editor() {
         )
     }
 
-    const ConditionEditor = (
-        { 
-            onDelete, 
-            entities, 
-            attributes, 
-            operators,
-            setSelectedEntity,
-            setSelectedAttribute 
-        }) => {
+    const ConditionEditor = ({ onDelete }) => {
         return (
             <Stack
                 direction='row' 
@@ -336,11 +300,8 @@ export default function Editor() {
                     placeholder={placeholderMap['entity'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
-                    onChange={(e) => setSelectedEntity(e.target.value)}
                 >
-                    {entities.map((item) => (
-                        <Option key={item} value={item}>{item}</Option>
-                    ))}
+                    
                 </Select>
                 {/* attribute select */}
                 <Select
@@ -348,11 +309,8 @@ export default function Editor() {
                     placeholder={placeholderMap['attribute'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
-                    onChange={(e) => setSelectedAttribute(e.target.value)}
                 >
-                    {attributes.map((item) => (
-                        <Option key={item} value={item}>{item}</Option>
-                    ))}
+                    
                 </Select>
                 {/* operator select */}
                 <Select
@@ -361,9 +319,7 @@ export default function Editor() {
                     size="sm"
                     sx={{ width: '8rem' }}
                 >
-                    {operators.map((item) => (
-                        <Option key={item} value={item}>{item}</Option>
-                    ))}
+                    
                 </Select>
                 <Input 
                     placeholder="Complete the condition..."
@@ -384,7 +340,7 @@ export default function Editor() {
         )
     }
 
-    const ConditionList = ({ items, setItems, entities, attributes, operators, setSelectedEntity, setSelectedAttribute }) => {
+    const ConditionList = ({ items, setItems }) => {
         const handleDelete = (index) => {
             setItems(prev => prev.filter((_, i) => i !== index));
         };
@@ -395,11 +351,6 @@ export default function Editor() {
                     <ConditionEditor
                         key={id}
                         onDelete={() => handleDelete(index)}
-                        entities={entities}
-                        attributes={attributes}
-                        operators={operators}
-                        setSelectedEntity={setSelectedEntity}
-                        setSelectedAttribute={setSelectedAttribute}
                     />
                 ))}
             </Box>
@@ -673,12 +624,7 @@ export default function Editor() {
                             {/* advanced condition editor 1 */}
                             <ConditionList 
                                 items={items1} 
-                                setItems={setItems1}
-                                entities={includeEntities}
-                                attributes={corInAttrList}
-                                operators={corInOp}
-                                setSelectedEntity={setSelectedEntity1}
-                                setSelectedAttribute={setSelectedAttribute1} 
+                                setItems={setItems1} 
                             />
                             <Stack 
                                 direction='row' 
@@ -724,11 +670,6 @@ export default function Editor() {
                             <ConditionList 
                                 items={items2} 
                                 setItems={setItems2}
-                                entities={excludeEntities}
-                                attributes={corExAttrList}
-                                operators={corExOp}
-                                setSelectedEntity={setSelectedEntity2}
-                                setSelectedAttribute={setSelectedAttribute2} 
                             />
                         </Box>
                         <Divider sx={{ m: 2 }}/>
