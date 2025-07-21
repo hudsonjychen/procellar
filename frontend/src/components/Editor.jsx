@@ -67,6 +67,11 @@ export default function Editor() {
         excludeAct: []
     })
 
+    const [includeOTConditions, setIncludeOTConditions] = useState([]);
+    const [includeActConditions, setIncludeActConditions] = useState([]);
+    const [excludeOTConditions, setExcludeOTConditions] = useState([]);
+    const [excludeActConditions, setExcludeActConditions] = useState([]);
+
     const [ruleData, setRuleData] = useState({
         ruleName: '',
         parentProcess: '',
@@ -135,7 +140,7 @@ export default function Editor() {
         clearEditor()
     }
 
-    const handleSave1 = () => {
+    const handleSave = () => {
         {/* update processes and process list for autocomplete component */}
         const originalProcessList = processAcList.map(item => item.title)
         if (!originalProcessList.includes(processAcName.title)) {
@@ -174,13 +179,14 @@ export default function Editor() {
                 }
             })
             setOpen1(false)
+            setOpen2(false)
             clearEditor()
         }        
     }
 
-    {/* for demo */}
     const handleSave2 = () => {
         setOpen2(false)
+        clearEditor()
     }
 
     const EditorSummary = () => (
@@ -264,7 +270,7 @@ export default function Editor() {
         />
     )
 
-    const AddButton = ({ setItems }) => {
+    const AddButton = ({ setConditions }) => {
         return (
             <IconButton
                 size="sm"
@@ -273,7 +279,13 @@ export default function Editor() {
                     backgroundColor: 'neutral',
                 }}
                 onClick={() => {
-                    setItems(prev => [...prev, Date.now()])
+                    setConditions(prev => [...prev, {
+                        id: Date.now(),
+                        entity: '',
+                        attribute: '',
+                        operator: '',
+                        value: ''
+                    }])
                 }} 
             >
                 <Add />
@@ -281,7 +293,29 @@ export default function Editor() {
         )
     }
 
-    const ConditionEditor = ({ onDelete, action, index }) => {
+    const ConditionEditor = ({ condition, onDelete, onChange, action }) => {
+        const [availableAttrs, setAvailableAttrs] = useState([]);
+        const [availableOps, setAvailableOps] = useState([]);
+
+        useEffect(() => {
+            const entityData = attrMap.find(e => e.name === condition.entity);
+            if (entityData) {
+                setAvailableAttrs(entityData.attributes || []);
+            } else {
+                setAvailableAttrs([]);
+            }
+        }, [condition.entity]);
+
+        useEffect(() => {
+            const attr = availableAttrs.find(a => a.name === condition.attribute);
+            if (attr) {
+                const ops = operatorMap[attr.type === 'integer' ? 'number' : attr.type] || [];
+                setAvailableOps(ops);
+            } else {
+                setAvailableOps([]);
+            }
+        }, [condition.attribute, availableAttrs]);
+
         return (
             <Stack
                 direction='row' 
@@ -298,6 +332,13 @@ export default function Editor() {
                     placeholder={placeholderMap['entity'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    value={condition.entity || ''}
+                    onChange={(e, value) => {
+                        onChange(condition.id, 'entity', value);
+                        onChange(condition.id, 'type', objectTypes.includes(value) ? 'ot' : 'act');
+                        onChange(condition.id, 'attribute', '');
+                        onChange(condition.id, 'operator', '');
+                    }}
                 >
                     {action === 'include' ? [...selectedEntities.includeOT, ...selectedEntities.includeAct].map((item) => (
                         <Option key={item} value={item}>{item}</Option>
@@ -310,21 +351,38 @@ export default function Editor() {
                     placeholder={placeholderMap['attribute'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    value={condition.attribute || ''}
+                    onChange={(e, value) => {
+                        onChange(condition.id, 'attribute', value);
+                        onChange(condition.id, 'operator', '');
+                    }}
                 >
-                    
+                    {availableAttrs.map(attr => (
+                        <Option key={attr.name} value={attr.name}>
+                            {attr.name}
+                        </Option>
+                    ))}
                 </Select>
                 {/* operator select */}
                 <Select
                     placeholder={placeholderMap['operator'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    value={condition.operator || ''}
+                    onChange={(e, value) => {
+                        onChange(condition.id, 'operator', value);
+                    }}
                 >
-                    
+                    {availableOps.map(op => (
+                        <Option key={op} value={op}>{op}</Option>
+                    ))}
                 </Select>
                 <Input 
                     placeholder="value..."
                     name="condition"
                     sx={{ width: '8rem'}}
+                    value={condition.value || ''}
+                    onChange={(e) => onChange(condition.id, 'value', e.target.value)}
                 />
                 <IconButton
                     size="sm"
@@ -340,19 +398,26 @@ export default function Editor() {
         )
     }
 
-    const ConditionList = ({ items, setItems, action }) => {
-        const handleDelete = (index) => {
-            setItems(prev => prev.filter((_, i) => i !== index));
+    const ConditionList = ({ conditions, setConditions, action }) => {
+        const handleDelete = (id) => {
+            setConditions(prev => prev.filter(item => item.id !== id));
+        };
+
+        const handleChange = (id, field, value) => {
+            setConditions(prev => prev.map(item =>
+                item.id === id ? { ...item, [field]: value } : item
+            ));
         };
 
         return (
             <Box>
-                {items.map((id, index) => (
+                {conditions.map((cond) => (
                     <ConditionEditor
-                        key={id}
-                        onDelete={() => handleDelete(index)}
+                        key={cond.id}
+                        condition={cond}
+                        onDelete={() => handleDelete(cond.id)}
+                        onChange={handleChange}
                         action={action}
-                        index={index}
                     />
                 ))}
             </Box>
@@ -547,7 +612,7 @@ export default function Editor() {
                             </Button>
                             <Button
                                 sx={{ width: 126 }}
-                                onClick={handleSave1}
+                                onClick={handleSave}
                             >
                                 Save
                             </Button>
@@ -599,12 +664,12 @@ export default function Editor() {
                                 sx={{ pt: 1, pb: 1 }}
                             >
                                 <Box sx={{ width: 126 }}>
-                                    <Typography level="title-md"> Include </Typography>
+                                    <Typography level="title-md"> Include Object Types </Typography>
                                 </Box>
                                 <Select
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
-                                    sx={{ width: '16rem' }}
+                                    sx={{ width: '24rem' }}
                                     value={selectedEntities['includeOT']}
                                     onChange={
                                         (e, newValue) => {
@@ -617,10 +682,29 @@ export default function Editor() {
                                         <Option key={item} value={item}>{item}</Option>
                                     ))}
                                 </Select>
+                                <AddButton setItems={setItems1} />
+                            </Stack>
+                            {/* advanced condition editor 1 */}
+                            <ConditionList 
+                                conditions={includeOTConditions} 
+                                setConditions={setIncludeOTConditions}
+                                action={'include'}
+                            />
+
+                            <Stack 
+                                direction='row' 
+                                justifyContent='flex-start' 
+                                alignItems='center'
+                                spacing={2} 
+                                sx={{ pt: 1, pb: 1 }}
+                            >
+                                <Box sx={{ width: 126 }}>
+                                    <Typography level="title-md"> Include Activities </Typography>
+                                </Box>
                                 <Select
                                     multiple
                                     placeholder={placeholderMap['activities'] || 'Select...'}
-                                    sx={{ width: '16rem' }}
+                                    sx={{ width: '24rem' }}
                                     value={selectedEntities['includeAct']}
                                     onChange={
                                         (e, newValue) => {
@@ -635,12 +719,13 @@ export default function Editor() {
                                 </Select>
                                 <AddButton setItems={setItems1} />
                             </Stack>
-                            {/* advanced condition editor 1 */}
+                            {/* advanced condition editor 2 */}
                             <ConditionList 
-                                items={items1} 
-                                setItems={setItems1} 
+                                conditions={includeActConditions} 
+                                setConditions={setIncludeActConditions}
                                 action={'include'}
                             />
+
                             <Stack 
                                 direction='row' 
                                 justifyContent='flex-start' 
@@ -649,12 +734,12 @@ export default function Editor() {
                                 sx={{ mt: 2, pt: 1, pb: 1 }}
                             >
                                 <Box  sx={{ width: 126 }}>
-                                    <Typography level="title-md"> Exclude </Typography>
+                                    <Typography level="title-md"> Exclude Object Types </Typography>
                                 </Box>
                                 <Select
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
-                                    sx={{ width: '16rem' }}
+                                    sx={{ width: '24rem' }}
                                     value={selectedEntities['excludeOT']}
                                     onChange={
                                         (e, newValue) => {
@@ -667,10 +752,29 @@ export default function Editor() {
                                         <Option key={item} value={item}>{item}</Option>
                                     ))}
                                 </Select>
+                                <AddButton setItems={setItems2} />
+                            </Stack>
+                            {/* advanced condition editor 2 */}
+                            <ConditionList 
+                                conditions={excludeOTConditions} 
+                                setConditions={setExcludeOTConditions}
+                                action={'exclude'}
+                            />
+
+                            <Stack 
+                                direction='row' 
+                                justifyContent='flex-start' 
+                                alignItems='center'
+                                spacing={2} 
+                                sx={{ mt: 2, pt: 1, pb: 1 }}
+                            >
+                                <Box  sx={{ width: 126 }}>
+                                    <Typography level="title-md"> Exclude Activities </Typography>
+                                </Box>
                                 <Select
                                     multiple
                                     placeholder={placeholderMap['activities'] || 'Select...'}
-                                    sx={{ width: '16rem' }}
+                                    sx={{ width: '24rem' }}
                                     value={selectedEntities['excludeAct']}
                                     onChange={
                                         (e, newValue) => {
@@ -687,8 +791,8 @@ export default function Editor() {
                             </Stack>
                             {/* advanced condition editor 2 */}
                             <ConditionList 
-                                items={items2} 
-                                setItems={setItems2}
+                                conditions={excludeActConditions} 
+                                setConditions={setExcludeActConditions}
                                 action={'exclude'}
                             />
                         </Box>
