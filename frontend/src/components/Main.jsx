@@ -1,8 +1,9 @@
 import { Box, ButtonGroup, IconButton, Card, Chip, Divider, Sheet, Stack, Typography } from "@mui/joy";
-import { ActivityIcon, ObjectIcon } from "../CustomIcons";
+import { ActivityIcon, AttributeIcon, ObjectIcon } from "../CustomIcons";
 import LogicEditor from "./LogicEditor";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import { grey } from '@mui/material/colors';
 import { useGlobal } from '../GlobalContext';
 
@@ -157,6 +158,7 @@ export default function Main() {
                 </IconButton>
                 <IconButton 
                     onClick={() => {
+                        console.log(processData)
                         handleDelete({ ruleName: ruleName, parentProcess: parentProcess });
                         cleanEmptyProcess(setProcessData)
                     }}
@@ -227,6 +229,62 @@ export default function Main() {
                             }
                         </Stack>
                     )}
+                    {/* include object type condition section */}
+                    {rule.includeOT.condition.length > 0 && (
+                        <Box>
+                            {   
+                                rule.includeOT.condition.map((cond, index) => (
+                                    <Stack direction='row' spacing={1} ml={18.3}>
+                                        <FilterAltOutlinedIcon sx={{ color: '#64748B' }}/>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md" 
+                                            startDecorator={<ObjectIcon />}
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.entity}
+                                        </Chip>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md" 
+                                            startDecorator={<AttributeIcon />}
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.attribute}
+                                        </Chip>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md"
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.operator +  '      ' + cond.value}
+                                        </Chip>
+                                    </Stack>
+                                ))
+                            }
+                        </Box>
+                    )}
                     {/* include activity section */}
                     {rule.includeAct.entities.length > 0 && (
                         <Stack direction='row' spacing={1} m={1} mb={-1}>
@@ -255,6 +313,62 @@ export default function Main() {
                                 ))
                             }
                         </Stack>
+                    )}
+                    {/* include activity condition section */}
+                    {rule.includeAct.condition.length > 0 && (
+                        <Box>
+                            {   
+                                rule.includeAct.condition.map((cond, index) => (
+                                    <Stack direction='row' spacing={1} ml={18.3}>
+                                        <FilterAltOutlinedIcon sx={{ color: '#64748B' }}/>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md" 
+                                            startDecorator={<ActivityIcon />}
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.entity}
+                                        </Chip>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md" 
+                                            startDecorator={<AttributeIcon />}
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.attribute}
+                                        </Chip>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md"
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.operator +  '      ' + cond.value}
+                                        </Chip>
+                                    </Stack>
+                                ))
+                            }
+                        </Box>
                     )}
                     {/* exclude object type section */}
                     {rule.excludeOT.entities.length > 0 && (
@@ -285,6 +399,62 @@ export default function Main() {
                             }
                         </Stack>
                     )}
+                    {/* exclude object type condition section */}
+                    {rule.excludeOT.condition.length > 0 && (
+                        <Box>
+                            {   
+                                rule.excludeOT.condition.map((cond, index) => (
+                                    <Stack direction='row' spacing={1} ml={18.3}>
+                                        <FilterAltOutlinedIcon sx={{ color: '#64748B' }}/>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md" 
+                                            startDecorator={<ObjectIcon />}
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.entity}
+                                        </Chip>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md" 
+                                            startDecorator={<AttributeIcon />}
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.attribute}
+                                        </Chip>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md"
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.operator +  '      ' + cond.value}
+                                        </Chip>
+                                    </Stack>
+                                ))
+                            }
+                        </Box>
+                    )}
                     {/* exclude activiy section */}
                     {rule.excludeAct.entities.length > 0 && (
                         <Stack direction='row' spacing={1} m={1} mb={-1}>
@@ -313,6 +483,62 @@ export default function Main() {
                                 ))
                             }
                         </Stack>
+                    )}
+                    {/* exclude activity condition section */}
+                    {rule.excludeAct.condition.length > 0 && (
+                        <Box>
+                            {   
+                                rule.excludeAct.condition.map((cond, index) => (
+                                    <Stack direction='row' spacing={1} ml={18.3}>
+                                        <FilterAltOutlinedIcon sx={{ color: '#64748B' }}/>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md" 
+                                            startDecorator={<ActivityIcon />}
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.entity}
+                                        </Chip>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md" 
+                                            startDecorator={<AttributeIcon />}
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.attribute}
+                                        </Chip>
+                                        <Chip
+                                            key={index}
+                                            variant="outlined"
+                                            size="md"
+                                            sx={{ 
+                                                border: '1.6px solid',
+                                                fontWeight: 'bold', 
+                                                borderColor: 'neutral.300',
+                                                color: 'neutral.500',
+                                                backgroundColor: 'transparent'
+                                            }}
+                                        >
+                                            {cond.operator +  '      ' + cond.value}
+                                        </Chip>
+                                    </Stack>
+                                ))
+                            }
+                        </Box>
                     )}
                 </Card>
                 <ButtonBar ruleName={rule.ruleName} parentProcess={rule.parentProcess}/>

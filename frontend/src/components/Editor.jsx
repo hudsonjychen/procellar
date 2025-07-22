@@ -20,9 +20,9 @@ const RuleNameInput = ({ ruleData, setRuleData }) => (
 )
 
 const operatorMap = {
-    string: ['===', '!=='],
-    number: ['===', '!==', '>', '>=', '<', '<='],
-    boolean: ['===', '!=='],
+    string: ['==', '!=', 'in', 'not in'],
+    integer: ['==', '!=', '>', '>=', '<', '<=', 'in', 'not in'],
+    boolean: ['==', '!='],
     array: ['included in', 'not included in']
 }
 
@@ -66,6 +66,8 @@ export default function Editor() {
         excludeOT: [],
         excludeAct: []
     })
+
+    const [selectedConditions, setSelectedConditions] = useState({})
 
     const [ruleData, setRuleData] = useState({
         ruleName: '',
@@ -128,14 +130,17 @@ export default function Editor() {
             excludeOT: [],
             excludeAct: []
         })
+
+        setSelectedConditions({})
     }
 
-    const handleCancel1 = () => {
+    const handleCancel = () => {
         setOpen1(false)
+        setOpen2(false)
         clearEditor()
     }
 
-    const handleSave1 = () => {
+    const handleSave = () => {
         {/* update processes and process list for autocomplete component */}
         const originalProcessList = processAcList.map(item => item.title)
         if (!originalProcessList.includes(processAcName.title)) {
@@ -144,10 +149,72 @@ export default function Editor() {
         }
 
         const { title } = processAcName
-        const updatedRuleData = {
-            ...ruleData,
-            parentProcess: title
-        }
+
+        const tempRuleData = ruleData
+        tempRuleData.parentProcess = title
+
+        tempRuleData.includeOT.condition = Object.entries(selectedConditions)
+        .map(([key, cond]) => {
+            if (cond.action === 'include' && cond.type === 'objectType' && cond.entity && cond.attribute && cond.operator) {
+                return {
+                    entity: cond.entity,
+                    attribute: cond.attribute,
+                    operator: cond.operator,
+                    value: cond.value
+                }
+            } else {
+                return null
+            }
+        })
+        .filter(Boolean)
+
+        tempRuleData.includeAct.condition = Object.entries(selectedConditions)
+        .map(([key, cond]) => {
+            if (cond.action === 'include' && cond.type === 'eventType' && cond.entity && cond.attribute && cond.operator) {
+                return {
+                    entity: cond.entity,
+                    attribute: cond.attribute,
+                    operator: cond.operator,
+                    value: cond.value
+                }
+            } else {
+                return null
+            }
+        })
+        .filter(Boolean)
+
+        tempRuleData.excludeOT.condition = Object.entries(selectedConditions)
+        .map(([key, cond]) => {
+            if (cond.action === 'exclude' && cond.type === 'objectType' && cond.entity && cond.attribute && cond.operator) {
+                return {
+                    entity: cond.entity,
+                    attribute: cond.attribute,
+                    operator: cond.operator,
+                    value: cond.value
+                }
+            } else {
+                return null
+            }
+        })
+        .filter(Boolean)
+
+        tempRuleData.excludeAct.condition = Object.entries(selectedConditions)
+        .map(([key, cond]) => {
+            if (cond.action === 'exclude' && cond.type === 'eventType' && cond.entity && cond.attribute && cond.operator) {
+                return {
+                    entity: cond.entity,
+                    attribute: cond.attribute,
+                    operator: cond.operator,
+                    value: cond.value
+                }
+            } else {
+                return null
+            }
+        })
+        .filter(Boolean)
+
+        const updatedRuleData = tempRuleData
+
         setRuleData(updatedRuleData);
         if (updatedRuleData.ruleName && updatedRuleData.parentProcess) {
             setProcessData(prev => {
@@ -174,6 +241,7 @@ export default function Editor() {
                 }
             })
             setOpen1(false)
+            setOpen2(false)
             clearEditor()
         }        
     }
@@ -281,28 +349,27 @@ export default function Editor() {
         )
     }
 
-    const ConditionEditor = ({ onDelete, action }) => {
-        const [condition, setCondition] = useState({})
+    const ConditionEditor = ({ onDelete, action, id }) => {
         const [attrOptions, setAttrOptions] = useState([])
         const [opOptions, setOpOptions] = useState([])
 
         useEffect(() => {
-            if (condition.entity){
-                const matched = attrMap.find(item => item.name === condition.entity)
+            if (selectedConditions[id]?.entity){
+                const matched = attrMap.find(item => item.name === selectedConditions[id].entity)
                 if (matched) {
                     setAttrOptions(matched.attributes)
                 }
             }
-        }, [condition.entity])
+        }, [selectedConditions[id]?.entity])
 
         useEffect(() => {
-            if (condition.attribute){
-                const matched = attrOptions.find(item => item.name === condition.attribute)
+            if (selectedConditions[id]?.attribute){
+                const matched = attrOptions.find(item => item.name === selectedConditions[id].attribute)
                 if (matched) {
                     setOpOptions(operatorMap[matched.type])
                 }
             }
-        }, [condition.attribute])
+        }, [selectedConditions[id]?.attribute, attrOptions])
 
         return (
             <Stack
@@ -320,8 +387,11 @@ export default function Editor() {
                     placeholder={placeholderMap['entity'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    value={selectedConditions[id]?.entity}
                     onChange={(e, newValue) => {
-                        setCondition(prev => ({...prev, entity: newValue}))
+                        const item = attrMap.find(item => item.name === newValue)
+                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], action: action, type: item.type,entity: newValue}}))
+                        console.log(selectedConditions)
                     }}
                 >
                     {action === 'include' ? [...selectedEntities.includeOT, ...selectedEntities.includeAct].map((item) => (
@@ -335,8 +405,10 @@ export default function Editor() {
                     placeholder={placeholderMap['attribute'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    value={selectedConditions[id]?.attribute}
                     onChange={(e, newValue) => {
-                        setCondition(prev => ({...prev, attribute: newValue}))
+                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], attribute: newValue}}))
+                        console.log(selectedConditions)
                     }}
                 >
                     {attrOptions
@@ -351,20 +423,24 @@ export default function Editor() {
                     placeholder={placeholderMap['operator'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    value={selectedConditions[id]?.operator}
                     onChange={(e, newValue) => {
-                        setCondition(prev => ({...prev, operator: newValue}))
+                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], operator: newValue}}))
                     }}
                 >
                     {opOptions.map(item => (
                         <Option key={item} value={item}>{item}</Option>
                     ))}
                 </Select>
+                {/* value input */}
                 <Input 
                     placeholder="value..."
                     name="condition"
                     sx={{ width: '8rem'}}
+                    value={selectedConditions[id]?.value || ''}
                     onChange={(e) => {
-                        setCondition(prev => ({...prev, value: e.target.value}))
+                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], value: e.target.value}}))
+                        console.log(selectedConditions)
                     }}
                 />
                 <IconButton
@@ -382,17 +458,23 @@ export default function Editor() {
     }
 
     const ConditionList = ({ items, setItems, action }) => {
-        const handleDelete = (index) => {
-            setItems(prev => prev.filter((_, i) => i !== index));
+        const handleDelete = (index, id) => {
+            setItems(prev => prev.filter((_, i) => i !== index))
+            setSelectedConditions(prev => {
+                const newConditions = { ...prev }
+                delete newConditions[id + action]
+                return newConditions
+            })
         };
 
         return (
             <Box>
                 {items.map((id, index) => (
                     <ConditionEditor
-                        key={id}
-                        onDelete={() => handleDelete(index)}
+                        key={id+action}
+                        onDelete={() => handleDelete(index, id)}
                         action={action}
+                        id={id+action}
                     />
                 ))}
             </Box>
@@ -581,13 +663,13 @@ export default function Editor() {
                             <Button 
                                 color='neutral' 
                                 sx={{ width: 126 }} 
-                                onClick={handleCancel1}
+                                onClick={handleCancel}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 sx={{ width: 126 }}
-                                onClick={handleSave1}
+                                onClick={handleSave}
                             >
                                 Save
                             </Button>
@@ -649,7 +731,7 @@ export default function Editor() {
                                     onChange={
                                         (e, newValue) => {
                                             setSelectedEntities(prev => ({ ...prev, includeOT: newValue}))
-                                            setRuleData(prev => ({ ...prev, ['includeObjectTypes']: newValue}))
+                                            setRuleData(prev => ({ ...prev, includeOT: {...prev.includeOT, entities: newValue}}))
                                         }
                                     }
                                 >
@@ -665,7 +747,7 @@ export default function Editor() {
                                     onChange={
                                         (e, newValue) => {
                                             setSelectedEntities(prev => ({ ...prev, includeAct: newValue}))
-                                            setRuleData(prev => ({ ...prev, ['includeActivities']: newValue}))
+                                            setRuleData(prev => ({ ...prev, includeAct: {...prev.includeAct, entities: newValue}}))
                                         }
                                     }
                                 >
@@ -699,7 +781,7 @@ export default function Editor() {
                                     onChange={
                                         (e, newValue) => {
                                             setSelectedEntities(prev => ({ ...prev, excludeOT: newValue}))
-                                            setRuleData(prev => ({ ...prev, ['excludeObjectTypes']: newValue}))
+                                            setRuleData(prev => ({ ...prev, excludeOT: {...prev.excludeOT, entities: newValue}}))
                                         }
                                     }
                                 >
@@ -715,7 +797,7 @@ export default function Editor() {
                                     onChange={
                                         (e, newValue) => {
                                             setSelectedEntities(prev => ({ ...prev, excludeAct: newValue}))
-                                            setRuleData(prev => ({ ...prev, ['excludeActivities']: newValue}))
+                                            setRuleData(prev => ({ ...prev, excludeAct: {...prev.excludeAct, entities: newValue}}))
                                         }
                                     }
                                 >
@@ -768,13 +850,13 @@ export default function Editor() {
                             <Button 
                                 color='neutral' 
                                 sx={{ width: 126 }} 
-                                onClick={() => setOpen1(false)}
+                                onClick={handleCancel}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 sx={{ width: 126 }}
-                                onClick={handleSave2}
+                                onClick={handleSave}
                             >
                                 Save
                             </Button>

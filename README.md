@@ -5,7 +5,10 @@ Procellar is a user-freindly and powerful web app that allows users to define pr
 ---
 
 ## Notes
+### Jul 22
+- The **Advanced Rule Editor** is functional on frontend. Conditions can now be defined and displayed. However, the backend is not yet ready, so exported PROCEL is not filtered by conditions. 
 
+### Earlier
 - This project is currently under development. 
 - The **Advanced Rule Editor** is not functional yet. 
 - For demonstratio purpose, it's recommended to use `example_data_3` from the `example-data/` directory.
