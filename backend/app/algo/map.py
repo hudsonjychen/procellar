@@ -29,3 +29,9 @@ def map_attibute_to_object_type(ocel: OCEL) -> Dict[str, list]:
     
     ot_attrs = {k: list(v) for k, v in ot_attrs.items()}
     return ot_attrs
+
+def map_attribute(event_log):
+    eventTypes = [{'name': item['name'], 'type': 'eventType', 'attributes': item['attributes']} for item in event_log['eventTypes']]
+    objectTypes = [{'name': item['name'], 'type': 'objectType', 'attributes': item['attributes']} for item in event_log['objectTypes']]
+    attributeMap = eventTypes + objectTypes
+    return attributeMap

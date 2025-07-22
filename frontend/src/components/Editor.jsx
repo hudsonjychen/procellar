@@ -4,7 +4,7 @@ import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlin
 import Add from '@mui/icons-material/Add';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGlobal } from '../GlobalContext';
 import Select from '@mui/joy/Select'
 import Option from '@mui/joy/Option'
@@ -281,7 +281,29 @@ export default function Editor() {
         )
     }
 
-    const ConditionEditor = ({ onDelete, action, index }) => {
+    const ConditionEditor = ({ onDelete, action }) => {
+        const [condition, setCondition] = useState({})
+        const [attrOptions, setAttrOptions] = useState([])
+        const [opOptions, setOpOptions] = useState([])
+
+        useEffect(() => {
+            if (condition.entity){
+                const matched = attrMap.find(item => item.name === condition.entity)
+                if (matched) {
+                    setAttrOptions(matched.attributes)
+                }
+            }
+        }, [condition.entity])
+
+        useEffect(() => {
+            if (condition.attribute){
+                const matched = attrOptions.find(item => item.name === condition.attribute)
+                if (matched) {
+                    setOpOptions(operatorMap[matched.type])
+                }
+            }
+        }, [condition.attribute])
+
         return (
             <Stack
                 direction='row' 
@@ -298,6 +320,9 @@ export default function Editor() {
                     placeholder={placeholderMap['entity'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    onChange={(e, newValue) => {
+                        setCondition(prev => ({...prev, entity: newValue}))
+                    }}
                 >
                     {action === 'include' ? [...selectedEntities.includeOT, ...selectedEntities.includeAct].map((item) => (
                         <Option key={item} value={item}>{item}</Option>
@@ -310,21 +335,37 @@ export default function Editor() {
                     placeholder={placeholderMap['attribute'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    onChange={(e, newValue) => {
+                        setCondition(prev => ({...prev, attribute: newValue}))
+                    }}
                 >
-                    
+                    {attrOptions
+                        .filter(item => item && item.name)
+                        .map(item => (
+                            <Option key={item.name} value={item.name}>{item.name}</Option>
+                        ))
+                    }
                 </Select>
                 {/* operator select */}
                 <Select
                     placeholder={placeholderMap['operator'] || 'Select...'}
                     size="sm"
                     sx={{ width: '8rem' }}
+                    onChange={(e, newValue) => {
+                        setCondition(prev => ({...prev, operator: newValue}))
+                    }}
                 >
-                    
+                    {opOptions.map(item => (
+                        <Option key={item} value={item}>{item}</Option>
+                    ))}
                 </Select>
                 <Input 
                     placeholder="value..."
                     name="condition"
                     sx={{ width: '8rem'}}
+                    onChange={(e) => {
+                        setCondition(prev => ({...prev, value: e.target.value}))
+                    }}
                 />
                 <IconButton
                     size="sm"
@@ -352,7 +393,6 @@ export default function Editor() {
                         key={id}
                         onDelete={() => handleDelete(index)}
                         action={action}
-                        index={index}
                     />
                 ))}
             </Box>

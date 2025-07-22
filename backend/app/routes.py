@@ -5,7 +5,7 @@ import json
 import traceback
 
 from app.algo.entity import get_activities, get_object_list, get_object_types, get_processes
-from app.algo.map import map_object_id_to_type
+from app.algo.map import map_object_id_to_type, map_attribute
 from app.algo.update import update
 from .cache import cachedFile, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedAttrMap
 
@@ -42,9 +42,10 @@ def upload():
         global cachedObjectTypeMap
         cachedObjectTypeMap = map_object_id_to_type(log)
 
-        ocel = cachedFile['json']
+        event_log = cachedFile['json']
         cachedAttrMap.clear()
-        cachedAttrMap.extend(ocel['eventTypes'] + ocel['objectTypes'])
+        cachedAttrMap.extend(map_attribute(event_log))
+        print(cachedAttrMap)
 
         return jsonify({"status": "success"}), 200
     
