@@ -1,6 +1,6 @@
 import { IconButton, Box, Modal, ModalDialog, DialogTitle, Stack, Typography, Button, Select, Option, Tooltip } from "@mui/joy";
 import { LogicIcon } from "../CustomIcons";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useGlobal } from '../GlobalContext';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 

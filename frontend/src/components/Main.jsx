@@ -1,6 +1,6 @@
 import { Box, ButtonGroup, IconButton, Card, Chip, Divider, Sheet, Stack, Typography } from "@mui/joy";
 import { ActivityIcon, AttributeIcon, ObjectIcon } from "../CustomIcons";
-import LogicEditor from "./LogicEditor";
+import AdvancedLogicEditor from "./AdvancedLogicEditor";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
@@ -192,7 +192,8 @@ export default function Main() {
                         overflow: 'hidden',
                         p: 2,
                         pb: 3,
-                        mb: 1.6
+                        mb: 1.6,
+                        overflowY: 'auto'
                     }}
                 >
                     <Box sx={{ ml: 1}}>
@@ -234,13 +235,12 @@ export default function Main() {
                         <Box>
                             {   
                                 rule.includeOT.condition.map((cond, index) => (
-                                    <Stack direction='row' spacing={1} ml={18.3}>
-                                        <FilterAltOutlinedIcon sx={{ color: '#64748B' }}/>
+                                    <Stack direction='row' spacing={1} ml={22.3} mb={0.2}>
                                         <Chip
                                             key={index}
                                             variant="outlined"
                                             size="md" 
-                                            startDecorator={<ObjectIcon />}
+                                            startDecorator={<FilterAltOutlinedIcon />}
                                             sx={{ 
                                                 border: '1.6px solid',
                                                 fontWeight: 'bold', 
@@ -249,36 +249,50 @@ export default function Main() {
                                                 backgroundColor: 'transparent'
                                             }}
                                         >
-                                            {cond.entity}
-                                        </Chip>
-                                        <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            size="md" 
-                                            startDecorator={<AttributeIcon />}
-                                            sx={{ 
-                                                border: '1.6px solid',
-                                                fontWeight: 'bold', 
-                                                borderColor: 'neutral.300',
-                                                color: 'neutral.500',
-                                                backgroundColor: 'transparent'
-                                            }}
-                                        >
-                                            {cond.attribute}
-                                        </Chip>
-                                        <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            size="md"
-                                            sx={{ 
-                                                border: '1.6px solid',
-                                                fontWeight: 'bold', 
-                                                borderColor: 'neutral.300',
-                                                color: 'neutral.500',
-                                                backgroundColor: 'transparent'
-                                            }}
-                                        >
-                                            {cond.operator +  '      ' + cond.value}
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md" 
+                                                startDecorator={<ObjectIcon />}
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.entity}
+                                            </Chip>
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md" 
+                                                startDecorator={<AttributeIcon />}
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.attribute}
+                                            </Chip>
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md"
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.operator + ' ' + cond.value}
+                                            </Chip>
                                         </Chip>
                                     </Stack>
                                 ))
@@ -319,13 +333,12 @@ export default function Main() {
                         <Box>
                             {   
                                 rule.includeAct.condition.map((cond, index) => (
-                                    <Stack direction='row' spacing={1} ml={18.3}>
-                                        <FilterAltOutlinedIcon sx={{ color: '#64748B' }}/>
+                                    <Stack direction='row' spacing={1} ml={22.3} mb={0.2}>
                                         <Chip
                                             key={index}
                                             variant="outlined"
                                             size="md" 
-                                            startDecorator={<ActivityIcon />}
+                                            startDecorator={<FilterAltOutlinedIcon />}
                                             sx={{ 
                                                 border: '1.6px solid',
                                                 fontWeight: 'bold', 
@@ -334,36 +347,50 @@ export default function Main() {
                                                 backgroundColor: 'transparent'
                                             }}
                                         >
-                                            {cond.entity}
-                                        </Chip>
-                                        <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            size="md" 
-                                            startDecorator={<AttributeIcon />}
-                                            sx={{ 
-                                                border: '1.6px solid',
-                                                fontWeight: 'bold', 
-                                                borderColor: 'neutral.300',
-                                                color: 'neutral.500',
-                                                backgroundColor: 'transparent'
-                                            }}
-                                        >
-                                            {cond.attribute}
-                                        </Chip>
-                                        <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            size="md"
-                                            sx={{ 
-                                                border: '1.6px solid',
-                                                fontWeight: 'bold', 
-                                                borderColor: 'neutral.300',
-                                                color: 'neutral.500',
-                                                backgroundColor: 'transparent'
-                                            }}
-                                        >
-                                            {cond.operator +  '      ' + cond.value}
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md" 
+                                                startDecorator={<ActivityIcon />}
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.entity}
+                                            </Chip>
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md" 
+                                                startDecorator={<AttributeIcon />}
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.attribute}
+                                            </Chip>
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md"
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.operator + ' ' + cond.value}
+                                            </Chip>
                                         </Chip>
                                     </Stack>
                                 ))
@@ -404,13 +431,12 @@ export default function Main() {
                         <Box>
                             {   
                                 rule.excludeOT.condition.map((cond, index) => (
-                                    <Stack direction='row' spacing={1} ml={18.3}>
-                                        <FilterAltOutlinedIcon sx={{ color: '#64748B' }}/>
+                                    <Stack direction='row' spacing={1} ml={22.3} mb={0.2}>
                                         <Chip
                                             key={index}
                                             variant="outlined"
                                             size="md" 
-                                            startDecorator={<ObjectIcon />}
+                                            startDecorator={<FilterAltOutlinedIcon />}
                                             sx={{ 
                                                 border: '1.6px solid',
                                                 fontWeight: 'bold', 
@@ -419,36 +445,50 @@ export default function Main() {
                                                 backgroundColor: 'transparent'
                                             }}
                                         >
-                                            {cond.entity}
-                                        </Chip>
-                                        <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            size="md" 
-                                            startDecorator={<AttributeIcon />}
-                                            sx={{ 
-                                                border: '1.6px solid',
-                                                fontWeight: 'bold', 
-                                                borderColor: 'neutral.300',
-                                                color: 'neutral.500',
-                                                backgroundColor: 'transparent'
-                                            }}
-                                        >
-                                            {cond.attribute}
-                                        </Chip>
-                                        <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            size="md"
-                                            sx={{ 
-                                                border: '1.6px solid',
-                                                fontWeight: 'bold', 
-                                                borderColor: 'neutral.300',
-                                                color: 'neutral.500',
-                                                backgroundColor: 'transparent'
-                                            }}
-                                        >
-                                            {cond.operator +  '      ' + cond.value}
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md" 
+                                                startDecorator={<ObjectIcon />}
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.entity}
+                                            </Chip>
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md" 
+                                                startDecorator={<AttributeIcon />}
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.attribute}
+                                            </Chip>
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md"
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.operator + ' ' + cond.value}
+                                            </Chip>
                                         </Chip>
                                     </Stack>
                                 ))
@@ -489,13 +529,12 @@ export default function Main() {
                         <Box>
                             {   
                                 rule.excludeAct.condition.map((cond, index) => (
-                                    <Stack direction='row' spacing={1} ml={18.3}>
-                                        <FilterAltOutlinedIcon sx={{ color: '#64748B' }}/>
+                                    <Stack direction='row' spacing={1} ml={22.3} mb={0.2}>
                                         <Chip
                                             key={index}
                                             variant="outlined"
                                             size="md" 
-                                            startDecorator={<ActivityIcon />}
+                                            startDecorator={<FilterAltOutlinedIcon />}
                                             sx={{ 
                                                 border: '1.6px solid',
                                                 fontWeight: 'bold', 
@@ -504,36 +543,50 @@ export default function Main() {
                                                 backgroundColor: 'transparent'
                                             }}
                                         >
-                                            {cond.entity}
-                                        </Chip>
-                                        <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            size="md" 
-                                            startDecorator={<AttributeIcon />}
-                                            sx={{ 
-                                                border: '1.6px solid',
-                                                fontWeight: 'bold', 
-                                                borderColor: 'neutral.300',
-                                                color: 'neutral.500',
-                                                backgroundColor: 'transparent'
-                                            }}
-                                        >
-                                            {cond.attribute}
-                                        </Chip>
-                                        <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            size="md"
-                                            sx={{ 
-                                                border: '1.6px solid',
-                                                fontWeight: 'bold', 
-                                                borderColor: 'neutral.300',
-                                                color: 'neutral.500',
-                                                backgroundColor: 'transparent'
-                                            }}
-                                        >
-                                            {cond.operator +  '      ' + cond.value}
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md" 
+                                                startDecorator={<ActivityIcon />}
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.entity}
+                                            </Chip>
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md" 
+                                                startDecorator={<AttributeIcon />}
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.attribute}
+                                            </Chip>
+                                            <Chip
+                                                key={index}
+                                                variant="outlined"
+                                                size="md"
+                                                sx={{ 
+                                                    border: '1.6px solid',
+                                                    fontWeight: 'bold', 
+                                                    borderColor: 'transparent',
+                                                    color: 'neutral.500',
+                                                    backgroundColor: 'transparent'
+                                                }}
+                                            >
+                                                {cond.operator + ' ' + cond.value}
+                                            </Chip>
                                         </Chip>
                                     </Stack>
                                 ))
@@ -562,7 +615,13 @@ export default function Main() {
                         alignItems: 'flex-start',
                     }}
                 >
+                    {/**
                     <LogicEditor 
+                        rules={process.rules}
+                        processName={process.processName}
+                    />
+                     */}
+                    <AdvancedLogicEditor 
                         rules={process.rules}
                         processName={process.processName}
                     />
