@@ -3,6 +3,7 @@ import { GroupIcon, LogicIcon, RootIcon } from "../CustomIcons";
 import { useState } from "react";
 import { useGlobal } from '../GlobalContext';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const demoLogicData = [
     {id: 0, name: 'root', leftGroup: 'group1', rightGroup: 'group2', operator: 'or'},
@@ -471,69 +472,99 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
                         Advanced Logic Editor
                     </DialogTitle>
-                    <form onSubmit={handleSubmit}>
-                        <Box 
-                            sx={{ 
-                                m: 1.2,
-                                mb: 4, 
-                                width: 480,
-                                p: 1,
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                alignContent: 'flex-start',
-                                alignItems: 'flex-start',
-                                gap: 2
-                            }}
-                        >
-                            <RowList logicData={logicData}/>
-                        </Box>
-                        <Stack
-                            direction='row' 
-                            justifyContent='flex-start' 
-                            alignItems='flex-start'
-                            spacing={2} 
-                            sx={{ m: 2, pt: 1, pb: 1 }}
-                        >
-                            <TipsAndUpdatesOutlinedIcon />
-                            <Typography >
-                                Click a group to start. Save only when all labels are green.
-                            </Typography>
-                        </Stack>
-                        <Stack 
-                            direction='row' 
-                            justifyContent='space-evenly' 
-                            alignItems='center'
-                            sx={{ m: 2, mt: 6 }}
-                        >
-                            <Button
-                                color='neutral' 
-                                sx={{ width: 126 }}
-                                onClick={() => {
-                                    console.log(logicData)
-                                    console.log(groupData)
-                                    handleClear()
-                                }}        
-                            >
-                                Clear
-                            </Button>
-                            <Button 
-                                color='neutral' 
-                                sx={{ width: 126 }}
-                                onClick={() => {
-                                    handleClear()
-                                    setOpenEditor(false)
+                    {ruleList.length > 1 ? 
+                        (
+                            <form onSubmit={handleSubmit}>
+                            <Box 
+                                sx={{ 
+                                    m: 1.2,
+                                    mb: 4, 
+                                    width: 480,
+                                    p: 1,
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    alignContent: 'flex-start',
+                                    alignItems: 'flex-start',
+                                    gap: 2
                                 }}
                             >
-                                Cancel
-                            </Button>
-                            <Button
-                                sx={{ width: 126 }}
-                                onClick={handleSave}
+                                <RowList logicData={logicData}/>
+                            </Box>
+                            <Stack
+                                direction='row' 
+                                justifyContent='flex-start' 
+                                alignItems='flex-start'
+                                spacing={2} 
+                                sx={{ m: 2, pt: 1, pb: 1 }}
                             >
-                                Save
-                            </Button>
-                        </Stack>
-                    </form>
+                                <TipsAndUpdatesOutlinedIcon />
+                                <Typography >
+                                    Click a group to start. Save only when all labels are green.
+                                </Typography>
+                            </Stack>
+                            <Stack 
+                                direction='row' 
+                                justifyContent='space-evenly' 
+                                alignItems='center'
+                                sx={{ m: 2, mt: 6 }}
+                            >
+                                <Button
+                                    color='neutral' 
+                                    sx={{ width: 126 }}
+                                    onClick={() => {
+                                        console.log(logicData)
+                                        console.log(groupData)
+                                        handleClear()
+                                    }}        
+                                >
+                                    Clear
+                                </Button>
+                                <Button 
+                                    color='neutral' 
+                                    sx={{ width: 126 }}
+                                    onClick={() => {
+                                        handleClear()
+                                        setOpenEditor(false)
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    sx={{ width: 126 }}
+                                    onClick={handleSave}
+                                >
+                                    Save
+                                </Button>
+                            </Stack>
+                            </form>
+                        ) : 
+                        (
+                            <Box>
+                                <Stack direction='row' spacing={1} sx={{ m: 2, mt: 2 }}>
+                                    <ErrorOutlineIcon />
+                                    <Typography level="body-md">
+                                        Define more than <strong>ONE rule</strong> to enable logic editor. 
+                                    </Typography>
+                                </Stack>
+                                <Stack 
+                                    direction='row' 
+                                    justifyContent='space-evenly' 
+                                    alignItems='center'
+                                    sx={{ m: 2, mt: 6 }}
+                                >
+                                    <Button
+                                        color='neutral' 
+                                        sx={{ width: 126 }}
+                                        onClick={() => {
+                                            setOpenEditor(false)
+                                        }}        
+                                    >
+                                        OK
+                                    </Button>
+                                </Stack>
+                            </Box>
+                        )
+                    }
                 </ModalDialog>
             </Modal>
         </Box>
