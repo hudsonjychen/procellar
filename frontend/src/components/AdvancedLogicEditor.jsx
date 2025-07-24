@@ -493,7 +493,7 @@ export default function AdvancedLogicEditor({ rules, processName }) {
             <Modal open={openEditor} onClose={() => setOpenEditor(false)}>
                 <ModalDialog sx={{ overflowY: 'auto' }}>
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
-                        Advanced Logic Editor
+                        Logic Editor
                     </DialogTitle>
                     {ruleList.length > 1 ? 
                         (
