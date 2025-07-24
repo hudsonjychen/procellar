@@ -50,6 +50,20 @@ export default function AdvancedLogicEditor({ rules, processName }) {
 
     const [openEditor, setOpenEditor] = useState(false)
 
+    const buildLogicString = (groupName) => {
+        const logicMap = new Map()
+        logicData.forEach(item => {
+            logicMap.set(item.name, item);
+        })
+        if (!logicMap.has(groupName)) return groupName;
+
+        const node = logicMap.get(groupName)
+        const left = buildLogicString(node.leftGroup)
+        const right = buildLogicString(node.rightGroup)
+
+        return `(${left} ${node.operator} ${right})`
+    }
+
     const GroupButton = ({ groupName, rowName, rowId }) => {
         const logicDataNameList = logicData.map(item => (item.name))
         const ifDisabled = (logicDataNameList.includes(groupName)) || (ruleList.includes(groupName))
@@ -523,6 +537,18 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                                 <TipsAndUpdatesOutlinedIcon />
                                 <Typography >
                                     Click a group to start. Save only when all labels are green.
+                                </Typography>
+                            </Stack>
+                            <Stack
+                                direction='row' 
+                                justifyContent='flex-start' 
+                                alignItems='flex-start'
+                                spacing={2} 
+                                sx={{ m: 2, pt: 1, pb: 1 }}
+                            >
+                                <LogicIcon />
+                                <Typography sx={{ fontWeight: 'bold' }}>
+                                    {buildLogicString('Root')}
                                 </Typography>
                             </Stack>
                             <Stack 
