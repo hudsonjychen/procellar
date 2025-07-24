@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useGlobal } from '../GlobalContext';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 
 const demoLogicData = [
     {id: 0, name: 'root', leftGroup: 'group1', rightGroup: 'group2', operator: 'or'},
@@ -17,30 +16,6 @@ const demoGroupData = {
     group1: ['rule1', 'rule4', 'rule5'],
     group2: ['rule2', 'rule3'],
     group3: ['rule4', 'rule5']
-}
-
-const areAllRulesAssigned = (groupData, logicData) => {
-    const usedRules = new Set();
-
-    for (const item of logicData) {
-        const { leftGroup, rightGroup } = item;
-        [leftGroup, rightGroup].forEach(val => {
-            if (val?.startsWith('rule')) {
-                usedRules.add(val);
-            }
-        });
-    }
-
-    for (const group in groupData) {
-        const rules = groupData[group];
-        for (const rule of rules) {
-            if (!usedRules.has(rule)) {
-                return false;
-            }
-        }
-    }
-
-    return true;
 }
 
 export default function AdvancedLogicEditor({ rules, processName }) {
@@ -64,8 +39,6 @@ export default function AdvancedLogicEditor({ rules, processName }) {
 
     const [index, setIndex] = useState(0)
     const [groupId, setGroupId] = useState(2)
-
-    const [openSaveAlert, setOpenSaveAlert] = useState(false)
 
     const [groupData, setGroupData] = useState(
         {
@@ -469,7 +442,25 @@ export default function AdvancedLogicEditor({ rules, processName }) {
         }
     }
     const handleSave = () => {
-        const canSave = areAllRulesAssigned(groupData, logicData)
+        const areAllRulesAssigned = (ruleList, logicData) => {
+            const usedRules = new Set()
+
+            for (const item of logicData) {
+                const { leftGroup, rightGroup } = item
+                if (ruleList.includes(leftGroup)) {
+                    usedRules.add(leftGroup)
+                }
+                if (ruleList.includes(rightGroup)) {
+                    usedRules.add(rightGroup)
+                }
+            }
+
+            console.log(usedRules)
+
+            return ruleList.every(rule => usedRules.has(rule))
+        }
+
+        const canSave = areAllRulesAssigned(ruleList, logicData)
         if (canSave) {
             const relations = buildLogicTree('Root')
             setProcessData(prev =>
@@ -483,7 +474,7 @@ export default function AdvancedLogicEditor({ rules, processName }) {
             setProcessLogicData(prev => ({...prev, [processName]: logicData}))
             setOpenEditor(false)
         } else {
-            setOpenSaveAlert(true)
+            return
         }
     }
 
@@ -598,20 +589,6 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                         )
                     }
                 </ModalDialog>
-                <Alert 
-                    open={openSaveAlert} 
-                    color={danger}
-                    variant='soft' 
-                    endDecorator={
-                        <IconButton variant="soft" color={color}>
-                            <CloseRoundedIcon />
-                        </IconButton>
-                    }
-                >
-                    <Typography level='body-sm' color=''>
-                        Can not save
-                    </Typography>
-                </Alert>
             </Modal>
         </Box>
     )
