@@ -193,7 +193,7 @@ export default function Main() {
                         p: 2,
                         pb: 3,
                         mb: 1.6,
-                        overflowY: 'auto'
+                        overflowX: 'auto'
                     }}
                 >
                     <Box sx={{ ml: 1}}>

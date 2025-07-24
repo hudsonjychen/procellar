@@ -352,6 +352,7 @@ export default function Editor() {
     const ConditionEditor = ({ onDelete, action, id }) => {
         const [attrOptions, setAttrOptions] = useState([])
         const [opOptions, setOpOptions] = useState([])
+        const [input, setInput] = useState(selectedConditions[id]?.value || '')
 
         useEffect(() => {
             if (selectedConditions[id]?.entity){
@@ -437,11 +438,11 @@ export default function Editor() {
                     placeholder="value..."
                     name="condition"
                     sx={{ width: '8rem'}}
-                    value={selectedConditions[id]?.value || ''}
+                    value={input}
                     onChange={(e) => {
-                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], value: e.target.value}}))
-                        console.log(selectedConditions)
+                        setInput(e.target.value)
                     }}
+                    onBlur={() => setSelectedConditions(prev => ({...prev, [id]: {...prev[id], value: input}}))}
                 />
                 <IconButton
                     size="sm"
