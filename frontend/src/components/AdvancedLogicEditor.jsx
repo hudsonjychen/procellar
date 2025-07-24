@@ -1,6 +1,8 @@
 import { Box, Tooltip, IconButton, Typography, Modal, Select, Option, ModalDialog, DialogTitle, Stack, Button, Card, List, ListItem, Checkbox, Dropdown, MenuButton, Menu } from "@mui/joy";
-import { LogicIcon } from "../CustomIcons";
+import { GroupIcon, LogicIcon, RootIcon } from "../CustomIcons";
 import { useState } from "react";
+import { useGlobal } from '../GlobalContext';
+import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 
 const demoLogicData = [
     {id: 0, name: 'root', leftGroup: 'group1', rightGroup: 'group2', operator: 'or'},
@@ -16,15 +18,22 @@ const demoGroupData = {
 }
 
 export default function AdvancedLogicEditor({ rules, processName }) {
-    const [logicData, setLogicData] = useState([
-        {
-            id: 0, 
-            name: 'root', 
-            leftGroup: 'group1', 
-            rightGroup: 'group2', 
-            operator: 'or'
+    const { setProcessData, processLogicData, setProcessLogicData } = useGlobal()
+    const [logicData, setLogicData] = useState(() => {
+        if (processName in processLogicData) {
+            return processLogicData[processName]
+        } else {
+            return [
+                {
+                    id: 0, 
+                    name: 'Root', 
+                    leftGroup: 'Group1', 
+                    rightGroup: 'Group2', 
+                    operator: 'or'
+                }
+            ]
         }
-    ])
+    })
     const ruleList = rules.map(r => {return r.ruleName})
 
     const [index, setIndex] = useState(0)
@@ -32,9 +41,9 @@ export default function AdvancedLogicEditor({ rules, processName }) {
 
     const [groupData, setGroupData] = useState(
         {
-            root: ruleList,
-            group1: [], 
-            group2: []
+            Root: ruleList,
+            Group1: [], 
+            Group2: []
         }
     )
 
@@ -42,7 +51,7 @@ export default function AdvancedLogicEditor({ rules, processName }) {
 
     const GroupButton = ({ groupName, rowName, rowId }) => {
         const logicDataNameList = logicData.map(item => (item.name))
-        const ifDisabled = (logicDataNameList.includes(groupName)) || !(groupName in groupData)
+        const ifDisabled = (logicDataNameList.includes(groupName)) || (ruleList.includes(groupName))
 
         const [open, setOpen] = useState(null)
 
@@ -101,8 +110,8 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                         {
                             id: (index + 1), 
                             name: groupName,
-                            leftGroup: 'group' + (groupId + 1),
-                            rightGroup: 'group' + (groupId + 2),
+                            leftGroup: 'Group' + (groupId + 1),
+                            rightGroup: 'Group' + (groupId + 2),
                             operator: 'or'
                         }
                     ])
@@ -188,8 +197,8 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                             {
                                 id: (index + 2), 
                                 name: otherGroupName,
-                                leftGroup: 'group' + (groupId + 1),
-                                rightGroup: 'group' + (groupId + 2),
+                                leftGroup: 'Group' + (groupId + 1),
+                                rightGroup: 'Group' + (groupId + 2),
                                 operator: 'or'
                             }
                         ])
@@ -202,8 +211,8 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                             {
                                 id: (index + 2), 
                                 name: otherGroupName,
-                                leftGroup: 'group' + (groupId + 3),
-                                rightGroup: 'group' + (groupId + 4),
+                                leftGroup: 'Group' + (groupId + 3),
+                                rightGroup: 'Group' + (groupId + 4),
                                 operator: 'or'
                             }
                         ])
@@ -216,8 +225,8 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                             {
                                 id: (index + 1), 
                                 name: otherGroupName,
-                                leftGroup: 'group' + (groupId + 1),
-                                rightGroup: 'group' + (groupId + 2),
+                                leftGroup: 'Group' + (groupId + 1),
+                                rightGroup: 'Group' + (groupId + 2),
                                 operator: 'or'
                             }
                         ])
@@ -240,11 +249,18 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                     color="primary"
                     disabled={ifDisabled}
                     sx={{
+                        fontSize: 'md',
                         '&:hover': {
                             backgroundColor: 'initial',
                             boxShadow: 'none',
                             color: 'inherit',
-                        }
+                        },
+                        '&.Mui-disabled': {
+                            opacity: 1,
+                            color: '#43A047',
+                            cursor: 'not-allowed'
+                        },
+                        width: 150
                     }}
                     onClick={() => setOpen(true)}
                 >
@@ -266,11 +282,11 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                         }
                     }}
                 >
-                    <Card sx={{ width: 220 }}>
-                        <Typography level="body-sm" sx={{ fontWeight: 'lg', mb: 2 }}>
-                            Select Rules for {groupName}
+                    <Card sx={{ width: 220, p: 3 }}>
+                        <Typography level="body-sm" sx={{ fontWeight: 'bold', mb: 2 }}>
+                            Select rules for {groupName}
                         </Typography>
-                        <Box>
+                        <Box sx={{ mb: 2 }}>
                             <List
                                 orientation="horizontal"
                                 wrap
@@ -290,11 +306,11 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                                 ))}
                             </List>
                         </Box>
-                        <Stack direction='row' spacing={2} justifyContent='center'>
-                            <Button sx={{ width: 62 }} onClick={handleCancel}>
+                        <Stack direction='row' spacing={3} justifyContent='center'>
+                            <Button color='neutral' sx={{ width: 82 }} onClick={handleCancel}>
                                 Cancel
                             </Button>
-                            <Button sx={{ width: 62 }} onClick={handleSave}>
+                            <Button sx={{ width: 82 }} onClick={handleSave}>
                                 Save
                             </Button>
                         </Stack>
@@ -307,10 +323,18 @@ export default function AdvancedLogicEditor({ rules, processName }) {
     const EditorRow = ({ row }) => {
         return (
             <Box>
-                <Stack direction='row'>
-                    <Typography> 
-                        {row.name} 
-                    </Typography>
+                <Stack direction='row' alignItems='center' justifyContent='space-between'>
+                    <Stack direction='row' alignItems='center' spacing={1} sx={{ width: 86 }}>
+                        {row.name === 'Root' ? (
+                            <RootIcon /> 
+                        ) : (
+                            <GroupIcon />
+                        )}
+                        <Typography level="title-md"> 
+                            {row.name} 
+                        </Typography>
+                    </Stack>
+                    
                     <GroupButton 
                         groupName={row.leftGroup}
                         rowName={row.name}
@@ -318,6 +342,7 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                     />
                     <LogicSelect 
                         op={row.operator}
+                        rowName={row.name}
                     />
                     <GroupButton 
                         groupName={row.rightGroup}
@@ -345,12 +370,22 @@ export default function AdvancedLogicEditor({ rules, processName }) {
         e.preventDefault()
     }
 
-    const LogicSelect = ({ op }) => {
+    const LogicSelect = ({ op, rowName }) => {
+        const handleSelect = (newValue) => {
+            setLogicData(prev => 
+                prev.map(item => 
+                    item.name === rowName
+                        ? { ...item, operator: newValue }
+                        : item
+                )
+            )
+        }
+
         return (
             <Select
                 sx={{ width: '6rem' }}
                 defaultValue={op}
-
+                onChange={(e, newValue) => handleSelect(newValue)}
             >
                 <Option value='and'>AND</Option>
                 <Option value='or'>OR</Option>
@@ -362,23 +397,61 @@ export default function AdvancedLogicEditor({ rules, processName }) {
         setLogicData([
             {
                 id: 0, 
-                name: 'root', 
-                leftGroup: 'group1', 
-                rightGroup: 'group2', 
+                name: 'Root', 
+                leftGroup: 'Group1', 
+                rightGroup: 'Group2', 
                 operator: 'or'
             }
         ])
 
         setGroupData(
             {
-                root: ruleList,
-                group1: [], 
-                group2: []
+                Root: ruleList,
+                Group1: [], 
+                Group2: []
             }
         )
 
         setIndex(0)
         setGroupId(2)
+    }
+
+    const groupList = logicData.map(item => item.name)
+    const groupMap = Object.fromEntries(logicData.map(item => [item.name, item]))
+    const buildLogicTree = (groupName) => {
+        const group = groupMap[groupName]
+        if (!group) {
+            return groupName
+        }
+
+        const { operator, leftGroup, rightGroup } = group
+
+        const left = groupList.includes(leftGroup)
+            ? buildLogicTree(leftGroup)
+            : leftGroup
+        
+        const right = groupList.includes(rightGroup)
+            ? buildLogicTree(rightGroup)
+            : rightGroup
+        
+        return {
+            op: operator,
+            left: left,
+            right: right
+        }
+    }
+    const handleSave = () => {
+        const relations = buildLogicTree('Root')
+        setProcessData(prev =>
+            prev.map(item => 
+                item.processName === processName ? {
+                    ...item,
+                    relations: relations
+                } : item
+            )
+        )
+        setProcessLogicData(prev => ({...prev, [processName]: logicData}))
+        setOpenEditor(false)
     }
 
     return (
@@ -403,7 +476,7 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                             sx={{ 
                                 m: 1.2,
                                 mb: 4, 
-                                width: 520,
+                                width: 480,
                                 p: 1,
                                 display: 'flex',
                                 flexWrap: 'wrap',
@@ -414,14 +487,25 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                         >
                             <RowList logicData={logicData}/>
                         </Box>
-                        
+                        <Stack
+                            direction='row' 
+                            justifyContent='flex-start' 
+                            alignItems='flex-start'
+                            spacing={2} 
+                            sx={{ m: 2, pt: 1, pb: 1 }}
+                        >
+                            <TipsAndUpdatesOutlinedIcon />
+                            <Typography >
+                                Click a group to start. Save only when all labels are green.
+                            </Typography>
+                        </Stack>
                         <Stack 
                             direction='row' 
                             justifyContent='space-evenly' 
                             alignItems='center'
                             sx={{ m: 2, mt: 6 }}
                         >
-                            <Button 
+                            <Button
                                 color='neutral' 
                                 sx={{ width: 126 }}
                                 onClick={() => {
@@ -435,11 +519,16 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                             <Button 
                                 color='neutral' 
                                 sx={{ width: 126 }}
+                                onClick={() => {
+                                    handleClear()
+                                    setOpenEditor(false)
+                                }}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 sx={{ width: 126 }}
+                                onClick={handleSave}
                             >
                                 Save
                             </Button>

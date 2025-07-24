@@ -40,6 +40,10 @@ export const GlobalProvider = ({ children }) => {
         });
     }, [processData])
 
+    {/* below is for advanced logic editor */}
+    {/* logic data */}
+    const [processLogicData, setProcessLogicData] = useState({})
+
     return (
         <GlobalContext.Provider 
             value={{
@@ -51,7 +55,8 @@ export const GlobalProvider = ({ children }) => {
                 objectTypeList, setObjectTypeList,
                 relations, setRelations,
                 ops, setOps,
-                attrMap, setAttrMap
+                attrMap, setAttrMap,
+                processLogicData, setProcessLogicData
             }}>
             {children}
         </GlobalContext.Provider>
