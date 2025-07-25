@@ -21,9 +21,9 @@ const RuleNameInput = ({ ruleData, setRuleData }) => (
 
 const operatorMap = {
     string: ['==', '!=', 'in', 'not in'],
-    integer: ['==', '!=', '>', '>=', '<', '<=', 'in', 'not in'],
-    boolean: ['==', '!='],
-    array: ['included in', 'not included in']
+    integer: ['==', '!=', '>', '>=', '<', '<='],
+    float: ['==', '!=', '>', '>=', '<', '<='],
+    boolean: ['==', '!=']
 }
 
 const demoAttributeMap = [

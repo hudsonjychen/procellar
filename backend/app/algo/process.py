@@ -25,18 +25,21 @@ class Process:
             'attributes': []
         })
 
-    def apply_rules(self, object_type_map, event):
+    def apply_rules(self, object_type_map, object_attr_map, event):
         context = dict()
         for r in self.rules:
             rule = Rule(parent_process=r["parentProcess"], 
                         rule_name=r["ruleName"],
                         include_ot=r["includeOT"]["entities"],
+                        include_ot_cond=r["includeOT"]["condition"],
                         include_act=r["includeAct"]["entities"],
+                        include_act_cond=r["includeAct"]["condition"],
                         exclude_ot=r["excludeOT"]["entities"],
-                        exclude_act=r["excludeAct"]["entities"])
-            bool_value = rule.check_event(object_type_map, event)
+                        exclude_ot_cond=r["excludeOT"]["condition"],
+                        exclude_act=r["excludeAct"]["entities"],
+                        exclude_act_cond=r["excludeAct"]["condition"])
+            bool_value = rule.check_event(object_type_map, object_attr_map, event)
             context[rule.rule_name] = bool_value
-        print(context)
         return context
     
     def _temp_evaluate(self, context):
@@ -73,9 +76,9 @@ class Process:
             "qualifier": 'process'
         })
     
-    def update(self, event_log, object_type_map):
+    def update(self, event_log, object_type_map, object_attr_map):
         for event in event_log["events"]:
-            context = self.apply_rules(object_type_map=object_type_map, event=event)
+            context = self.apply_rules(object_type_map=object_type_map, object_attr_map=object_attr_map, event=event)
             self.update_event(context=context, event=event)
         
         self.update_objects(event_log["objects"])

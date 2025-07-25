@@ -35,3 +35,17 @@ def map_attribute(event_log):
     objectTypes = [{'name': item['name'], 'type': 'objectType', 'attributes': item['attributes']} for item in event_log['objectTypes']]
     attributeMap = eventTypes + objectTypes
     return attributeMap
+
+def map_attribute_to_object(event_log):
+    object_attribute_map = {}
+    
+    for obj in event_log.get('objects', []):
+        obj_id = obj['id']
+        object_attribute_map[obj_id] = []
+        for attr in obj.get('attributes', []):
+            object_attribute_map[obj_id].append({
+                'name': attr['name'],
+                'value': attr['value']
+            })
+    
+    return object_attribute_map

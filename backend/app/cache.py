@@ -1,4 +1,4 @@
-cachedFile = {}
+cachedFile = {'json': {'original':None, 'modified': None}}
 cachedProcessList = []
 cachedObjectTypeList = []
 cachedProcesses = {}
@@ -6,3 +6,4 @@ cachedObjectTypes = []
 cachedActivities = []
 cachedObjectTypeMap = None
 cachedAttrMap = []
+cachedObjectAttrMap = None

@@ -1,3 +1,4 @@
+import copy
 import tempfile
 from flask import Blueprint, jsonify, request
 import pm4py
@@ -5,9 +6,9 @@ import json
 import traceback
 
 from app.algo.entity import get_activities, get_object_list, get_object_types, get_processes
-from app.algo.map import map_object_id_to_type, map_attribute
+from app.algo.map import map_object_id_to_type, map_attribute, map_attribute_to_object
 from app.algo.update import update
-from .cache import cachedFile, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedAttrMap
+from .cache import cachedFile, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedObjectAttrMap, cachedAttrMap
 
 main = Blueprint('main', __name__)
 
@@ -23,7 +24,7 @@ def upload():
             temp_path = temp.name
         
         with open(temp_path, 'r') as f:
-            cachedFile['json'] = json.load(f)
+            cachedFile['json']['original'] = json.load(f)
 
         log = pm4py.read_ocel2_json(temp_path)
 
@@ -42,10 +43,14 @@ def upload():
         global cachedObjectTypeMap
         cachedObjectTypeMap = map_object_id_to_type(log)
 
-        event_log = cachedFile['json']
+        event_log = cachedFile['json']['original']
+
+        global cachedObjectAttrMap
+        cachedObjectAttrMap = map_attribute_to_object(event_log)
+        print(map_attribute_to_object(event_log))
+
         cachedAttrMap.clear()
         cachedAttrMap.extend(map_attribute(event_log))
-        print(cachedAttrMap)
 
         return jsonify({"status": "success"}), 200
     
@@ -84,7 +89,11 @@ def process_data():
             if not isinstance(item, dict) or 'processName' not in item:
                 return jsonify({"error": "Invalid format in data"}), 400
         
-        update(object_type_map=cachedObjectTypeMap, event_log=cachedFile['json'], process_data=data)
+        file = cachedFile['json']['original']
+        fileCopy = copy.deepcopy(file)
+        
+        update(object_type_map=cachedObjectTypeMap, object_attr_map=cachedObjectAttrMap, event_log=fileCopy, process_data=data)
+        cachedFile['json']['modified'] = fileCopy
         return jsonify({"status": "success"}), 200
 
     except Exception as e:
@@ -94,5 +103,5 @@ def process_data():
 @main.route('/export_file', methods=['GET'])
 def export_file():
     return jsonify({
-        'exportedFile': cachedFile['json']
+        'exportedFile': cachedFile['json']['modified']
     })
