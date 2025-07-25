@@ -5,6 +5,9 @@ Procellar is a user-freindly and powerful web app that allows users to define pr
 ---
 
 ## What's new
+### Jul 25
+- Condition filtering is now fully supported accross frontend and backend.
+
 ### Jul 24
 - Now we have a completely redesigned **Logic Editor** which allows users to fully control logic relations. 
 - Various bugs and issues have been fixed.
