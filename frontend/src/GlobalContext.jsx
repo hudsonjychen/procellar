@@ -10,6 +10,10 @@ export const GlobalProvider = ({ children }) => {
     {/* a generic process list */}
     const [processes, setProcesses] = useState([]);
 
+    {/* file info */}
+    const [fileInfo, setFileInfo] = useState({});
+    const [uploadStatus, setUploadStatus] = useState([]);
+
     const [objectTypes, setObjectTypes] = useState([]);
     const [activities, setActivities] = useState([]);
     const [objectTypeList, setObjectTypeList] = useState([]);
@@ -50,6 +54,8 @@ export const GlobalProvider = ({ children }) => {
                 processData, setProcessData,
                 processAcList, setProcessAcList,
                 processes, setProcesses,
+                fileInfo, setFileInfo,
+                uploadStatus, setUploadStatus,
                 objectTypes, setObjectTypes,
                 activities, setActivities,
                 objectTypeList, setObjectTypeList,

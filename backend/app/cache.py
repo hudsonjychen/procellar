@@ -1,4 +1,5 @@
 cachedFile = {'json': {'original':None, 'modified': None}}
+cachedFileInfo = {'filename': '', 'size': 0, 'uploadtime': ''}
 cachedProcessList = []
 cachedObjectTypeList = []
 cachedProcesses = {}

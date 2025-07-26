@@ -5,7 +5,7 @@ import { useGlobal } from '../GlobalContext';
 import { Box, Button } from '@mui/joy';
 
 export default function ImportButton() {
-    const { setObjectTypes, setActivities, setObjectTypeList, setAttrMap } = useGlobal();
+    const { setFileInfo, setUploadStatus, setObjectTypes, setActivities, setObjectTypeList, setAttrMap, setProcessData, setProcessAcList, setProcesses } = useGlobal();
     const fileInputRef = useRef(null);
 
     const VisuallyHiddenInput = styled('input')({
@@ -38,18 +38,31 @@ export default function ImportButton() {
             });
         
             const result = await response.json();
-            console.log("Succeed", result);
+            if (!response.ok || result.error) {
+                throw new Error(result.error || `Upload failed with status ${response.status}`);
+            }
 
             const res = await fetch("http://localhost:5001/get_data");
             const data = await res.json();
+            setFileInfo(data.fileInfo);
             setObjectTypes(data.objectTypes);
             setActivities(data.activities);
             setObjectTypeList(data.objectTypeList);
             setAttrMap(data.attributes)
-        
+            
+            setUploadStatus(prev => [...prev, 'success'])
         } 
         catch (err) {
-            console.error("Fail", err);
+            console.error("Fail", err)
+            setUploadStatus(prev => [...prev, 'failure'])
+            setFileInfo({});
+            setObjectTypes([]);
+            setActivities([]);
+            setObjectTypeList([]);
+            setAttrMap({});
+            setProcessData([]);
+            setProcessAcList([]);
+            setProcesses([]);
         }
     }
 

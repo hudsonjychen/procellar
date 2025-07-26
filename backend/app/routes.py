@@ -1,4 +1,6 @@
 import copy
+from datetime import datetime
+import os
 import tempfile
 from flask import Blueprint, jsonify, request
 import pm4py
@@ -8,7 +10,7 @@ import traceback
 from app.algo.entity import get_activities, get_object_list, get_object_types, get_processes
 from app.algo.map import map_object_id_to_type, map_attribute, map_attribute_to_object
 from app.algo.update import update
-from .cache import cachedFile, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedObjectAttrMap, cachedAttrMap
+from .cache import cachedFile, cachedFileInfo, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedObjectAttrMap, cachedAttrMap
 
 main = Blueprint('main', __name__)
 
@@ -22,6 +24,16 @@ def upload():
         with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp:
             file.save(temp.name)
             temp_path = temp.name
+        
+        filename = file.filename
+        size = round(os.path.getsize(temp_path) / 1024 / 1024, 2)
+        uploadtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        cachedFileInfo['filename'] = filename
+        cachedFileInfo['size'] = size
+        cachedFileInfo['uploadtime'] = uploadtime
+
+        print(cachedFileInfo)
         
         with open(temp_path, 'r') as f:
             cachedFile['json']['original'] = json.load(f)
@@ -65,7 +77,8 @@ def get_data():
         'processList': cachedProcessList,
         'objectTypes': cachedObjectTypes,
         'activities': cachedActivities,
-        'attributes': cachedAttrMap
+        'attributes': cachedAttrMap,
+        'fileInfo': cachedFileInfo
     })
 
 @main.route('/process_data', methods=['POST'])

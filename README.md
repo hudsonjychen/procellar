@@ -5,25 +5,19 @@ Procellar is a user-freindly and powerful web app that allows users to define pr
 ---
 
 ## What's new
+### Jul 26
+- The information of imported files is provided.
+- Constraints for user behaviours are added.
+- Notifications when facing error or importing file successfully.
+
 ### Jul 25
-- Condition filtering is now fully supported accross frontend and backend.
+- Condition filtering is now fully supported accross frontend to backend.
 
 ### Jul 24
 - Now we have a completely redesigned **Logic Editor** which allows users to fully control logic relations. 
 - Various bugs and issues have been fixed.
 
-## Notes
-### Jul 24
-- The frontend is nearly complete, though some parts still need refinement.
-- The backend for condition filtering is not ready yet but will be delivered very soon.
-
-### Jul 22
-- The **Advanced Rule Editor** is functional on frontend. Conditions can now be defined and displayed. However, the backend is not yet ready, so exported PROCEL is not filtered by conditions. 
-
-### Earlier
-- This project is currently under development. 
-- The **Advanced Rule Editor** is not functional yet. 
-- For demonstratio purpose, it's recommended to use `example_data_3` from the `example-data/` directory.
+---
 
 ## Table of Contents
 

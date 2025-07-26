@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useGlobal } from '../GlobalContext';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { ErrorAlert } from "./Alert";
 
 const demoLogicData = [
     {id: 0, name: 'root', leftGroup: 'group1', rightGroup: 'group2', operator: 'or'},
@@ -50,6 +51,9 @@ export default function AdvancedLogicEditor({ rules, processName }) {
 
     const [openEditor, setOpenEditor] = useState(false)
 
+    {/* states for alert */}
+    const [showAlert1, setShowAlert1] = useState(false)
+
     const buildLogicString = (groupName) => {
         const logicMap = new Map()
         logicData.forEach(item => {
@@ -68,7 +72,7 @@ export default function AdvancedLogicEditor({ rules, processName }) {
         const logicDataNameList = logicData.map(item => (item.name))
         const ifDisabled = (logicDataNameList.includes(groupName)) || (ruleList.includes(groupName))
 
-        const [open, setOpen] = useState(null)
+        const [open, setOpen] = useState(false)
 
         const ruleOptions = groupData[rowName]
         const ruleOptionsCheckObj = Object.fromEntries(ruleOptions.map(key => [key, false]))
@@ -76,184 +80,185 @@ export default function AdvancedLogicEditor({ rules, processName }) {
         const tempCheckedRuleList = Object.entries(tempCheckedRules).filter(([key, value]) => value === true).map(([key]) => key)
 
         const handleSave = () => {
-
-            setGroupData(prev => ({
-                    ...prev, 
-                    [groupName]: tempCheckedRuleList
-                })
-            )
-
-            const checkedRuleList = tempCheckedRuleList
-            if (checkedRuleList.length < 1) {
-                return
-            } else if (checkedRuleList.length === 1) {
-                setLogicData(prev =>
-                    prev.map(item => {
-                        if (item.id !== rowId) return item;
-
-                        if (item.leftGroup === groupName) {
-                            return {
-                                ...item,
-                                leftGroup: checkedRuleList[0]
-                            };
-                        } else {
-                            return {
-                                ...item,
-                                rightGroup: checkedRuleList[0]
-                            };
-                        }
+            if (tempCheckedRuleList.length < ruleOptions.length && tempCheckedRuleList.length > 0){
+                setGroupData(prev => ({
+                        ...prev, 
+                        [groupName]: tempCheckedRuleList
                     })
                 )
-            } else if (checkedRuleList.length === 2) {
-                setIndex(prev => (prev + 1))
-                setLogicData(prev => ([
+
+                const checkedRuleList = tempCheckedRuleList
+                if (checkedRuleList.length < 1) {
+                    return
+                } else if (checkedRuleList.length === 1) {
+                    setLogicData(prev =>
+                        prev.map(item => {
+                            if (item.id !== rowId) return item;
+
+                            if (item.leftGroup === groupName) {
+                                return {
+                                    ...item,
+                                    leftGroup: checkedRuleList[0]
+                                };
+                            } else {
+                                return {
+                                    ...item,
+                                    rightGroup: checkedRuleList[0]
+                                };
+                            }
+                        })
+                    )
+                } else if (checkedRuleList.length === 2) {
+                    setIndex(prev => (prev + 1))
+                    setLogicData(prev => ([
+                            ...prev, 
+                            {
+                                id: (index + 1), 
+                                name: groupName,
+                                leftGroup: checkedRuleList[0],
+                                rightGroup: checkedRuleList[1],
+                                operator: 'or'
+                            }
+                        ])
+                    )
+                } else {
+                    setIndex(prev => (prev + 1))
+                    setGroupId(prev => (prev + 2))
+                    setLogicData(prev => ([
+                            ...prev, 
+                            {
+                                id: (index + 1), 
+                                name: groupName,
+                                leftGroup: 'Group' + (groupId + 1),
+                                rightGroup: 'Group' + (groupId + 2),
+                                operator: 'or'
+                            }
+                        ])
+                    )
+                }
+
+                {/** update logic data for the corresponding other group */}
+                const currentRow = logicData.find(item => item.name === rowName)
+                const otherGroupName = currentRow.leftGroup === groupName ? currentRow.rightGroup : currentRow.leftGroup
+                const leftRuleList = ruleOptions.filter(item => !tempCheckedRuleList.includes(item))
+                setGroupData(prev => ({
                         ...prev, 
-                        {
-                            id: (index + 1), 
-                            name: groupName,
-                            leftGroup: checkedRuleList[0],
-                            rightGroup: checkedRuleList[1],
-                            operator: 'or'
-                        }
-                    ])
+                        [otherGroupName]: leftRuleList
+                    })
                 )
-            } else {
-                setIndex(prev => (prev + 1))
-                setGroupId(prev => (prev + 2))
-                setLogicData(prev => ([
-                        ...prev, 
-                        {
-                            id: (index + 1), 
-                            name: groupName,
-                            leftGroup: 'Group' + (groupId + 1),
-                            rightGroup: 'Group' + (groupId + 2),
-                            operator: 'or'
-                        }
-                    ])
-                )
+                if (leftRuleList.length < 1) {
+                    return
+                } else if (leftRuleList.length === 1) {
+                    setLogicData(prev =>
+                        prev.map(item => {
+                            if (item.id !== rowId) return item;
+
+                            if (item.leftGroup === otherGroupName) {
+                                return {
+                                    ...item,
+                                    leftGroup: leftRuleList[0]
+                                };
+                            } else {
+                                return {
+                                    ...item,
+                                    rightGroup: leftRuleList[0]
+                                };
+                            }
+                        })
+                    )
+                } else if (leftRuleList.length === 2) {
+                    if (checkedRuleList.length === 2) {
+                        setIndex(prev => (prev + 1))
+                        setLogicData(prev => ([
+                                ...prev, 
+                                {
+                                    id: (index + 2), 
+                                    name: otherGroupName,
+                                    leftGroup: leftRuleList[0],
+                                    rightGroup: leftRuleList[1],
+                                    operator: 'or'
+                                }
+                            ])
+                        )
+                    } else if (checkedRuleList.length > 2) {
+                        setIndex(prev => (prev + 1))
+                        setLogicData(prev => ([
+                                ...prev, 
+                                {
+                                    id: (index + 2), 
+                                    name: otherGroupName,
+                                    leftGroup: leftRuleList[0],
+                                    rightGroup: leftRuleList[1],
+                                    operator: 'or'
+                                }
+                            ])
+                        )
+                    } else {
+                        setIndex(prev => (prev + 1))
+                        setLogicData(prev => ([
+                                ...prev, 
+                                {
+                                    id: (index + 1), 
+                                    name: otherGroupName,
+                                    leftGroup: leftRuleList[0],
+                                    rightGroup: leftRuleList[1],
+                                    operator: 'or'
+                                }
+                            ])
+                        )
+                    }
+                } else {
+                    if (checkedRuleList.length === 2) {
+                        setIndex(prev => (prev + 1))
+                        setGroupId(prev => (prev + 2))
+                        setLogicData(prev => ([
+                                ...prev, 
+                                {
+                                    id: (index + 2), 
+                                    name: otherGroupName,
+                                    leftGroup: 'Group' + (groupId + 1),
+                                    rightGroup: 'Group' + (groupId + 2),
+                                    operator: 'or'
+                                }
+                            ])
+                        )
+                    } else if (checkedRuleList.length > 2) {
+                        setIndex(prev => (prev + 1))
+                        setGroupId(prev => (prev + 2))
+                        setLogicData(prev => ([
+                                ...prev, 
+                                {
+                                    id: (index + 2), 
+                                    name: otherGroupName,
+                                    leftGroup: 'Group' + (groupId + 3),
+                                    rightGroup: 'Group' + (groupId + 4),
+                                    operator: 'or'
+                                }
+                            ])
+                        )
+                    } else {
+                        setIndex(prev => (prev + 1))
+                        setGroupId(prev => (prev + 2))
+                        setLogicData(prev => ([
+                                ...prev, 
+                                {
+                                    id: (index + 1), 
+                                    name: otherGroupName,
+                                    leftGroup: 'Group' + (groupId + 1),
+                                    rightGroup: 'Group' + (groupId + 2),
+                                    operator: 'or'
+                                }
+                            ])
+                        )
+                    }
+                }            
+
+                setOpen(false)
             }
-
-            {/** update logic data for the corresponding other group */}
-            const currentRow = logicData.find(item => item.name === rowName)
-            const otherGroupName = currentRow.leftGroup === groupName ? currentRow.rightGroup : currentRow.leftGroup
-            const leftRuleList = ruleOptions.filter(item => !tempCheckedRuleList.includes(item))
-            setGroupData(prev => ({
-                    ...prev, 
-                    [otherGroupName]: leftRuleList
-                })
-            )
-            if (leftRuleList.length < 1) {
-                return
-            } else if (leftRuleList.length === 1) {
-                setLogicData(prev =>
-                    prev.map(item => {
-                        if (item.id !== rowId) return item;
-
-                        if (item.leftGroup === otherGroupName) {
-                            return {
-                                ...item,
-                                leftGroup: leftRuleList[0]
-                            };
-                        } else {
-                            return {
-                                ...item,
-                                rightGroup: leftRuleList[0]
-                            };
-                        }
-                    })
-                )
-            } else if (leftRuleList.length === 2) {
-                if (checkedRuleList.length === 2) {
-                    setIndex(prev => (prev + 1))
-                    setLogicData(prev => ([
-                            ...prev, 
-                            {
-                                id: (index + 2), 
-                                name: otherGroupName,
-                                leftGroup: leftRuleList[0],
-                                rightGroup: leftRuleList[1],
-                                operator: 'or'
-                            }
-                        ])
-                    )
-                } else if (checkedRuleList.length > 2) {
-                    setIndex(prev => (prev + 1))
-                    setLogicData(prev => ([
-                            ...prev, 
-                            {
-                                id: (index + 2), 
-                                name: otherGroupName,
-                                leftGroup: leftRuleList[0],
-                                rightGroup: leftRuleList[1],
-                                operator: 'or'
-                            }
-                        ])
-                    )
-                } else {
-                    setIndex(prev => (prev + 1))
-                    setLogicData(prev => ([
-                            ...prev, 
-                            {
-                                id: (index + 1), 
-                                name: otherGroupName,
-                                leftGroup: leftRuleList[0],
-                                rightGroup: leftRuleList[1],
-                                operator: 'or'
-                            }
-                        ])
-                    )
-                }
-            } else {
-                if (checkedRuleList.length === 2) {
-                    setIndex(prev => (prev + 1))
-                    setGroupId(prev => (prev + 2))
-                    setLogicData(prev => ([
-                            ...prev, 
-                            {
-                                id: (index + 2), 
-                                name: otherGroupName,
-                                leftGroup: 'Group' + (groupId + 1),
-                                rightGroup: 'Group' + (groupId + 2),
-                                operator: 'or'
-                            }
-                        ])
-                    )
-                } else if (checkedRuleList.length > 2) {
-                    setIndex(prev => (prev + 1))
-                    setGroupId(prev => (prev + 2))
-                    setLogicData(prev => ([
-                            ...prev, 
-                            {
-                                id: (index + 2), 
-                                name: otherGroupName,
-                                leftGroup: 'Group' + (groupId + 3),
-                                rightGroup: 'Group' + (groupId + 4),
-                                operator: 'or'
-                            }
-                        ])
-                    )
-                } else {
-                    setIndex(prev => (prev + 1))
-                    setGroupId(prev => (prev + 2))
-                    setLogicData(prev => ([
-                            ...prev, 
-                            {
-                                id: (index + 1), 
-                                name: otherGroupName,
-                                leftGroup: 'Group' + (groupId + 1),
-                                rightGroup: 'Group' + (groupId + 2),
-                                operator: 'or'
-                            }
-                        ])
-                    )
-                }
-            }            
-
-            setOpen(false)
         }
 
         const handleCancel = () => {
-            setTempCheckedRules(uncheckedRules)
+            setTempCheckedRules(ruleOptionsCheckObj)
             setOpen(false)
         }
 
@@ -488,7 +493,7 @@ export default function AdvancedLogicEditor({ rules, processName }) {
             setProcessLogicData(prev => ({...prev, [processName]: logicData}))
             setOpenEditor(false)
         } else {
-            return
+            setShowAlert1(true)
         }
     }
 
@@ -504,11 +509,18 @@ export default function AdvancedLogicEditor({ rules, processName }) {
                     <LogicIcon />
                 </IconButton>
             </Tooltip>
-            <Modal open={openEditor} onClose={() => setOpenEditor(false)}>
+            <Modal open={openEditor} onClose={() => {setOpenEditor(false); setShowAlert1(false)}}>
                 <ModalDialog sx={{ overflowY: 'auto' }}>
+                    <ErrorAlert 
+                        showAlert={showAlert1} 
+                        setShowAlert={setShowAlert1} 
+                        alertText='You can only save when all labels are green.'
+                    />
+
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
                         Logic Editor
                     </DialogTitle>
+                    
                     {ruleList.length > 1 ? 
                         (
                             <form onSubmit={handleSubmit}>

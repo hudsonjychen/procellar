@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useGlobal } from '../GlobalContext';
 import Select from '@mui/joy/Select'
 import Option from '@mui/joy/Option'
+import { ErrorAlert } from "./Alert";
 
 const RuleNameInput = ({ ruleData, setRuleData }) => (
     <Input 
@@ -89,6 +90,9 @@ export default function Editor() {
             condition: []
         }
     })
+
+    {/* states for alert */}
+    const [showAlert1, setShowAlert1] = useState(false)
 
     const allEmpty =
         ruleData.includeOT.entities.length === 0 &&
@@ -216,7 +220,7 @@ export default function Editor() {
         const updatedRuleData = tempRuleData
 
         setRuleData(updatedRuleData);
-        if (updatedRuleData.ruleName && updatedRuleData.parentProcess) {
+        if (updatedRuleData.ruleName && updatedRuleData.parentProcess && !allEmpty) {
             setProcessData(prev => {
                 const existingIndex = prev.findIndex(
                     p => p.processName === title
@@ -243,6 +247,8 @@ export default function Editor() {
             setOpen1(false)
             setOpen2(false)
             clearEditor()
+        } else {
+            setShowAlert1(true)
         }        
     }
 
@@ -509,8 +515,13 @@ export default function Editor() {
             </Button>
 
             {/* basic process editor */}
-            <Modal open={open1} onClose={() => setOpen1(false)}>
+            <Modal open={open1} onClose={() => {setOpen1(false); setShowAlert1(false)}}>
                 <ModalDialog sx={{ display: 'flex', width: '576px', overflowY: 'auto' }}>
+                    <ErrorAlert 
+                        showAlert={showAlert1} 
+                        setShowAlert={setShowAlert1} 
+                        alertText='Please provide a process name, a rule name, and select at least one entity before saving.'
+                    />
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
                         Process Editor
                     </DialogTitle>
@@ -680,8 +691,13 @@ export default function Editor() {
             </Modal>
             
             {/* advanced process editor */}
-            <Modal open={open2} onClose={() => setOpen2(false)}>
+            <Modal open={open2} onClose={() => {setOpen2(false); setShowAlert1(false)}}>
                 <ModalDialog sx={{ overflowY: 'auto' }}>
+                    <ErrorAlert 
+                        showAlert={showAlert1} 
+                        setShowAlert={setShowAlert1} 
+                        alertText='Please provide a process name, a rule name, and select at least one entity before saving.'
+                    />
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
                         Advanced Process Editor
                     </DialogTitle>

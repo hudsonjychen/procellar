@@ -1,14 +1,76 @@
-import { List, Sheet, ListItem, ListItemButton, Typography, ListItemContent, Divider, ListItemDecorator, ListDivider, Box } from "@mui/joy";
+import { Stack, List, Sheet, ListItem, ListItemButton, Typography, ListItemContent, Divider, ListItemDecorator, ListDivider, Box, Dropdown, MenuButton, IconButton, Menu } from "@mui/joy";
 import { useGlobal } from "../GlobalContext"
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import { Collapse } from "@mui/material";
 import { NewIcon, ObjectIcon, ProcessIcon } from "../CustomIcons";
 
 export default function Side() {
-    const { objectTypeList, processes } = useGlobal()
-    const [open1, setOpen1] = useState(false)
-    const [open2, setOpen2] = useState(false)
+    const { fileInfo, objectTypeList, processData } = useGlobal()
+    const [open1, setOpen1] = useState(true)
+    const [open2, setOpen2] = useState(true)
+    const [open3, setOpen3] = useState(false)
+
+    const FileInfo = () => {
+
+        return (
+            <Box sx={{ position: 'fixed', bottom: 24, left: 24 }}>
+                <Dropdown
+                    open={open3}
+                    onOpenChange={setOpen3}
+                >
+                    <MenuButton
+                        onMouseEnter={() => setOpen3(true)}
+                        onMouseLeave={() => setOpen3(false)}
+                        slots={{ root: IconButton }}
+                        slotProps={{ root: { variant: 'outlined', color: 'neutral' } }}
+                        sx={{ backgroundColor: 'white' }}
+                    >
+                        <InfoOutlineIcon />
+                    </MenuButton>
+                    <Menu 
+                        placement="top-start"
+                    >
+                        <Box sx={{ width: 260, ml: 1.8, mr: 1.8, mt: 0.6, mb: 0.6 }}>
+                            <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 1 }}>
+                                <Typography level="title-sm">
+                                    File Information
+                                </Typography>
+                            </Stack>
+
+                            <Stack direction='row' spacing={1} justifyContent='space-between'>
+                                <Typography level="body-sm" color="neutral" fontSize={12}>
+                                    Filename
+                                </Typography>
+                                <Typography level="body-sm" fontSize={12}>
+                                    {'filename' in fileInfo ? fileInfo.filename : '-----'}
+                                </Typography>
+                            </Stack>
+
+                            <Stack direction='row' spacing={1} justifyContent='space-between'>
+                                <Typography level="body-sm" color="neutral" fontSize={12}>
+                                    Size
+                                </Typography>
+                                <Typography level="body-sm" fontSize={12}>
+                                    {'size' in fileInfo ? fileInfo.size + ' MB' : '-----'}
+                                </Typography>
+                            </Stack>
+
+                            <Stack direction='row' spacing={1} justifyContent='space-between'>
+                                <Typography level="body-sm" color="neutral" fontSize={12}>
+                                    Upload time
+                                </Typography>
+                                <Typography level="body-sm" fontSize={12}>
+                                    {'uploadtime' in fileInfo ? fileInfo.uploadtime : '-----'}
+                                </Typography>
+                            </Stack>
+                        </Box>
+                    </Menu>
+                </Dropdown>
+            </Box>
+        )
+    }
 
     return (
         <Sheet
@@ -28,7 +90,7 @@ export default function Side() {
             }}
         >
             <List sx={{ width: '100%', minWidth: 180, maxWidth: 360 }}>
-                <ListItem sx={{ mb: 2 }}>
+                <ListItem sx={{ pb: 2 }}>
                     <Typography sx={{ fontSize: 22, fontWeight: 'bold' }}> Entity List </Typography>
                 </ListItem>
                 {/* object type collapsible list */}
@@ -98,25 +160,20 @@ export default function Side() {
                 </ListItem>
                 <Collapse in={open2}>
                     <List sx={{ ml: 4.5 }}>
-                        {processes.length ? processes.map((item, index) => (
+                        {processData.length ? processData.map((item, index) => (
                             <Box>
                                 <ListItem 
-                                    key={item}
+                                    key={item.processName}
                                     sx={{ display: 'flex', justifyContent: 'space-between', pr: 2.4}} 
                                 >
                                     <Typography>
-                                        {item.name}
+                                        {item.processName}
                                     </Typography>
-                                    {item.justCreated ?
-                                        <Box sx={{ mr: '1px' }}>
-                                            <NewIcon />
-                                        </Box> :
-                                        <Box sx={{ visibility: 'hidden' }}>
-                                            <NewIcon />
-                                        </Box>
-                                    }
+                                    <Typography>
+                                        {item.rules.length} <span style={{ color: '#999' }}>  rs</span>
+                                    </Typography>
                                 </ListItem>
-                                {index != processes.length-1 && 
+                                {index != processData.length-1 && 
                                     <ListDivider inset="gutter"/>
                                 }
                             </Box>
@@ -130,6 +187,7 @@ export default function Side() {
                     </List>
                 </Collapse>
             </List>
+            <FileInfo />
         </Sheet>
     )
 }
