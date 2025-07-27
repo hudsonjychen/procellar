@@ -45,7 +45,7 @@ export function ErrorAlert({ showAlert, setShowAlert, alertText }) {
     )
 }
 
-export function SuccessImportAlert({ showAlert, setShowAlert, alertText }) {
+export function SuccessAlert({ showAlert, setShowAlert, alertText }) {
 
     useEffect(() => {
         if (showAlert) {
@@ -98,7 +98,7 @@ export function SuccessImportAlert({ showAlert, setShowAlert, alertText }) {
     )
 }
 
-export function FailureImportAlert({ showAlert, setShowAlert, alertText }) {
+export function FailureAlert({ showAlert, setShowAlert, alertText }) {
 
     useEffect(() => {
         if (showAlert) {

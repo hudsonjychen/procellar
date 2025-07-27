@@ -2,7 +2,7 @@ import { Sheet } from "@mui/joy";
 import ExportButton from "./Export";
 import ImportButton from "./Import";
 import { useGlobal } from '../GlobalContext';
-import { SuccessImportAlert, FailureImportAlert } from "./Alert";
+import { SuccessAlert, FailureAlert } from "./Alert";
 import { useEffect, useState } from "react";
 
 export default function Top() {
@@ -32,13 +32,13 @@ export default function Top() {
             <ExportButton />
             <ImportButton />
             {alertStatus === 'success' ? (
-                <SuccessImportAlert
+                <SuccessAlert
                     showAlert={showAlert}
                     setShowAlert={setShowAlert}
                     alertText='File imported successfully.'
                 />
                 ) : alertStatus === 'failure' ? (
-                <FailureImportAlert
+                <FailureAlert
                     showAlert={showAlert}
                     setShowAlert={setShowAlert}
                     alertText='File is not imported.'

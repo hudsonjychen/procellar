@@ -38,14 +38,14 @@ export default function ExportButton() {
 
             const zip = new JSZip();
 
-            zip.file('procel.json', JSON.stringify(data.exportedFile, null, 2));
+            zip.file('process-enriched-ocel.json', JSON.stringify(data.exportedFile, null, 2));
             zip.file('definition-file.json', JSON.stringify(processData, null, 2));
 
             zip.generateAsync({ type: 'blob' }).then(content => {
                 const url = URL.createObjectURL(content);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'exported_data.zip';
+                a.download = 'exported-data.zip';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

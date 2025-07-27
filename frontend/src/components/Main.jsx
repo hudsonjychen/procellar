@@ -1,127 +1,11 @@
 import { Box, ButtonGroup, IconButton, Card, Chip, Divider, Sheet, Stack, Typography } from "@mui/joy";
 import { ActivityIcon, AttributeIcon, ObjectIcon } from "../CustomIcons";
-import AdvancedLogicEditor from "./AdvancedLogicEditor";
+import LogicEditor from "./LogicEditor";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import { grey } from '@mui/material/colors';
 import { useGlobal } from '../GlobalContext';
-
-const demoProcessData = [
-    {
-        "processName": "order management",
-        "justCreated": true,
-        "rules": [
-            {
-                "ruleName": "rule1",
-                "parentProcess": "order management",
-                "includeOT": {
-                    "entities": ["order", "item"],
-                    "condition": []
-                },
-                "includeAct": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeOT": {
-                    "entities": ["shipment"],
-                    "condition": []
-                },
-                "excludeAct": {
-                    "entities": ["order cancelled"],
-                    "condition": []
-                }
-            },
-            {
-                "ruleName": "rule2",
-                "parentProcess": "order management",
-                "includeOT": {
-                    "entities": ["order", "shipment"],
-                    "condition": []
-                },
-                "includeAct": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeAct": {
-                    "entities": ["shipment delayed"],
-                    "condition": []
-                }
-            },
-            {
-                "ruleName": "rule3",
-                "parentProcess": "order management",
-                "includeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "includeAct": {
-                    "entities": ["order placed"],
-                    "condition": []
-                },
-                "excludeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeAct": {
-                    "entities": [],
-                    "condition": []
-                }
-            }
-        ],
-        "relations": {}
-    },
-    {
-        "processName": "shipment management",
-        "rules": [
-            {
-                "ruleName": "rule1",
-                "parentProcess": "shipment management",
-                "includeOT": {
-                    "entities": ["shipment"],
-                    "condition": []
-                },
-                "includeAct": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeAct": {
-                    "entities": ["order cancelled"],
-                    "condition": []
-                }
-            },
-            {
-                "ruleName": "rule2",
-                "parentProcess": "shipment management",
-                "includeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "includeAct": {
-                    "entities": ["shipment delayed"],
-                    "condition": []
-                },
-                "excludeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeAct": {
-                    "entities": [],
-                    "condition": []
-                }
-            }
-        ],
-        "relations": {}
-    }
-]
 
 export default function Main() {
     const { processData, setProcessData } = useGlobal()
@@ -615,13 +499,7 @@ export default function Main() {
                         alignItems: 'flex-start',
                     }}
                 >
-                    {/**
                     <LogicEditor 
-                        rules={process.rules}
-                        processName={process.processName}
-                    />
-                     */}
-                    <AdvancedLogicEditor 
                         rules={process.rules}
                         processName={process.processName}
                     />
