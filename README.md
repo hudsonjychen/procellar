@@ -1,6 +1,6 @@
-# Procellar (POCEL Stellar)
+# Procellar
 
-Procellar is a user-freindly and powerful web app that allows users to define processes on event logs.
+Procellar is a user-freindly and powerful tool that allows users to define processes on event logs.
 
 ---
 

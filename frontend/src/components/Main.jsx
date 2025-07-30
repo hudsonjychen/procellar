@@ -8,7 +8,7 @@ import { grey } from '@mui/material/colors';
 import { useGlobal } from '../GlobalContext';
 
 export default function Main() {
-    const { processData, setProcessData } = useGlobal()
+    const { processData, setProcessData, setProcessLogicData } = useGlobal()
 
     const handleDelete = ({ ruleName, parentProcess }) => {
         setProcessData(prev => {
@@ -17,11 +17,16 @@ export default function Main() {
                     return {
                         ...process,
                         rules: process.rules.filter(rule => rule.ruleName != ruleName),
+                        relations: {}
                     }
                 } else {
                     return process
                 }
             })
+        })
+        setProcessLogicData(prev => { 
+            const { [parentProcess]: _, ...rest} = prev;
+            return rest;
         })
     }
 

@@ -54,7 +54,7 @@ const placeholderMap = {
 }
 
 export default function Editor() {
-    const { setProcessData, processAcList, setProcessAcList, setProcesses, objectTypes, activities, attrMap } = useGlobal()
+    const { setProcessData, processData, processAcList, setProcessAcList, setProcesses, objectTypes, activities, attrMap, setProcessLogicData } = useGlobal()
     const [open1, setOpen1] = useState(false)
     const [open2, setOpen2] = useState(false)
     const [items1, setItems1] = useState([0])
@@ -100,6 +100,11 @@ export default function Editor() {
         ruleData.includeAct.entities.length === 0 &&
         ruleData.excludeOT.entities.length === 0 &&
         ruleData.excludeAct.entities.length === 0;
+
+    const matchedProcess = processData.find(process => process.processName === processAcName.title)
+    const existingRuleNames = matchedProcess ? matchedProcess.rules.map(rule => rule.ruleName) : []
+
+    console.log(processAcName);
 
     const filter = createFilterOptions();
 
@@ -221,7 +226,7 @@ export default function Editor() {
         const updatedRuleData = tempRuleData
 
         setRuleData(updatedRuleData);
-        if (updatedRuleData.ruleName && updatedRuleData.parentProcess && !allEmpty) {
+        if (updatedRuleData.ruleName && updatedRuleData.parentProcess && !allEmpty && !existingRuleNames.includes(updatedRuleData.ruleName)) {
             setProcessData(prev => {
                 const existingIndex = prev.findIndex(
                     p => p.processName === title
@@ -232,6 +237,7 @@ export default function Editor() {
                     updatedProcesses[existingIndex] = {
                         ...existingProcess,
                         rules: [...existingProcess.rules, updatedRuleData],
+                        relations: {}
                     }
                     return updatedProcesses;
                 } else {
@@ -241,10 +247,17 @@ export default function Editor() {
                             processName: title,
                             justCreated: true,
                             rules: [updatedRuleData],
+                            relations: {}
                         }
                     ]
                 }
             })
+
+            setProcessLogicData(prev => { 
+                const { [title]: _, ...rest} = prev;
+                return rest;
+            })
+
             setOpen1(false)
             setOpen2(false)
             clearEditor()
@@ -497,7 +510,7 @@ export default function Editor() {
                     <ErrorAlert 
                         showAlert={showAlert1} 
                         setShowAlert={setShowAlert1} 
-                        alertText='Please provide a process name, a rule name, and select at least one entity before saving.'
+                        alertText='Please provide a process name, a unique rule name, and select at least one entity before saving.'
                     />
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
                         Process Editor

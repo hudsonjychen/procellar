@@ -584,7 +584,6 @@ export default function LogicEditor({ rules, processName }) {
                                     color='neutral' 
                                     sx={{ width: 126 }}
                                     onClick={() => {
-                                        handleClear()
                                         setOpenEditor(false)
                                     }}
                                 >
