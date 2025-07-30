@@ -1,28 +1,69 @@
-import { IconButton, DialogTitle, Divider, Autocomplete, AutocompleteOption, ListItemDecorator, Input, Modal, ModalDialog, Box, Stack, Typography, Button } from "@mui/joy";
+import { Stack, Typography } from '@mui/material';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 
-export default function EditorSummary({ allEmpty }) {
+export default function EditorSummary({ allEmpty, ruleData }) {
+    const { includeOT, includeAct, excludeOT, excludeAct } = ruleData;
+
+    const buildSummary = () => {
+        const parts = [];
+
+        if (includeOT.entities.length > 0 || includeAct.entities.length > 0) {
+            const includeParts = [];
+
+            if (includeOT.entities.length > 0) {
+                includeParts.push(
+                    `events involving <strong>${includeOT.entities.join(', ')}</strong>`
+                );
+            }
+
+            if (includeAct.entities.length > 0) {
+                includeParts.push(
+                    `events classified under activity type(s) <strong>${includeAct.entities.join(', ')}</strong>`
+                );
+            }
+
+            parts.push(`Will include ${includeParts.join(' or ')}`);
+        }
+
+        if (excludeOT.entities.length > 0 || excludeAct.entities.length > 0) {
+            const excludeParts = [];
+
+            if (excludeOT.entities.length > 0) {
+                excludeParts.push(
+                    `events involving <strong>${excludeOT.entities.join(', ')}</strong>`
+                );
+            }
+
+            if (excludeAct.entities.length > 0) {
+                excludeParts.push(
+                    `events classified under activity type(s) <strong>${excludeAct.entities.join(', ')}</strong>`
+                );
+            }
+
+            parts.push(`Will exclude ${excludeParts.join(' or ')}`);
+        }
+
+        return parts.join('. ') + '.';
+    };
+
     return (
         <Stack
-            direction='row' 
-            justifyContent='flex-start' 
+            direction='row'
+            justifyContent='flex-start'
             alignItems='flex-start'
-            spacing={2} 
+            spacing={2}
             sx={{ m: 2, pt: 1, pb: 1 }}
         >
             <TipsAndUpdatesOutlinedIcon />
             {
-                allEmpty ? 
-                <Typography>
-                    Start configuring and reviewing the defined scope of the selected events in this section.
-                </Typography> :
-                <Typography>
-                    Events involving all of <strong>{ruleData.includeOT.entities.join(', ')}</strong> or
-                    classified under the one of the activity type(s) <strong>{ruleData.includeAct.entities.join(', ')}</strong> will be included. <br />
-                    Events involving all of <strong>{ruleData.excludeOT.entities.join(', ')}</strong> or
-                    classified under the one of the activity type(s) <strong>{ruleData.excludeAct.entities.join(', ')}</strong> will be excluded.
-                </Typography>
+                allEmpty ?
+                    <Typography>
+                        Start configuring and reviewing the defined scope of the selected events in this section.
+                    </Typography> :
+                    <Typography
+                        dangerouslySetInnerHTML={{ __html: buildSummary() }}
+                    />
             }
         </Stack>
-    )
+    );
 }

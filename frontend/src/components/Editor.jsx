@@ -9,6 +9,7 @@ import { useGlobal } from '../GlobalContext';
 import Select from '@mui/joy/Select'
 import Option from '@mui/joy/Option'
 import { ErrorAlert } from "./Alert";
+import EditorSummary from "./EditorSummary";
 
 const RuleNameInput = ({ ruleData, setRuleData }) => (
     <Input 
@@ -256,30 +257,6 @@ export default function Editor() {
     const handleSave2 = () => {
         setOpen2(false)
     }
-
-    const EditorSummary = () => (
-        <Stack
-            direction='row' 
-            justifyContent='flex-start' 
-            alignItems='flex-start'
-            spacing={2} 
-            sx={{ m: 2, pt: 1, pb: 1 }}
-        >
-            <TipsAndUpdatesOutlinedIcon />
-            {
-                allEmpty ? 
-                <Typography>
-                    Start configuring and reviewing the defined scope of the selected events in this section.
-                </Typography> :
-                <Typography>
-                    Events involving all of <strong>{ruleData.includeOT.entities.join(', ')}</strong> or
-                    classified under the one of the activity type(s) <strong>{ruleData.includeAct.entities.join(', ')}</strong> will be included. <br />
-                    Events involving all of <strong>{ruleData.excludeOT.entities.join(', ')}</strong> or
-                    classified under the one of the activity type(s) <strong>{ruleData.excludeAct.entities.join(', ')}</strong> will be excluded.
-                </Typography>
-            }
-        </Stack>
-    )
 
     const ProcessNameInput = (width) => (
         <Autocomplete
@@ -665,7 +642,7 @@ export default function Editor() {
                                 Open Advanced Process Editor
                             </Button>
                         </Box>
-                        <EditorSummary />
+                        <EditorSummary allEmpty={allEmpty} ruleData={ruleData} />
                         <Stack 
                             direction='row' 
                             justifyContent='space-evenly' 
@@ -857,7 +834,7 @@ export default function Editor() {
                                 Go Back to Process Editor
                             </Button>
                         </Box>
-                        <EditorSummary />
+                        <EditorSummary allEmpty={allEmpty} ruleData={ruleData} />
                         <Stack 
                             direction='row' 
                             justifyContent='space-evenly' 

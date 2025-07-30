@@ -75,34 +75,44 @@ class Rule:
 
     @staticmethod
     def _check_ot_condition(conds, object_type_map, object_attr_map, event):
-        for cond in conds:
-            for rel in event['relationships']:
-                if object_type_map[rel['objectId']] == cond['entity']:
-                    for attr in object_attr_map[rel['objectId']]:
-                        if attr['name'] == cond['attribute']:
-                            op = Rule._operator_convert(cond['operator'])
-                            val = Rule._value_convert(cond['value'])
-                            try:
-                                print(attr['value'], op, val)
-                                return op(attr['value'], val)
-                            except TypeError:
-                                return False
-        return False
+        context = []
+        if len(conds) > 0:
+            for cond in conds:
+                for rel in event['relationships']:
+                    if object_type_map[rel['objectId']] == cond['entity']:
+                        for attr in object_attr_map[rel['objectId']]:
+                            if attr['name'] == cond['attribute']:
+                                op = Rule._operator_convert(cond['operator'])
+                                val = Rule._value_convert(cond['value'])
+                                try:
+                                    print(attr['value'], op, val)
+                                    context.append(op(attr['value'], val))
+                                except TypeError:
+                                    context.append(False)
+        if len(context) > 0:
+            return all(context)
+        else:
+            return True
     
     @staticmethod
     def _check_act_condition(conds, event):
-        for cond in conds:
-            if event['type'] == cond['entity']:
-                for attr in event['attributes']:
-                    if attr['name'] == cond['attribute']:
-                        op = Rule._operator_convert(cond['operator'])
-                        val = Rule._value_convert(cond['operator'])
-                        try:
-                            print(attr['value'], op, val)
-                            return op(attr['value'], val)
-                        except TypeError:
-                            return False
-        return False
+        context = []
+        if len(conds) > 0:
+            for cond in conds:
+                if event['type'] == cond['entity']:
+                    for attr in event['attributes']:
+                        if attr['name'] == cond['attribute']:
+                            op = Rule._operator_convert(cond['operator'])
+                            val = Rule._value_convert(cond['operator'])
+                            try:
+                                print(attr['value'], op, val)
+                                context.append(op(attr['value'], val))
+                            except TypeError:
+                                context.append(False)
+        if len(context) > 0:
+            return all(context)
+        else:
+            return True
 
     def check_event(self, object_type_map, object_attr_map, event):
         rel_oid = [rel['objectId'] for rel in event['relationships'] if rel['qualifier'] != 'process']
