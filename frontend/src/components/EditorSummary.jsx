@@ -12,13 +12,13 @@ export default function EditorSummary({ allEmpty, ruleData }) {
 
             if (includeOT.entities.length > 0) {
                 includeParts.push(
-                    `events involving <strong>${includeOT.entities.join(', ')}</strong>`
+                    `events involving object type(s) of <strong>${includeOT.entities.join(', and ')}</strong>`
                 );
             }
 
             if (includeAct.entities.length > 0) {
                 includeParts.push(
-                    `events classified under activity type(s) <strong>${includeAct.entities.join(', ')}</strong>`
+                    `events classified under activity type(s) <strong>${includeAct.entities.join(', or ')}</strong>`
                 );
             }
 
@@ -30,13 +30,13 @@ export default function EditorSummary({ allEmpty, ruleData }) {
 
             if (excludeOT.entities.length > 0) {
                 excludeParts.push(
-                    `events involving <strong>${excludeOT.entities.join(', ')}</strong>`
+                    `events involving object type(s) <strong>${excludeOT.entities.join(', and ')}</strong>`
                 );
             }
 
             if (excludeAct.entities.length > 0) {
                 excludeParts.push(
-                    `events classified under activity type(s) <strong>${excludeAct.entities.join(', ')}</strong>`
+                    `events classified under activity type(s) <strong>${excludeAct.entities.join(', or ')}</strong>`
                 );
             }
 

@@ -387,7 +387,7 @@ export default function Editor() {
                     value={selectedConditions[id]?.entity}
                     onChange={(e, newValue) => {
                         const item = attrMap.find(item => item.name === newValue)
-                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], action: action, type: item.type,entity: newValue}}))
+                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], action: action, type: item?.type, entity: newValue}}))
                         console.log(selectedConditions)
                     }}
                 >
@@ -513,7 +513,7 @@ export default function Editor() {
                         alertText='Please provide a process name, a unique rule name, and select at least one entity before saving.'
                     />
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
-                        Process Editor
+                        Rule Editor
                     </DialogTitle>
                     <form onSubmit={handleSubmit}>
                         <Box sx={{ m: 2, width: 380 }}>
@@ -689,7 +689,7 @@ export default function Editor() {
                         alertText='Please provide a process name, a rule name, and select at least one entity before saving.'
                     />
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
-                        Advanced Process Editor
+                        Advanced Rule Editor
                     </DialogTitle>
                     <form onSubmit={handleSubmit}>
                         {/* name input */}
