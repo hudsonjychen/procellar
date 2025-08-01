@@ -89,3 +89,7 @@ How it works:
 
 Each level has a logic operator selector (`AND` / `OR`). The resulting expression is shown dynamically at the bottom.
 Click **Clear** to reset the logic editor (this action cannot be undone).
+
+## Table of Contents
+- [Introduction](introduction.md)
+- [Getting Started](getting-started.md)

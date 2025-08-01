@@ -100,3 +100,7 @@ Once you’ve finished defining your processes, click the Export button in the t
 
 You can now use our companion tool, [Business Execution Graph](https://github.com/hudsonjychen/business-execution-graph), to explore interactions between processes!
 
+
+## Table of Contents
+- [Introduction](introduction.md)
+- [Usage Guide](usage-guide.md)

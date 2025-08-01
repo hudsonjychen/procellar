@@ -12,3 +12,6 @@ The word stellar reflects our vision of creating a brilliant, high-quality tool 
 
 To take a look at our case study, please go to [Process-Level-OCPM](https://github.com/shahrzadkhayatbashi/Process-Level-OCPM).
 
+## Table of Contents
+- [Getting Started](getting-started.md)
+- [Usage Guide](usage-guide.md)
