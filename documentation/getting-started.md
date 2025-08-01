@@ -61,7 +61,7 @@ Once the file is successfully imported:
 You can now start defining your own processes to populate the list!
 
 ### Creating and Defining a Process
-Click the **Add New** button in the bottom right corner to open the **Rule Editor**. Begin by entering a process name and rule name. Use clear and meaningful names—especially for the process name, as it will be embedded in the data and used for subsequent analysis.
+Click the **Add New** button in the bottom right corner to open the **Process Editor**. Begin by entering a process name and rule name. Use clear and meaningful names—especially for the process name, as it will be embedded in the data and used for subsequent analysis.
 
 ![Basic Process Editor](./images/basic-process-editor.png)
 
@@ -101,6 +101,5 @@ Once you’ve finished defining your processes, click the Export button in the t
 You can now use our companion tool, [Business Execution Graph](https://github.com/hudsonjychen/business-execution-graph), to explore interactions between processes!
 
 
-## Table of Contents
-- [Introduction](introduction.md)
+## Further Reading
 - [Usage Guide](usage-guide.md)

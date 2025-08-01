@@ -15,7 +15,7 @@ The left panel displays:
 An information icon at the bottom-left corner, which shows file details (name, size, upload time) on hover.
 
 The **main area** visualizes all defined processes. Each rule is shown as a card, summarizing included or excluded entities and any advanced filtering conditions.
-On each rule card, you’ll find an action button group:
+Next to each rule card, you’ll find an action button group:
 - Click the pen icon to edit the rule.
 - Click the trash icon to delete it (note: *deletions are irreversible*).
 
@@ -50,7 +50,7 @@ Include statements (object types and activities) define the initial event scope.
 Exclude statements apply to the included event set. Their relationship is also `OR` — if an event matches any exclude statement, it is removed. If no exclude statements are defined, nothing is excluded.
 
 ### Advanced Mode
-Click **Go to Advanced Process Editor** to switch to advanced mode.
+Click **Open Advanced Process Editor** to switch to advanced mode.
 
 ![Advanced Editor Editing](./images/advanced-editor-editing.png)
 
@@ -90,6 +90,5 @@ How it works:
 Each level has a logic operator selector (`AND` / `OR`). The resulting expression is shown dynamically at the bottom.
 Click **Clear** to reset the logic editor (this action cannot be undone).
 
-## Table of Contents
-- [Introduction](introduction.md)
+## Further Reading
 - [Getting Started](getting-started.md)
