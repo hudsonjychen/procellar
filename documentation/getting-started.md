@@ -50,14 +50,20 @@ If you’d like to try the tool with example data, you can download sample files
 
 Click the Import button located in the top-right corner of the interface.
 
+![Initial Page](./images/initial-page.png)
+
 Once the file is successfully imported:
 - The left panel will display a list of entities, including object types and their corresponding counts.
 - The process list will also appear, though it will be empty initially.
+
+![File Imported](./images/file-imported.png)
 
 You can now start defining your own processes to populate the list!
 
 ### Creating and Defining a Process
 Click the **Add New** button in the bottom right corner to open the **Rule Editor**. Begin by entering a process name and rule name. Use clear and meaningful names—especially for the process name, as it will be embedded in the data and used for subsequent analysis.
+
+![Basic Process Editor](./images/basic-process-editor.png)
 
 Next, define the semantics of the rule using four optional components:
 - Include Object Types
@@ -69,18 +75,22 @@ Each statement supports multiple entities. As you edit these statements, a **sum
 
 Let’s walk through a quick example. After importing the `ContainerLogistics.json` event data, suppose you want to define a process called *Order Management*. In the editor, enter `Order Management` as the process name and name the first rule `om1`. You want this process to include events involving two object types—`Transport Document` and `Customer Order`—but exclude events with the activity type `Order Empty Containers`. To do this, select the two object types under Include Object Types, and select `Order Empty Containers` under Exclude Activities.
 
-For more details on how each statement works and how they interact, refer to the Usage Guide.
+![Process Editor Editing](./images/process-editor-editing.png)
+
+For more details on how each statement works and how they interact, refer to the [Usage Guide](usage-guide.md#rule-editor).
 
 Once you’ve finished editing, click **Save**. Congratulations—you’ve just created your first process and defined its first rule. It will now appear in the **main area**, where your rules are visualized clearly and beautifully using shapes, colors, and labels. You can continue to define more rules and processes, all of which are displayed in the main area.
 
 In the **left panel**, you'll see a list of the processes you've defined. Each process displays the number of associated rules (abbreviated as `rs`) next to its name.
 
+![Process Display](./images/process-display.png)
+
 ### Best Practices
 We recommend two best practices when creating and defining processes:
 
-1. Define each process using a single, comprehensive rule. This means making full use of the four statements mentioned above. This approach promotes clarity and conciseness. For a deep dive, see the Rule Editor section of the Usage Guide.
+1. Define each process using a single, comprehensive rule. This means making full use of the four statements mentioned above. This approach promotes clarity and conciseness. For a deep dive, see the Rule Editor section of the [Usage Guide](usage-guide.md#rule-editor).
 
-2. Build your process with multiple simple rules when you need more flexibility. Each rule can contain only one statement or even a single entity. You can then use the Logic Editor to define logical relationships between rules. To open the **Logic Editor**, click the *fx* icon next to the process name in the main area (note: this is only available if the process has more than one rule). See the Logic Editor section of the Usage Guide for more information.
+2. Build your process with multiple simple rules when you need more flexibility. Each rule can contain only one statement or even a single entity. You can then use the Logic Editor to define logical relationships between rules. To open the **Logic Editor**, click the *fx* icon next to the process name in the main area (note: this is only available if the process has more than one rule). See the Logic Editor section of the [Usage Guide](usage-guide.md#logic-editor) for more information.
 
 ### Exporting Your Process Definitions
 Once you’ve finished defining your processes, click the Export button in the top right corner. This will download a `.zip` file to your computer, which includes:

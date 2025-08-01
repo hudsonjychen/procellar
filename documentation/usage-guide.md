@@ -4,6 +4,8 @@ This page provides detailed instructions for using **Procellar**, helping you fu
 ## Interface Overview
 The Procellar interface consists of three main parts: the **header**, the **left panel**, and the **main area**.
 
+![Process Display](./images/process-display.png)
+
 In the header, you can import or export files using the respective buttons.
 
 The left panel displays:
@@ -20,6 +22,8 @@ On each rule card, you’ll find an action button group:
 ## Rule Editor
 The Rule Editor is the core feature of **Procellar**. Click the **Add New** button in the bottom-right corner to open it.
 
+![Process Editor Editing](./images/process-editor-editing.png)
+
 There are two modes: **Basic** (default) and **Advanced**.
 
 In Basic Mode, you can define up to four optional statements:
@@ -29,7 +33,7 @@ In Basic Mode, you can define up to four optional statements:
 - Exclude Activities
 
 To save a rule, you must:
--Provide a process name.
+- Provide a process name.
 - Provide a unique rule name (within that process).
 - Define at least one statement.
 
@@ -47,6 +51,9 @@ Exclude statements apply to the included event set. Their relationship is also `
 
 ### Advanced Mode
 Click **Go to Advanced Process Editor** to switch to advanced mode.
+
+![Advanced Editor Editing](./images/advanced-editor-editing.png)
+
 This interface adds condition editors to the basic structure. You can:
 - Add conditions with the plus icon
 - Remove conditions with the trash icon
@@ -63,7 +70,13 @@ Each condition is attached to a statement. A statement is only effective when it
 
 ## Logic Editor
 Click the *fx* icon next to a process name in the main area to open the **Logic Editor**.
+
+![Logic Editor](./images/logic-editor.png)
+
 This tool lets you define complex logical relationships among rules within a process. It is enabled only when you define more than one rule for a process.
+
+![Logic Editor Editing](./images/logic-editor-editing.png)
+![Logic Editor Edited](./images/logic-editor-edited.png)
 
 How it works:
 - The editor starts with a **root level** and two default **groups**: `group1` and `group2`.

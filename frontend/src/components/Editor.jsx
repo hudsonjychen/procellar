@@ -513,7 +513,7 @@ export default function Editor() {
                         alertText='Please provide a process name, a unique rule name, and select at least one entity before saving.'
                     />
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
-                        Rule Editor
+                        Process Editor
                     </DialogTitle>
                     <form onSubmit={handleSubmit}>
                         <Box sx={{ m: 2, width: 380 }}>
@@ -689,7 +689,7 @@ export default function Editor() {
                         alertText='Please provide a process name, a rule name, and select at least one entity before saving.'
                     />
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
-                        Advanced Rule Editor
+                        Advanced Process Editor
                     </DialogTitle>
                     <form onSubmit={handleSubmit}>
                         {/* name input */}
