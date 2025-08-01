@@ -12,7 +12,7 @@ The word stellar reflects our vision of creating a brilliant, high-quality tool 
 
 To take a look at our case study, please go to [Process-Level-OCPM](https://github.com/shahrzadkhayatbashi/Process-Level-OCPM).
 
-Go to [Getting Started](getting-started.md) to kick things off.
+Go to [Getting Started](./documentation/getting-started.md) to kick things off.
 
 ## Features
 1. **Process Scope Definition**  
