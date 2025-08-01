@@ -79,8 +79,8 @@ class Rule:
         if len(conds) > 0:
             for cond in conds:
                 for rel in event['relationships']:
-                    if object_type_map[rel['objectId']] == cond['entity']:
-                        for attr in object_attr_map[rel['objectId']]:
+                    if object_type_map.get(rel.get('objectId')) == cond['entity']:
+                        for attr in object_attr_map.get(rel.get('objectId'), []):
                             if attr['name'] == cond['attribute']:
                                 op = Rule._operator_convert(cond['operator'])
                                 val = Rule._value_convert(cond['value'])
@@ -88,7 +88,7 @@ class Rule:
                                     print(attr['value'], op, val)
                                     context.append(op(attr['value'], val))
                                 except TypeError:
-                                    context.append(False)
+                                    context.append(True)
         if len(context) > 0:
             return all(context)
         else:
