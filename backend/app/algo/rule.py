@@ -85,7 +85,6 @@ class Rule:
                                 op = Rule._operator_convert(cond['operator'])
                                 val = Rule._value_convert(cond['value'])
                                 try:
-                                    print(attr['value'], op, val)
                                     context.append(op(attr['value'], val))
                                 except TypeError:
                                     context.append(True)
@@ -105,7 +104,6 @@ class Rule:
                             op = Rule._operator_convert(cond['operator'])
                             val = Rule._value_convert(cond['operator'])
                             try:
-                                print(attr['value'], op, val)
                                 context.append(op(attr['value'], val))
                             except TypeError:
                                 context.append(True)
