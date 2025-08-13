@@ -1,86 +1,47 @@
 # Procellar
 
-Procellar is a user-freindly and powerful tool that allows users to define processes on event logs.
+**Procellar** is a part of a framework for embedding analyst-defined process scopes into object-centric event log (OCEL). You can learn more about our initiative in our paper.
 
----
+**"Process-Level Aggregation and Analysis of Object-Centric Event Data"**  
+*Shahrzad Khayatbashi, Majid Rafiei, Jiayuan Chen, and Amin Jalali*
 
-## What's new
-### Jul 26
-- The information of imported files is provided.
-- Constraints for user behaviours are added.
-- Notifications when facing error or importing file successfully.
+Submitted to the [10th International Workshop on Process Querying, Manipulation, and Intelligence (PQMI 2025)](http://processquerying.com/pqmi2025/)
 
-### Jul 25
-- Condition filtering is now fully supported accross frontend to backend.
+The name **Procellar** /ˈproʊ.sə.lɚ/ is derived from a combination of *process-enriched OCEL* and *stellar*.
+The word stellar reflects our vision of creating a brilliant, high-quality tool for working with event data.
 
-### Jul 24
-- Now we have a completely redesigned **Logic Editor** which allows users to fully control logic relations. 
-- Various bugs and issues have been fixed.
+To take a look at our case study, please go to [Process-Level-OCPM](https://github.com/shahrzadkhayatbashi/Process-Level-OCPM).
 
----
+Go to [Getting Started](./documentation/getting-started.md) to kick things off.
 
-## Table of Contents
+## Features
+1. **Process Scope Definition**  
+Define user-specific process scopes by combining object types, activities, and filtering conditions. Supports both basic and advanced rule editing.
 
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
+2. **Process-Enriched OCEL Generation**  
+Embed defined process scopes directly into event data to produce a process-enriched Object-Centric Event Log (OCEL 2.0 format).
 
----
+3. **Visual Rule Management**  
+Intuitive card-based visualization of rules and processes, with support for rule editing, deletion, and semantic summaries.
+
+4. **Advanced Filtering Logic**  
+Use attribute-level conditions and logical operators (AND / OR) to build complex, fine-grained process definitions.
+
+5. **Flexible Export and Integration**  
+Export results as a .zip package containing both the process definitions and enriched OCEL, ready for downstream analysis or use with companion tool [Business Execution Graph](https://github.com/hudsonjychen/business-execution-graph).
 
 ## Project Structure
 
-```bash
-.
-├── backend/ # Flask backend
-│ ├── app/ # Backend source code
-│ ├── run.py
-│ └── requirements.txt
-├── frontend/ # Frontend (Vite + React)
-│ ├── src/ # Frontend source code
-│ ├── eslint.config.js
-│ ├── index.html
-│ ├── logo.png
-│ ├── vite.config.js
-│ └── package.json
-├── example-data/ # Example event logs for demo or test
-├── .gitignore
-└── README.md
-```
+- `backend/app` - Backend source code
+- `backend/requirements.txt` - Requirements txt for setting up
+- `backend/run.py` - Entry point for starting the Flask server
+- `documentation` - Documentation for Procellar
+- `frontend/src` - Frontend source code
+- `frontend/package.json` - Frontend dependencies and build scripts
+- `README.md` - README
 
-## Getting Started
+## Documentation
+Refer to the documentation for a quick start and comprehensive information.
 
-### Prerequisties
-- [Node.js](https://nodejs.org/) >= 16.x
-- [Python](https://www.python.org/) >= 3.8
-- [pip](https://pip.pypa.io/en/stable/)
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/hudsonjychen/procellar.git
-cd procellar
-```
-
-### 2. Set Up the Backend
-#### Windows
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-python run.py
-```
-#### macOS
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python run.py
-```
-
-### 3. Set Up the Frontend
-```bash
-# In another terminal
-cd frontend
-npm install
-npm run dev
-```
+- [Getting Started](./documentation/getting-started.md)
+- [Usage Guide](./documentation/usage-guide.md)

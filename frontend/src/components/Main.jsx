@@ -6,6 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import { grey } from '@mui/material/colors';
 import { useGlobal } from '../GlobalContext';
+import EditingEditor from "./EditingEditor";
 
 export default function Main() {
     const { processData, setProcessData, setProcessLogicData } = useGlobal()
@@ -38,13 +39,11 @@ export default function Main() {
 
     const ButtonBar = ({ ruleName, parentProcess }) => {
         return (
-            <ButtonGroup 
-                orientation="vertical"
-                variant="plain"
+            <Stack 
+
             >
-                <IconButton>
-                    <EditIcon sx={{ color: grey[600] }}/>
-                </IconButton>
+                <EditingEditor ruleName={ruleName} processName={parentProcess} />
+                <Divider sx={{ ml: 0.6, mr: 0.6 }}/>
                 <IconButton 
                     onClick={() => {
                         console.log(processData)
@@ -54,7 +53,7 @@ export default function Main() {
                 >
                     <DeleteIcon sx={{ color: grey[600] }}/>
                 </IconButton>
-            </ButtonGroup>
+            </Stack>
         )
     }
 

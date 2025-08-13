@@ -74,7 +74,7 @@ export default function LogicEditor({ rules, processName }) {
 
         const [open, setOpen] = useState(false)
 
-        const ruleOptions = groupData[rowName]
+        const ruleOptions = groupData[rowName] || []
         const ruleOptionsCheckObj = Object.fromEntries(ruleOptions.map(key => [key, false]))
         const [tempCheckedRules, setTempCheckedRules] = useState(ruleOptionsCheckObj)
         const tempCheckedRuleList = Object.entries(tempCheckedRules).filter(([key, value]) => value === true).map(([key]) => key)

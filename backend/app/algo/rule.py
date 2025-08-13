@@ -79,16 +79,15 @@ class Rule:
         if len(conds) > 0:
             for cond in conds:
                 for rel in event['relationships']:
-                    if object_type_map[rel['objectId']] == cond['entity']:
-                        for attr in object_attr_map[rel['objectId']]:
+                    if object_type_map.get(rel.get('objectId')) == cond['entity']:
+                        for attr in object_attr_map.get(rel.get('objectId'), []):
                             if attr['name'] == cond['attribute']:
                                 op = Rule._operator_convert(cond['operator'])
                                 val = Rule._value_convert(cond['value'])
                                 try:
-                                    print(attr['value'], op, val)
                                     context.append(op(attr['value'], val))
                                 except TypeError:
-                                    context.append(False)
+                                    context.append(True)
         if len(context) > 0:
             return all(context)
         else:
@@ -105,10 +104,9 @@ class Rule:
                             op = Rule._operator_convert(cond['operator'])
                             val = Rule._value_convert(cond['operator'])
                             try:
-                                print(attr['value'], op, val)
                                 context.append(op(attr['value'], val))
                             except TypeError:
-                                context.append(False)
+                                context.append(True)
         if len(context) > 0:
             return all(context)
         else:
@@ -118,25 +116,30 @@ class Rule:
         rel_oid = [rel['objectId'] for rel in event['relationships'] if rel['qualifier'] != 'process']
         rel_ot = [object_type_map[oid] for oid in rel_oid if oid in object_type_map]
 
+        # check if all statements are empty, if so, return false
+        if all(not lst for lst in [self.include_ot, self.exclude_ot, self.include_act, self.exclude_act]):
+            return False
+
+        # check if the process has existed in the event, if so, return false
         if self.parent_process in rel_oid:
             return False
         
-        if self.exclude_act and event['type'] in self.exclude_act and self._check_act_condition(self.exclude_act_cond, event):
-            return False
+        # include statements
+        if not self.include_ot and not self.include_act:
+            include_pass = True
+        else:
+            include_pass = (
+                (self.include_ot and all(ot in rel_ot for ot in self.include_ot) and self._check_ot_condition(self.include_ot_cond, object_type_map, object_attr_map, event)) or
+                (self.include_act and event['type'] in self.include_act and self._check_act_condition(self.include_act_cond, event))
+            )
         
-        if self.include_act and event['type'] in self.include_act and self._check_act_condition(self.include_act_cond, event):
-            return True
-
-        if self.exclude_ot:
-            if all(ot in rel_ot for ot in self.exclude_ot) and self._check_ot_condition(self.exclude_ot_cond, object_type_map, object_attr_map, event): 
-                return False
-            else:
-                if self.include_ot and all(ot in rel_ot for ot in self.include_ot) and self._check_ot_condition(self.include_ot_cond, object_type_map, object_attr_map, event):
-                    return True
-                elif not self.include_ot:
-                    return True
-
-        if self.include_ot and all(ot in rel_ot for ot in self.include_ot) and self._check_ot_condition(self.include_ot_cond, object_type_map, object_attr_map, event):
-            return True
-            
-        return False
+        # exclude statements
+        if not self.exclude_ot and not self.exclude_act:
+            exclude_pass = False
+        else:
+            exclude_pass = (
+                (self.exclude_ot and all(ot in rel_ot for ot in self.exclude_ot) and self._check_ot_condition(self.exclude_ot_cond, object_type_map, object_attr_map, event)) or
+                (self.exclude_act and event['type'] in self.exclude_act and self._check_act_condition(self.exclude_act_cond, event))
+            )
+        
+        return include_pass and not exclude_pass

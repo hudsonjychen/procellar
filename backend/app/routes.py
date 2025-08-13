@@ -32,8 +32,6 @@ def upload():
         cachedFileInfo['filename'] = filename
         cachedFileInfo['size'] = size
         cachedFileInfo['uploadtime'] = uploadtime
-
-        print(cachedFileInfo)
         
         with open(temp_path, 'r') as f:
             cachedFile['json']['original'] = json.load(f)
@@ -59,7 +57,6 @@ def upload():
 
         global cachedObjectAttrMap
         cachedObjectAttrMap = map_attribute_to_object(event_log)
-        print(map_attribute_to_object(event_log))
 
         cachedAttrMap.clear()
         cachedAttrMap.extend(map_attribute(event_log))

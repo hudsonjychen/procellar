@@ -387,7 +387,7 @@ export default function Editor() {
                     value={selectedConditions[id]?.entity}
                     onChange={(e, newValue) => {
                         const item = attrMap.find(item => item.name === newValue)
-                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], action: action, type: item.type,entity: newValue}}))
+                        setSelectedConditions(prev => ({...prev, [id]: {...prev[id], action: action, type: item?.type, entity: newValue}}))
                         console.log(selectedConditions)
                     }}
                 >
