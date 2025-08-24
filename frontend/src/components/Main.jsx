@@ -9,7 +9,7 @@ import { useGlobal } from '../GlobalContext';
 import EditingEditor from "./EditingEditor";
 
 export default function Main() {
-    const { processData, setProcessData, setProcessLogicData } = useGlobal()
+    const { processData, setProcessData, setProcessLogicData, setProcesses } = useGlobal()
 
     const handleDelete = ({ ruleName, parentProcess }) => {
         setProcessData(prev => {
@@ -31,24 +31,25 @@ export default function Main() {
         })
     }
 
-    const cleanEmptyProcess = (setProcessData) => {
+    const cleanEmptyProcess = () => {
         setProcessData(prev => {
-            return prev.filter(process => process.rules.length != 0)
-        })
+            const newProcessData = prev.filter(process => process.rules.length != 0);
+            const updatedProcessList = newProcessData.map(data => data.processName)
+            setProcesses(pr => {return pr.filter(p => !p.justCreated || updatedProcessList.includes(p.name))});
+            return newProcessData;
+        });
     }
 
     const ButtonBar = ({ ruleName, parentProcess }) => {
         return (
-            <Stack 
-
-            >
+            <Stack>
                 <EditingEditor ruleName={ruleName} processName={parentProcess} />
                 <Divider sx={{ ml: 0.6, mr: 0.6 }}/>
                 <IconButton 
                     onClick={() => {
-                        console.log(processData)
+                        console.log(processData);
                         handleDelete({ ruleName: ruleName, parentProcess: parentProcess });
-                        cleanEmptyProcess(setProcessData)
+                        cleanEmptyProcess();
                     }}
                 >
                     <DeleteIcon sx={{ color: grey[600] }}/>

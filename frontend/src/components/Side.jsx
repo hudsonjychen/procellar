@@ -1,13 +1,15 @@
 import { Stack, List, Sheet, ListItem, ListItemButton, Typography, ListItemContent, Divider, ListItemDecorator, ListDivider, Box, Dropdown, MenuButton, IconButton, Menu } from "@mui/joy";
 import { useGlobal } from "../GlobalContext"
-import { useRef, useState } from "react";
+import { useRef, useState, Fragment } from "react";
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import { Collapse } from "@mui/material";
+import ArrowOutwardRoundedIcon from '@mui/icons-material/ArrowOutwardRounded';
 import { NewIcon, ObjectIcon, ProcessIcon } from "../CustomIcons";
+import { ErrorBoundary, FallbackUI } from '../ErrorBoundary';
 
 export default function Side() {
-    const { fileInfo, objectTypeList, processData } = useGlobal()
+    const { fileInfo, objectTypeList, processData, processes } = useGlobal()
     const [open1, setOpen1] = useState(true)
     const [open2, setOpen2] = useState(true)
     const [open3, setOpen3] = useState(false)
@@ -72,6 +74,35 @@ export default function Side() {
         )
     }
 
+    const ProcessList = () => {
+        return (
+            <Box>
+                {
+                    processes.map((item, index) => (
+                        <Fragment key={item.name}>
+                            <ListItem 
+                                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 2.4}} 
+                            >
+                                <Typography>
+                                    {item.name}
+                                </Typography>
+                                {item.justCreated ? 
+                                    <Typography>
+                                        {processData.find(process => process.processName === item.name)?.rules.length} <span style={{ color: '#999' }}>  rs</span>
+                                    </Typography>
+                                    : <ArrowOutwardRoundedIcon sx={{ fontSize: 18, color: '#999' }}/>
+                                }
+                            </ListItem>
+                            {index != processes.length-1 && 
+                                <ListDivider inset="gutter"/>
+                            }
+                        </Fragment>
+                    ))
+                }
+            </Box>
+        )
+    }
+
     return (
         <Sheet
             variant="plain"
@@ -110,35 +141,36 @@ export default function Side() {
                         />
                     </ListItemButton>
                 </ListItem>
-                <Collapse in={open1}>
-                    <List sx={{ ml: 4.5 }}>
-                        {objectTypeList.length ? objectTypeList.map((item, index) => (
-                            <Box>
-                                <ListItem 
-                                    key={item.name}
-                                    sx={{ display: 'flex', justifyContent: 'space-between', pr: 2.4}} 
-                                >
+                <ErrorBoundary fallback={<FallbackUI />}>
+                    <Collapse in={open1}>
+                        <List sx={{ ml: 4.5 }}>
+                            {objectTypeList.length ? objectTypeList.map((item, index) => (
+                                <Box>
+                                    <ListItem 
+                                        key={item.name}
+                                        sx={{ display: 'flex', justifyContent: 'space-between', pr: 2.4}} 
+                                    >
+                                        <Typography>
+                                            {item.name}
+                                        </Typography>
+                                        <Typography>
+                                            {item.count}
+                                        </Typography>
+                                    </ListItem>
+                                    {index != objectTypeList.length-1 && 
+                                        <ListDivider inset="gutter"/>
+                                    }
+                                </Box>
+                            )) :
+                                <ListItem>
                                     <Typography>
-                                        {item.name}
-                                    </Typography>
-                                    <Typography>
-                                        {item.count}
+                                        No entities
                                     </Typography>
                                 </ListItem>
-                                {index != objectTypeList.length-1 && 
-                                    <ListDivider inset="gutter"/>
-                                }
-                            </Box>
-                        )) :
-                            <ListItem>
-                                <Typography>
-                                    No entities
-                                </Typography>
-                            </ListItem>
-                        }
-                    </List>
-                </Collapse>
-
+                            }
+                        </List>
+                    </Collapse>
+                </ErrorBoundary>
                 <Divider sx={{ m: 1, mt: 2, mb: 2 }}/>
 
                 {/* process collapsible list */}
@@ -158,34 +190,21 @@ export default function Side() {
                         />
                     </ListItemButton>
                 </ListItem>
-                <Collapse in={open2}>
-                    <List sx={{ ml: 4.5 }}>
-                        {processData.length ? processData.map((item, index) => (
-                            <Box>
-                                <ListItem 
-                                    key={item.processName}
-                                    sx={{ display: 'flex', justifyContent: 'space-between', pr: 2.4}} 
-                                >
+                <ErrorBoundary fallback={<FallbackUI />}>
+                    <Collapse in={open2}>
+                        <List sx={{ ml: 4.5 }}>
+                            {(processData.length || processes.length) ?
+                                <ProcessList />  
+                                :
+                                <ListItem>
                                     <Typography>
-                                        {item.processName}
-                                    </Typography>
-                                    <Typography>
-                                        {item.rules.length} <span style={{ color: '#999' }}>  rs</span>
+                                        No entities
                                     </Typography>
                                 </ListItem>
-                                {index != processData.length-1 && 
-                                    <ListDivider inset="gutter"/>
-                                }
-                            </Box>
-                        )) :
-                            <ListItem>
-                                <Typography>
-                                    No entities
-                                </Typography>
-                            </ListItem>
-                        }
-                    </List>
-                </Collapse>
+                            }
+                        </List>
+                    </Collapse>
+                </ErrorBoundary>
             </List>
             <FileInfo />
         </Sheet>

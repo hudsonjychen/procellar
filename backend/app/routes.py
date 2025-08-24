@@ -7,23 +7,29 @@ import pm4py
 import json
 import traceback
 
-from app.algo.entity import get_activities, get_object_list, get_object_types, get_processes
+from app.algo.entity import get_activities, get_object_count_list, get_object_types, get_processes
 from app.algo.map import map_object_id_to_type, map_attribute, map_attribute_to_object
 from app.algo.update import update
-from .cache import cachedFile, cachedFileInfo, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedObjectAttrMap, cachedAttrMap
+from .cache import cachedFile, cachedFileInfo, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedObjectAttrMap, cachedAttrMap, cachedProcessData
 
 main = Blueprint('main', __name__)
 
 @main.route('/upload', methods=['POST'])
 def upload():
-    if "file" not in request.files:
+    if "ocel" not in request.files:
         return jsonify({"error": "No File"}), 400
-    file = request.files["file"]
+    file = request.files["ocel"]
+
+    df = request.files.get("df")
 
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp:
             file.save(temp.name)
             temp_path = temp.name
+        
+        if df:
+            df.seek(0)
+            cachedFile['df'] = json.load(df)
         
         filename = file.filename
         size = round(os.path.getsize(temp_path) / 1024 / 1024, 2)
@@ -39,16 +45,21 @@ def upload():
         log = pm4py.read_ocel2_json(temp_path)
 
         cachedObjectTypeList.clear()
-        cachedObjectTypeList.extend(get_object_list(log)) # displayed on the left side
+        cachedObjectTypeList.extend(get_object_count_list(log)) # displayed on the left side
 
         cachedProcessList.clear()
-        cachedProcessList.extend(get_processes(log)) # displayed on the left side
+        processList = [{'name': p, 'justCreated': False} for p in get_processes(log)]
+        cachedProcessList.extend(processList) # displayed on the left side
 
         cachedObjectTypes.clear()
         cachedObjectTypes.extend(get_object_types(log)) # object type options for editor
 
         cachedActivities.clear()
         cachedActivities.extend(get_activities(log)) # activity options for editor
+
+        cachedProcessData.clear()
+        if cachedFile['df']:
+            cachedProcessData.extend(cachedFile['df'])
         
         global cachedObjectTypeMap
         cachedObjectTypeMap = map_object_id_to_type(log)
@@ -75,7 +86,8 @@ def get_data():
         'objectTypes': cachedObjectTypes,
         'activities': cachedActivities,
         'attributes': cachedAttrMap,
-        'fileInfo': cachedFileInfo
+        'fileInfo': cachedFileInfo,
+        'processData': cachedProcessData
     })
 
 @main.route('/process_data', methods=['POST'])

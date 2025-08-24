@@ -1,4 +1,4 @@
-cachedFile = {'json': {'original':None, 'modified': None}}
+cachedFile = {'json': {'original':None, 'modified': None}, 'df': None}
 cachedFileInfo = {'filename': '', 'size': 0, 'uploadtime': ''}
 cachedProcessList = []
 cachedObjectTypeList = []
@@ -8,3 +8,4 @@ cachedActivities = []
 cachedObjectTypeMap = None
 cachedAttrMap = []
 cachedObjectAttrMap = None
+cachedProcessData = []

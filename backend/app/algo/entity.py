@@ -1,13 +1,15 @@
 from typing import Dict, Set
 from pm4py.objects.ocel.obj import OCEL
 
-def get_object_list(ocel: OCEL) -> Dict[str, int]:
+def get_object_count_list(ocel: OCEL) -> Dict[str, int]:
     ol = {}
     ots = ocel.objects[ocel.object_type_column]
+    types = get_object_types(ocel)
     for ot in ots:
-        if ot not in ol:
-            ol[ot] = 0
-        ol[ot] += 1
+        if ot in types:
+            if ot not in ol:
+                ol[ot] = 0
+            ol[ot] += 1
     return [{'name': k, 'count': v} for k, v in ol.items()]
 
 

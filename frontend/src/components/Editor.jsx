@@ -60,7 +60,7 @@ export default function Editor() {
     const [items1, setItems1] = useState([0])
     const [items2, setItems2] = useState([0])
 
-    const [processAcName, setProcessAcName] = useState(null)
+    const [processAcName, setProcessAcName] = useState({title: null});
 
     const [selectedEntities, setSelectedEntities] = useState({
         includeOT: [],
