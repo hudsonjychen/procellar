@@ -16,10 +16,14 @@ def _get_map(path):
 
 def _update_event_log(object_type_map, object_attr_map, event_log, process_data):
     Process.update_object_types(event_log["objectTypes"])
+    Process.clear_process_objects(objects=event_log["objects"], deleted_processes=process_data.get("deletedProcesses", []))
+
+    REQUIRED_KEYS = ["processName", "imported", "rules", "relations"]
 
     for p in process_data:
-        process = Process(process_name=p.get("processName"), rules=p.get("rules"), relations=p.get("relations"))
-        process.update(event_log, object_type_map, object_attr_map)
+        if REQUIRED_KEYS <= p.keys():
+            process = Process(process_name=p.get("processName"), rules=p.get("rules"), relations=p.get("relations"))
+            process.update(event_log, object_type_map, object_attr_map, deleted_processes=process_data.get("deletedProcesses", []))
 
 def update(object_type_map, object_attr_map, event_log, process_data):
     _update_event_log(object_type_map=object_type_map, object_attr_map=object_attr_map, event_log=event_log, process_data=process_data)

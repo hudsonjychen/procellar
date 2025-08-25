@@ -21,6 +21,7 @@ def upload():
     file = request.files["ocel"]
 
     df = request.files.get("df")
+    cachedFile['df'] = None
 
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp:
@@ -47,10 +48,6 @@ def upload():
         cachedObjectTypeList.clear()
         cachedObjectTypeList.extend(get_object_count_list(log)) # displayed on the left side
 
-        cachedProcessList.clear()
-        processList = [{'name': p, 'justCreated': False} for p in get_processes(log)]
-        cachedProcessList.extend(processList) # displayed on the left side
-
         cachedObjectTypes.clear()
         cachedObjectTypes.extend(get_object_types(log)) # object type options for editor
 
@@ -58,16 +55,31 @@ def upload():
         cachedActivities.extend(get_activities(log)) # activity options for editor
 
         cachedProcessData.clear()
+        cachedProcessList.clear()
+        process_list = [{'name': p, 'imported': True} for p in get_processes(log)]
+        cachedProcessList.extend(process_list) # displayed on the left side
         if cachedFile['df']:
+            imported_process_list = [{'name': p['processName'], 'imported': True} for p in cachedFile['df']]
+            index = {item["name"]: item for item in process_list}
+            for item in imported_process_list:
+                if item["name"] in index:
+                    index[item["name"]]["imported"] = True
+                else:
+                    new_entry = {"name": item["name"], "imported": True}
+                    process_list.append(new_entry)
             cachedProcessData.extend(cachedFile['df'])
+            cachedProcessList.extend(process_list)
         
-        global cachedObjectTypeMap
-        cachedObjectTypeMap = map_object_id_to_type(log)
+        print(cachedProcessData)
+        print(cachedProcessList)
+        
+        cachedObjectTypeMap.clear()
+        cachedObjectTypeMap.update(map_object_id_to_type(log))
 
         event_log = cachedFile['json']['original']
 
-        global cachedObjectAttrMap
-        cachedObjectAttrMap = map_attribute_to_object(event_log)
+        cachedObjectAttrMap.clear()
+        cachedObjectAttrMap.update(map_attribute_to_object(event_log))
 
         cachedAttrMap.clear()
         cachedAttrMap.extend(map_attribute(event_log))

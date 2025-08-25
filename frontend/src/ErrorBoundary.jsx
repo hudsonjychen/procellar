@@ -32,7 +32,8 @@ function FallbackUI() {
             sx={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                mb: 3
             }}
         >
             <Alert

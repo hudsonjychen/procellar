@@ -15,6 +15,24 @@ class Process:
             'name': 'process',
             'attributes': []
         })
+    
+    @staticmethod
+    def clear_process_objects(objects, deleted_processes):
+        new_objects = [
+            obj for obj in objects
+            if obj.get('type') != 'process' or obj.get('id') not in deleted_processes
+        ]        
+        objects.clear()
+        objects.extend(new_objects)
+    
+    @staticmethod
+    def clear_process_event(event, deleted_processes):
+        new_relationships = [
+            rel for rel in event['relationships'] 
+            if rel.get('objectId') in deleted_processes and rel.get('qualifier') == 'process'
+        ]
+        event['relationships'].clear()
+        event['relationships'].extend(new_relationships)
 
     def update_objects(self, objects):
         if any(o.get('id') == self.process_name and o.get('type') == 'process' for o in objects):
@@ -66,18 +84,27 @@ class Process:
         else:
             raise ValueError(f'Invalid operator: {op}')
         
-    def update_event(self, context, event):
-        if not self.evaluate(context):
-            return 
+    def update_event(self, context, event): 
         if any(o.get('objectId') == self.process_name and o.get('qualifier') == 'process' for o in event['relationships']):
-            return
+            if self.evaluate(context):
+                return
+            else:
+                new_relationships = [
+                    rel for rel in event['relationships'] 
+                    if rel.get('objectId') != self.process_name or rel.get('qualifier') != 'process'
+                ]
+                event['relationships'].clear()
+                event['relationships'].extend(new_relationships)
+                return
+
         event['relationships'].append({
             'objectId': self.process_name,
-            "qualifier": 'process'
+            'qualifier': 'process'
         })
     
-    def update(self, event_log, object_type_map, object_attr_map):
+    def update(self, event_log, object_type_map, object_attr_map, deleted_processes):
         for event in event_log["events"]:
+            self.clear_process_event(event=event, deleted_processes=deleted_processes)
             context = self.apply_rules(object_type_map=object_type_map, object_attr_map=object_attr_map, event=event)
             self.update_event(context=context, event=event)
         

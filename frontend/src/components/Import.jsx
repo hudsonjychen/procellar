@@ -52,6 +52,7 @@ export default function ImportButton() {
         }
         
         formDataRef.current.set(fileType, file);
+        console.log(formDataRef);
     };
     
     const handleContinue = async () => {
@@ -61,6 +62,8 @@ export default function ImportButton() {
                 body: formDataRef.current,
                 mode: 'cors'
             });
+
+            formDataRef.current = new FormData();
         
             const result = await response.json();
             if (!response.ok || result.error) {
@@ -75,7 +78,12 @@ export default function ImportButton() {
             setObjectTypeList(data.objectTypeList);
             setAttrMap(data.attributes);
             setProcesses(data.processList);
-            setProcessData(data.processData);
+
+            const processData = data.processData;
+            console.log(processData);
+            const processAcList = processData.map(data => {return {title: data.processName}});
+            setProcessData(processData);
+            setProcessAcList(processAcList);
             
             setUploadStatus(prev => [...prev, 'success']);
         } 

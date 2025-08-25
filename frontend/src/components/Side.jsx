@@ -1,10 +1,12 @@
-import { Stack, List, Sheet, ListItem, ListItemButton, Typography, ListItemContent, Divider, ListItemDecorator, ListDivider, Box, Dropdown, MenuButton, IconButton, Menu } from "@mui/joy";
+import { Stack, List, Sheet, ListItem, ListItemButton, Typography, ListItemContent, Divider, ListItemDecorator, ListDivider, Box, Dropdown, MenuButton, IconButton, Menu, Tooltip } from "@mui/joy";
 import { useGlobal } from "../GlobalContext"
 import { useRef, useState, Fragment } from "react";
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import { Collapse } from "@mui/material";
 import ArrowOutwardRoundedIcon from '@mui/icons-material/ArrowOutwardRounded';
+import DataObjectRoundedIcon from '@mui/icons-material/DataObjectRounded';
+import HideSourceRoundedIcon from '@mui/icons-material/HideSourceRounded';
 import { NewIcon, ObjectIcon, ProcessIcon } from "../CustomIcons";
 import { ErrorBoundary, FallbackUI } from '../ErrorBoundary';
 
@@ -17,7 +19,13 @@ export default function Side() {
     const FileInfo = () => {
 
         return (
-            <Box sx={{ position: 'fixed', bottom: 24, left: 24 }}>
+            <Box 
+                sx={{ 
+                    position: 'fixed', 
+                    bottom: 24, 
+                    left: 24
+                }}
+            >
                 <Dropdown
                     open={open3}
                     onOpenChange={setOpen3}
@@ -27,7 +35,7 @@ export default function Side() {
                         onMouseLeave={() => setOpen3(false)}
                         slots={{ root: IconButton }}
                         slotProps={{ root: { variant: 'outlined', color: 'neutral' } }}
-                        sx={{ backgroundColor: 'white' }}
+                        sx={{ backgroundColor: 'white', boxShadow: 'md'  }}
                     >
                         <InfoOutlineIcon />
                     </MenuButton>
@@ -86,12 +94,27 @@ export default function Side() {
                                 <Typography>
                                     {item.name}
                                 </Typography>
-                                {item.justCreated ? 
-                                    <Typography>
-                                        {processData.find(process => process.processName === item.name)?.rules.length} <span style={{ color: '#999' }}>  rs</span>
-                                    </Typography>
-                                    : <ArrowOutwardRoundedIcon sx={{ fontSize: 18, color: '#999' }}/>
-                                }
+                                <Stack direction='row' alignItems='center'>
+                                    {processData.find(process => process.processName === item.name) ? 
+                                        <Tooltip 
+                                            title={`${processData.find(process => process.processName === item.name)?.rules.length ?? 0} rules`}
+                                            variant="outlined"
+                                        >
+                                            <Typography>
+                                                {processData.find(process => process.processName === item.name)?.rules.length} <span style={{ color: '#999' }}>  rs</span>
+                                            </Typography>
+                                        </Tooltip>
+                                        : 
+                                        <Tooltip title='No rulesets provided' variant="outlined">
+                                            <HideSourceRoundedIcon sx={{ fontSize: 18, color: '#999' }}/>
+                                        </Tooltip>
+                                    }
+                                    {item.imported &&
+                                        <Tooltip title='Embedded in the OCEL' variant="outlined">
+                                            <DataObjectRoundedIcon sx={{ fontSize: 18, color: '#999' }}/>
+                                        </Tooltip>
+                                    }
+                                </Stack>
                             </ListItem>
                             {index != processes.length-1 && 
                                 <ListDivider inset="gutter"/>

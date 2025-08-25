@@ -499,7 +499,7 @@ export default function LogicEditor({ rules, processName }) {
 
     return (
         <Box>
-            <Tooltip title='Edit logic relations'>
+            <Tooltip title='Edit logic relations' variant="outlined">
                 <IconButton
                     onClick={() => setOpenEditor(true)}
                     sx={{ 
@@ -565,7 +565,8 @@ export default function LogicEditor({ rules, processName }) {
                             </Stack>
                             <Stack 
                                 direction='row' 
-                                justifyContent='space-evenly' 
+                                justifyContent='flex-end' 
+                                spacing={2} 
                                 alignItems='center'
                                 sx={{ m: 2, mt: 6 }}
                             >
