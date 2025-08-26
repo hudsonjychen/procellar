@@ -10,7 +10,7 @@ import traceback
 from app.algo.entity import get_activities, get_object_count_list, get_object_types, get_processes
 from app.algo.map import map_object_id_to_type, map_attribute, map_attribute_to_object
 from app.algo.update import update
-from .cache import cachedFile, cachedFileInfo, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedObjectAttrMap, cachedAttrMap, cachedProcessData
+from .cache import cachedFile, cachedFileInfo, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedObjectAttrMap, cachedAttrMap, cachedProcessData, cachedDeletedProcesses
 
 main = Blueprint('main', __name__)
 
@@ -57,18 +57,14 @@ def upload():
         cachedProcessData.clear()
         cachedProcessList.clear()
         process_list = [{'name': p, 'imported': True} for p in get_processes(log)]
-        cachedProcessList.extend(process_list) # displayed on the left side
         if cachedFile['df']:
-            imported_process_list = [{'name': p['processName'], 'imported': True} for p in cachedFile['df']]
+            df_process_list = [{'name': p['processName'], 'imported': False} for p in cachedFile['df']]
             index = {item["name"]: item for item in process_list}
-            for item in imported_process_list:
-                if item["name"] in index:
-                    index[item["name"]]["imported"] = True
-                else:
-                    new_entry = {"name": item["name"], "imported": True}
-                    process_list.append(new_entry)
+            for item in df_process_list:
+                if item["name"] not in index:
+                    process_list.append(item)
             cachedProcessData.extend(cachedFile['df'])
-            cachedProcessList.extend(process_list)
+        cachedProcessList.extend(process_list) # displayed on the left side
         
         print(cachedProcessData)
         print(cachedProcessList)
@@ -109,15 +105,21 @@ def process_data():
         if not request.is_json:
             return jsonify({"error": "Request must contain JSON data"}), 400
         
-        data = request.get_json()
+        zipData = request.get_json()
         
-        if not data:
+        if not zipData:
             return jsonify({"error": "No JSON data provided"}), 400
         
-        print("Received data:", data)
+        data = zipData.get("processData", [])
+        deleted_processes = zipData.get("deletedProcesses", [])
+        
+        print("Received data:", data, deleted_processes)
         
         if not isinstance(data, list):
             return jsonify({"error": "Expected a list of objects"}), 400
+        
+        if not isinstance(deleted_processes, list):
+            return jsonify({"error": "Expected a list of deleted data"}), 400
         
         for item in data:
             if not isinstance(item, dict) or 'processName' not in item:
@@ -125,8 +127,11 @@ def process_data():
         
         file = cachedFile['json']['original']
         fileCopy = copy.deepcopy(file)
+
+        cachedDeletedProcesses.clear()
+        cachedDeletedProcesses.extend(deleted_processes)
         
-        update(object_type_map=cachedObjectTypeMap, object_attr_map=cachedObjectAttrMap, event_log=fileCopy, process_data=data)
+        update(object_type_map=cachedObjectTypeMap, object_attr_map=cachedObjectAttrMap, event_log=fileCopy, process_data=data, deleted_processes=cachedDeletedProcesses)
         cachedFile['json']['modified'] = fileCopy
         return jsonify({"status": "success"}), 200
 

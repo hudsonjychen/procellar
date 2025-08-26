@@ -14,16 +14,16 @@ def _save_json(data, path):
 def _get_map(path):
     return map_object_id_to_type(pm4py.read_ocel2_json(path))
 
-def _update_event_log(object_type_map, object_attr_map, event_log, process_data):
+def _update_event_log(object_type_map, object_attr_map, event_log, process_data, deleted_processes):
     Process.update_object_types(event_log["objectTypes"])
-    Process.clear_process_objects(objects=event_log["objects"], deleted_processes=process_data.get("deletedProcesses", []))
+    Process.clear_process_objects(objects=event_log["objects"], deleted_processes=deleted_processes)
 
     REQUIRED_KEYS = ["processName", "imported", "rules", "relations"]
 
     for p in process_data:
-        if REQUIRED_KEYS <= p.keys():
+        if set(REQUIRED_KEYS) <= p.keys():
             process = Process(process_name=p.get("processName"), rules=p.get("rules"), relations=p.get("relations"))
-            process.update(event_log, object_type_map, object_attr_map, deleted_processes=process_data.get("deletedProcesses", []))
+            process.update(event_log, object_type_map, object_attr_map, deleted_processes=deleted_processes)
 
-def update(object_type_map, object_attr_map, event_log, process_data):
-    _update_event_log(object_type_map=object_type_map, object_attr_map=object_attr_map, event_log=event_log, process_data=process_data)
+def update(object_type_map, object_attr_map, event_log, process_data, deleted_processes):
+    _update_event_log(object_type_map=object_type_map, object_attr_map=object_attr_map, event_log=event_log, process_data=process_data, deleted_processes=deleted_processes)

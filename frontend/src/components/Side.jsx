@@ -91,10 +91,15 @@ export default function Side() {
                             <ListItem 
                                 sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 2.4}} 
                             >
-                                <Typography>
+                                <Typography sx={{ 
+                                    flex: 1,
+                                    textAlign: 'left', 
+                                    wordBreak: 'break-word',
+                                    whiteSpace: 'normal'
+                                }}>
                                     {item.name}
                                 </Typography>
-                                <Stack direction='row' alignItems='center'>
+                                <Stack direction='row' alignItems='center' spacing={0.5}>
                                     {processData.find(process => process.processName === item.name) ? 
                                         <Tooltip 
                                             title={`${processData.find(process => process.processName === item.name)?.rules.length ?? 0} rules`}
@@ -173,7 +178,12 @@ export default function Side() {
                                         key={item.name}
                                         sx={{ display: 'flex', justifyContent: 'space-between', pr: 2.4}} 
                                     >
-                                        <Typography>
+                                        <Typography sx={{ 
+                                            flex: 1,
+                                            textAlign: 'left', 
+                                            wordBreak: 'break-word',
+                                            whiteSpace: 'normal'
+                                        }}>
                                             {item.name}
                                         </Typography>
                                         <Typography>

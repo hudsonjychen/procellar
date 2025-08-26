@@ -9,7 +9,7 @@ import { useGlobal } from '../GlobalContext';
 import EditingEditor from "./EditingEditor";
 
 export default function Main() {
-    const { processData, setProcessData, setProcessLogicData, setProcesses } = useGlobal()
+    const { processData, setProcessData, setProcessLogicData, setProcesses, setDeletedProcesses } = useGlobal()
 
     const handleDelete = ({ ruleName, parentProcess }) => {
         setProcessData(prev => {
@@ -35,6 +35,7 @@ export default function Main() {
         setProcessData(prev => {
             const deletedProcesses = prev.filter(process => process.rules.length == 0).map(pr => pr.processName);
             console.log(deletedProcesses);
+            setDeletedProcesses(pr => [...pr, ...deletedProcesses]);
             const newProcessData = prev.filter(process => process.rules.length != 0);
             const updatedProcessList = newProcessData.map(data => data.processName);
             setProcesses(pr => {return pr.filter(p => !deletedProcesses.includes(p.name))});

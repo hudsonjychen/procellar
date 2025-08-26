@@ -29,7 +29,7 @@ class Process:
     def clear_process_event(event, deleted_processes):
         new_relationships = [
             rel for rel in event['relationships'] 
-            if rel.get('objectId') in deleted_processes and rel.get('qualifier') == 'process'
+            if rel.get('qualifier') != 'process' or rel.get('objectId') not in deleted_processes
         ]
         event['relationships'].clear()
         event['relationships'].extend(new_relationships)
@@ -85,10 +85,9 @@ class Process:
             raise ValueError(f'Invalid operator: {op}')
         
     def update_event(self, context, event): 
+        event_pass = self.evaluate(context)
         if any(o.get('objectId') == self.process_name and o.get('qualifier') == 'process' for o in event['relationships']):
-            if self.evaluate(context):
-                return
-            else:
+            if not event_pass:
                 new_relationships = [
                     rel for rel in event['relationships'] 
                     if rel.get('objectId') != self.process_name or rel.get('qualifier') != 'process'
@@ -96,15 +95,18 @@ class Process:
                 event['relationships'].clear()
                 event['relationships'].extend(new_relationships)
                 return
+            else:
+                return
 
-        event['relationships'].append({
-            'objectId': self.process_name,
-            'qualifier': 'process'
-        })
+        if event_pass:
+            event['relationships'].append({
+                'objectId': self.process_name,
+                'qualifier': 'process'
+            })
     
     def update(self, event_log, object_type_map, object_attr_map, deleted_processes):
         for event in event_log["events"]:
-            self.clear_process_event(event=event, deleted_processes=deleted_processes)
+            Process.clear_process_event(event=event, deleted_processes=deleted_processes)
             context = self.apply_rules(object_type_map=object_type_map, object_attr_map=object_attr_map, event=event)
             self.update_event(context=context, event=event)
         

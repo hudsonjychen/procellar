@@ -4,11 +4,13 @@ import { useGlobal } from '../GlobalContext';
 import JSZip from "jszip"
 
 export default function ExportButton() {
-    const { processData } = useGlobal();
+    const { processData, deletedProcesses } = useGlobal();
 
     const handleClick = async () => {
 
         console.log(processData)
+        console.log(deletedProcesses)
+        const zipData = {processData: processData, deletedProcesses: deletedProcesses}
 
         try {
             const response = await fetch("http://localhost:5001/process_data", {
@@ -16,7 +18,7 @@ export default function ExportButton() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(processData),
+                body: JSON.stringify(zipData),
                 mode: 'cors'
             });
             

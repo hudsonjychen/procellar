@@ -9,3 +9,4 @@ cachedObjectTypeMap = {}
 cachedAttrMap = []
 cachedObjectAttrMap = {}
 cachedProcessData = []
+cachedDeletedProcesses = []
