@@ -1,4 +1,4 @@
-import { Box, ButtonGroup, IconButton, Card, Chip, Divider, Sheet, Stack, Typography } from "@mui/joy";
+import { Box, ButtonGroup, IconButton, Card, Chip, Divider, Sheet, Stack, Typography, Tooltip } from "@mui/joy";
 import { ActivityIcon, AttributeIcon, ObjectIcon } from "../CustomIcons";
 import LogicEditor from "./LogicEditor";
 import EditIcon from '@mui/icons-material/Edit';
@@ -9,7 +9,7 @@ import { useGlobal } from '../GlobalContext';
 import EditingEditor from "./EditingEditor";
 
 export default function Main() {
-    const { processData, setProcessData, setProcessLogicData } = useGlobal()
+    const { processData, setProcessData, setProcessLogicData, setProcesses, setDeletedProcesses } = useGlobal()
 
     const handleDelete = ({ ruleName, parentProcess }) => {
         setProcessData(prev => {
@@ -31,28 +31,34 @@ export default function Main() {
         })
     }
 
-    const cleanEmptyProcess = (setProcessData) => {
+    const cleanEmptyProcess = () => {
         setProcessData(prev => {
-            return prev.filter(process => process.rules.length != 0)
-        })
+            const deletedProcesses = prev.filter(process => process.rules.length == 0).map(pr => pr.processName);
+            console.log(deletedProcesses);
+            setDeletedProcesses(pr => [...pr, ...deletedProcesses]);
+            const newProcessData = prev.filter(process => process.rules.length != 0);
+            const updatedProcessList = newProcessData.map(data => data.processName);
+            setProcesses(pr => {return pr.filter(p => !deletedProcesses.includes(p.name))});
+            return newProcessData;
+        });
     }
 
     const ButtonBar = ({ ruleName, parentProcess }) => {
         return (
-            <Stack 
-
-            >
+            <Stack>
                 <EditingEditor ruleName={ruleName} processName={parentProcess} />
                 <Divider sx={{ ml: 0.6, mr: 0.6 }}/>
-                <IconButton 
-                    onClick={() => {
-                        console.log(processData)
-                        handleDelete({ ruleName: ruleName, parentProcess: parentProcess });
-                        cleanEmptyProcess(setProcessData)
-                    }}
-                >
-                    <DeleteIcon sx={{ color: grey[600] }}/>
-                </IconButton>
+                <Tooltip title="Delete" variant="outlined" placement="left">
+                    <IconButton 
+                        onClick={() => {
+                            console.log(processData);
+                            handleDelete({ ruleName: ruleName, parentProcess: parentProcess });
+                            cleanEmptyProcess();
+                        }}
+                    >
+                            <DeleteIcon sx={{ color: grey[600] }}/>
+                    </IconButton>
+                </Tooltip>
             </Stack>
         )
     }

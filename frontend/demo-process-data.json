@@ -1,7 +1,7 @@
 [
     {
         "processName": "order management",
-        "justCreated": true,
+        "imported": false,
         "rules": [
             {
                 "ruleName": "rule1",

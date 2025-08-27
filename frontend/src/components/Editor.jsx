@@ -1,4 +1,4 @@
-import { IconButton, DialogTitle, Divider, Autocomplete, AutocompleteOption, ListItemDecorator, Input, Modal, ModalDialog, Box, Stack, Typography, Button } from "@mui/joy";
+import { IconButton, DialogTitle, Divider, Autocomplete, AutocompleteOption, ListItemDecorator, Input, Modal, ModalDialog, Box, Stack, Typography, Button, Tooltip } from "@mui/joy";
 import { createFilterOptions } from '@mui/joy/Autocomplete';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 import Add from '@mui/icons-material/Add';
@@ -10,6 +10,9 @@ import Select from '@mui/joy/Select'
 import Option from '@mui/joy/Option'
 import { ErrorAlert } from "./Alert";
 import EditorSummary from "./EditorSummary";
+import { ErrorBoundary, FallbackUI } from '../ErrorBoundary';
+import HelpOutlinedIcon from '@mui/icons-material/HelpOutlined';
+
 
 const RuleNameInput = ({ ruleData, setRuleData }) => (
     <Input 
@@ -60,7 +63,7 @@ export default function Editor() {
     const [items1, setItems1] = useState([0])
     const [items2, setItems2] = useState([0])
 
-    const [processAcName, setProcessAcName] = useState(null)
+    const [processAcName, setProcessAcName] = useState();
 
     const [selectedEntities, setSelectedEntities] = useState({
         includeOT: [],
@@ -101,7 +104,7 @@ export default function Editor() {
         ruleData.excludeOT.entities.length === 0 &&
         ruleData.excludeAct.entities.length === 0;
 
-    const matchedProcess = processData.find(process => process.processName === processAcName.title)
+    const matchedProcess = processData.find(process => process.processName === processAcName?.title)
     const existingRuleNames = matchedProcess ? matchedProcess.rules.map(rule => rule.ruleName) : []
 
     console.log(processAcName);
@@ -151,14 +154,13 @@ export default function Editor() {
     }
 
     const handleSave = () => {
+        const { title } = processAcName
+
         {/* update processes and process list for autocomplete component */}
         const originalProcessList = processAcList.map(item => item.title)
-        if (!originalProcessList.includes(processAcName.title)) {
-            setProcesses(prev => ([...prev, {name: processAcName.title, justCreated: true}]))
+        if (!originalProcessList.includes(title)) {
             setProcessAcList(prev => ([...prev, processAcName]))
         }
-
-        const { title } = processAcName
 
         const tempRuleData = ruleData
         tempRuleData.parentProcess = title
@@ -227,6 +229,14 @@ export default function Editor() {
 
         setRuleData(updatedRuleData);
         if (updatedRuleData.ruleName && updatedRuleData.parentProcess && !allEmpty && !existingRuleNames.includes(updatedRuleData.ruleName)) {
+            setProcesses(prev => {
+                if (prev.some(item => item.name === title)) {
+                    return prev;
+                } else {
+                    return [...prev, {name: title, imported: false}];
+                }
+            })
+            
             setProcessData(prev => {
                 const existingIndex = prev.findIndex(
                     p => p.processName === title
@@ -245,7 +255,7 @@ export default function Editor() {
                         ...prev,
                         {
                             processName: title,
-                            justCreated: true,
+                            imported: false,
                             rules: [updatedRuleData],
                             relations: {}
                         }
@@ -515,168 +525,203 @@ export default function Editor() {
                     <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', ml: 2, mt: 2 }}>
                         Process Editor
                     </DialogTitle>
-                    <form onSubmit={handleSubmit}>
-                        <Box sx={{ m: 2, width: 380 }}>
-                            <Stack 
-                                direction='row' 
-                                justifyContent='space-between' 
-                                alignItems='center' 
-                                sx={{ pt: 1, pb: 1 }}
-                            >
-                                <Typography level="title-md"> Process name </Typography>
-                                <Box sx={{ width: '224px' }}>
-                                    <ProcessNameInput width='224px' />
-                                </Box>
-                            </Stack>
-                            <Stack 
-                                direction='row' 
-                                justifyContent='space-between' 
-                                alignItems='center' 
-                                sx={{ pt: 1, pb: 1 }}
-                            >
-                                <Typography level="title-md"> Rule name </Typography>
-                                <Box sx={{ width: '224px' }}>
-                                    <RuleNameInput ruleData={ruleData} setRuleData={setRuleData} />
-                                </Box>
-                            </Stack>
-                        </Box>
-                        <Divider sx={{ m: 2 }}/>
-                        <Box sx={{ m: 2 }}>
-                            <Stack 
-                                direction='row' 
-                                justifyContent='flex-start' 
-                                alignItems='center'
-                                spacing={2} 
-                                sx={{ pt: 1, pb: 1 }}
-                            >
-                                <Box sx={{ width: 86 }}>
-                                    <Typography level="title-md"> Include </Typography>
-                                </Box>
-                                <Select
-                                    multiple
-                                    placeholder={placeholderMap['objectTypes'] || 'Select...'}
-                                    sx={{ width: '12rem' }}
-                                    value={selectedEntities['includeOT']}
-                                    onChange={
-                                        (e, newValue) => {
-                                            setSelectedEntities(prev => ({ ...prev, includeOT: newValue}))
-                                            setRuleData(prev => ({ ...prev, includeOT: {...prev.includeOT, entities: newValue}}))
-                                        }
-                                    }
+                    <ErrorBoundary fallback={<FallbackUI />}>
+                        <form onSubmit={handleSubmit}>
+                            <Box sx={{ m: 2, width: 380 }}>
+                                <Stack 
+                                    direction='row' 
+                                    justifyContent='space-between' 
+                                    alignItems='center' 
+                                    sx={{ pt: 1, pb: 1 }}
                                 >
-                                    {objectTypes.map((item) => (
-                                        <Option key={item} value={item}>{item}</Option>
-                                    ))}
-                                </Select>
-                                <Select
-                                    multiple
-                                    placeholder={placeholderMap['activities'] || 'Select...'}
-                                    sx={{ width: '12rem' }}
-                                    value={selectedEntities['includeAct']}
-                                    onChange={
-                                        (e, newValue) => {
-                                            setSelectedEntities(prev => ({ ...prev, includeAct: newValue}))
-                                            setRuleData(prev => ({ ...prev, includeAct: {...prev.includeAct, entities: newValue}}))
-                                        }
-                                    }
+                                    <Typography level="title-md"> Process name </Typography>
+                                    <Box sx={{ width: '224px' }}>
+                                        <ProcessNameInput width='224px' />
+                                    </Box>
+                                </Stack>
+                                <Stack 
+                                    direction='row' 
+                                    justifyContent='space-between' 
+                                    alignItems='center' 
+                                    sx={{ pt: 1, pb: 1 }}
                                 >
-                                    {activities.map((item) => (
-                                        <Option key={item} value={item}>{item}</Option>
-                                    ))}
-                                </Select>
-                            </Stack>
-                            <Stack 
-                                direction='row' 
-                                justifyContent='flex-start' 
-                                alignItems='center'
-                                spacing={2} 
-                                sx={{ pt: 1, pb: 1 }}
-                            >
-                                <Box  sx={{ width: 86 }}>
-                                    <Typography level="title-md"> Exclude </Typography>
-                                </Box>
-                                <Select
-                                    multiple
-                                    placeholder={placeholderMap['objectTypes'] || 'Select...'}
-                                    sx={{ width: '12rem' }}
-                                    value={selectedEntities['excludeOT']}
-                                    onChange={
-                                        (e, newValue) => {
-                                            setSelectedEntities(prev => ({ ...prev, excludeOT: newValue}))
-                                            setRuleData(prev => ({ ...prev, excludeOT: {...prev.excludeOT, entities: newValue}}))
-                                        }
-                                    }
+                                    <Typography level="title-md"> Rule name </Typography>
+                                    <Box sx={{ width: '224px' }}>
+                                        <RuleNameInput ruleData={ruleData} setRuleData={setRuleData} />
+                                    </Box>
+                                </Stack>
+                            </Box>
+                            <Divider sx={{ m: 2 }}/>
+                            <Box sx={{ m: 2 }}>
+                                <Stack 
+                                    direction='row' 
+                                    justifyContent='flex-start' 
+                                    alignItems='center'
+                                    spacing={2} 
+                                    sx={{ pt: 1, pb: 1 }}
                                 >
-                                    {objectTypes.map((item) => (
-                                        <Option key={item} value={item}>{item}</Option>
-                                    ))}
-                                </Select>
-                                <Select
-                                    multiple
-                                    placeholder={placeholderMap['activities'] || 'Select...'}
-                                    sx={{ width: '12rem' }}
-                                    value={selectedEntities['excludeAct']}
-                                    onChange={
-                                        (e, newValue) => {
-                                            setSelectedEntities(prev => ({ ...prev, excludeAct: newValue}))
-                                            setRuleData(prev => ({ ...prev, excludeAct: {...prev.excludeAct, entities: newValue}}))
+                                    <Stack 
+                                        direction='row'
+                                        alignItems='center' 
+                                        sx={{ width: 86 }}
+                                    >
+                                        <Typography level="title-md"> Include </Typography>
+                                        <Tooltip
+                                            variant="outlined"
+                                            title={
+                                                <>
+                                                Multiple object types are combined with AND.
+                                                <br />
+                                                Multiple activities are combined with OR.
+                                                </>
+                                            }
+                                        >
+                                            <HelpOutlinedIcon fontSize="sm" sx={{ color: '#999' }}/>
+                                        </Tooltip>
+                                    </Stack>
+                                    <Select
+                                        multiple
+                                        placeholder={placeholderMap['objectTypes'] || 'Select...'}
+                                        sx={{ width: '12rem' }}
+                                        value={selectedEntities['includeOT']}
+                                        onChange={
+                                            (e, newValue) => {
+                                                setSelectedEntities(prev => ({ ...prev, includeOT: newValue}))
+                                                setRuleData(prev => ({ ...prev, includeOT: {...prev.includeOT, entities: newValue}}))
+                                            }
                                         }
-                                    }
+                                    >
+                                        {objectTypes.map((item) => (
+                                            <Option key={item} value={item}>{item}</Option>
+                                        ))}
+                                    </Select>
+                                    <Select
+                                        multiple
+                                        placeholder={placeholderMap['activities'] || 'Select...'}
+                                        sx={{ width: '12rem' }}
+                                        value={selectedEntities['includeAct']}
+                                        onChange={
+                                            (e, newValue) => {
+                                                setSelectedEntities(prev => ({ ...prev, includeAct: newValue}))
+                                                setRuleData(prev => ({ ...prev, includeAct: {...prev.includeAct, entities: newValue}}))
+                                            }
+                                        }
+                                    >
+                                        {activities.map((item) => (
+                                            <Option key={item} value={item}>{item}</Option>
+                                        ))}
+                                    </Select>
+                                </Stack>
+                                <Stack 
+                                    direction='row' 
+                                    justifyContent='flex-start' 
+                                    alignItems='center'
+                                    spacing={2} 
+                                    sx={{ pt: 1, pb: 1 }}
                                 >
-                                    {activities.map((item) => (
-                                        <Option key={item} value={item}>{item}</Option>
-                                    ))}
-                                </Select>
-                            </Stack>
-                        </Box>
-                        <Divider sx={{ m: 2 }}/>
-                        <Box sx={{ m: 2 }}>
-                            <Button 
-                                variant="plain"
-                                color="primary"
-                                disableRipple
-                                sx={{
-                                    p: 0,
-                                    m: 0,
-                                    minWidth: 'unset',
-                                    background: 'none',
-                                    fontWeight: 'bold',
-                                    textDecoration: 'underline',
-                                    '&:hover': {
+                                    <Stack 
+                                        direction='row'
+                                        alignItems='center' 
+                                        sx={{ width: 86 }}
+                                    >
+                                        <Typography level="title-md"> Exclude </Typography>
+                                        <Tooltip
+                                            variant="outlined"
+                                            title={
+                                                <>
+                                                Multiple object types are combined with AND.
+                                                <br />
+                                                Multiple activities are combined with OR.
+                                                </>
+                                            }
+                                        >
+                                            <HelpOutlinedIcon fontSize="sm" sx={{ color: '#999' }}/>
+                                        </Tooltip>
+                                    </Stack>
+                                    <Select
+                                        multiple
+                                        placeholder={placeholderMap['objectTypes'] || 'Select...'}
+                                        sx={{ width: '12rem' }}
+                                        value={selectedEntities['excludeOT']}
+                                        onChange={
+                                            (e, newValue) => {
+                                                setSelectedEntities(prev => ({ ...prev, excludeOT: newValue}))
+                                                setRuleData(prev => ({ ...prev, excludeOT: {...prev.excludeOT, entities: newValue}}))
+                                            }
+                                        }
+                                    >
+                                        {objectTypes.map((item) => (
+                                            <Option key={item} value={item}>{item}</Option>
+                                        ))}
+                                    </Select>
+                                    <Select
+                                        multiple
+                                        placeholder={placeholderMap['activities'] || 'Select...'}
+                                        sx={{ width: '12rem' }}
+                                        value={selectedEntities['excludeAct']}
+                                        onChange={
+                                            (e, newValue) => {
+                                                setSelectedEntities(prev => ({ ...prev, excludeAct: newValue}))
+                                                setRuleData(prev => ({ ...prev, excludeAct: {...prev.excludeAct, entities: newValue}}))
+                                            }
+                                        }
+                                    >
+                                        {activities.map((item) => (
+                                            <Option key={item} value={item}>{item}</Option>
+                                        ))}
+                                    </Select>
+                                </Stack>
+                            </Box>
+                            <Divider sx={{ m: 2 }}/>
+                            <Box sx={{ m: 2 }}>
+                                <Button 
+                                    variant="plain"
+                                    color="primary"
+                                    disableRipple
+                                    sx={{
+                                        p: 0,
+                                        m: 0,
+                                        minWidth: 'unset',
                                         background: 'none',
-                                        textDecoration: 'underline'
-                                    }
-                                }}
-                                onClick={() => {
-                                    setOpen1(false);
-                                    setOpen2(true);
-                                }}
+                                        fontWeight: 'bold',
+                                        textDecoration: 'underline',
+                                        '&:hover': {
+                                            background: 'none',
+                                            textDecoration: 'underline'
+                                        }
+                                    }}
+                                    onClick={() => {
+                                        setOpen1(false);
+                                        setOpen2(true);
+                                    }}
+                                >
+                                    Open Advanced Process Editor
+                                </Button>
+                            </Box>
+                            <EditorSummary allEmpty={allEmpty} ruleData={ruleData} />
+                            <Stack 
+                                direction='row' 
+                                justifyContent='flex-end' 
+                                spacing={3}
+                                alignItems='center'
+                                sx={{ m: 2, mt: 6 }}
                             >
-                                Open Advanced Process Editor
-                            </Button>
-                        </Box>
-                        <EditorSummary allEmpty={allEmpty} ruleData={ruleData} />
-                        <Stack 
-                            direction='row' 
-                            justifyContent='space-evenly' 
-                            alignItems='center'
-                            sx={{ m: 2, mt: 6 }}
-                        >
-                            <Button 
-                                color='neutral' 
-                                sx={{ width: 126 }} 
-                                onClick={handleCancel}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                sx={{ width: 126 }}
-                                onClick={handleSave}
-                            >
-                                Save
-                            </Button>
-                        </Stack>
-                    </form>
+                                <Button 
+                                    color='neutral' 
+                                    sx={{ width: 126 }} 
+                                    onClick={handleCancel}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    sx={{ width: 126 }}
+                                    onClick={handleSave}
+                                >
+                                    Save
+                                </Button>
+                            </Stack>
+                        </form>
+                    </ErrorBoundary>
                 </ModalDialog>
             </Modal>
             
@@ -727,9 +772,25 @@ export default function Editor() {
                                 spacing={2} 
                                 sx={{ pt: 1, pb: 1 }}
                             >
-                                <Box sx={{ width: 126 }}>
+                                <Stack 
+                                    direction='row'
+                                    alignItems='center' 
+                                    sx={{ width: 86 }}
+                                >
                                     <Typography level="title-md"> Include </Typography>
-                                </Box>
+                                    <Tooltip
+                                        variant="outlined"
+                                        title={
+                                            <>
+                                            Multiple object types are combined with AND.
+                                            <br />
+                                            Multiple activities are combined with OR.
+                                            </>
+                                        }
+                                    >
+                                        <HelpOutlinedIcon fontSize="sm" sx={{ color: '#999' }}/>
+                                    </Tooltip>
+                                </Stack>
                                 <Select
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
@@ -777,9 +838,25 @@ export default function Editor() {
                                 spacing={2} 
                                 sx={{ mt: 2, pt: 1, pb: 1 }}
                             >
-                                <Box  sx={{ width: 126 }}>
+                                <Stack 
+                                    direction='row'
+                                    alignItems='center' 
+                                    sx={{ width: 86 }}
+                                >
                                     <Typography level="title-md"> Exclude </Typography>
-                                </Box>
+                                    <Tooltip
+                                        variant="outlined"
+                                        title={
+                                            <>
+                                            Multiple object types are combined with AND.
+                                            <br />
+                                            Multiple activities are combined with OR.
+                                            </>
+                                        }
+                                    >
+                                        <HelpOutlinedIcon fontSize="sm" sx={{ color: '#999' }}/>
+                                    </Tooltip>
+                                </Stack>
                                 <Select
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
@@ -850,7 +927,8 @@ export default function Editor() {
                         <EditorSummary allEmpty={allEmpty} ruleData={ruleData} />
                         <Stack 
                             direction='row' 
-                            justifyContent='space-evenly' 
+                            justifyContent='flex-end' 
+                            spacing={3}
                             alignItems='center'
                             sx={{ m: 2, mt: 6 }}
                         >

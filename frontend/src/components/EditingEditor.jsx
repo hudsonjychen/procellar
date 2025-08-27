@@ -1,4 +1,4 @@
-import { IconButton, DialogTitle, Divider, Autocomplete, AutocompleteOption, ListItemDecorator, Input, Modal, ModalDialog, Box, Stack, Typography, Button } from "@mui/joy";
+import { IconButton, DialogTitle, Divider, Autocomplete, AutocompleteOption, ListItemDecorator, Input, Modal, ModalDialog, Box, Stack, Typography, Button, Tooltip } from "@mui/joy";
 import { createFilterOptions } from '@mui/joy/Autocomplete';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 import EditIcon from '@mui/icons-material/Edit';
@@ -176,14 +176,13 @@ export default function EditingEditor({ processName, ruleName }) {
     }
 
     const handleSave = () => {
+        const { title } = processAcName
+        
         {/* update processes and process list for autocomplete component */}
         const originalProcessList = processAcList.map(item => item.title)
-        if (!originalProcessList.includes(processAcName.title)) {
-            setProcesses(prev => ([...prev, {name: processAcName.title, justCreated: true}]))
+        if (!originalProcessList.includes(title)) {
             setProcessAcList(prev => ([...prev, processAcName]))
         }
-
-        const { title } = processAcName
 
         const tempRuleData = ruleData
         tempRuleData.parentProcess = title
@@ -252,6 +251,7 @@ export default function EditingEditor({ processName, ruleName }) {
 
         setRuleData(updatedRuleData);
         if (!allEmpty) {
+            
             setProcessData(prev => {
                 const existingIndex = prev.findIndex(
                     p => p.processName === title
@@ -290,7 +290,7 @@ export default function EditingEditor({ processName, ruleName }) {
                         ...prev,
                         {
                             processName: title,
-                            justCreated: true,
+                            imported: false,
                             rules: [updatedRuleData],
                             relations: {}
                         }
@@ -522,11 +522,13 @@ export default function EditingEditor({ processName, ruleName }) {
 
     return (
         <Box>
-            <IconButton 
-                onClick={() => setOpen1(true)}
-            >
-                <EditIcon sx={{ color: grey[600] }}/>
-            </IconButton>
+            <Tooltip title="Edit" variant="outlined" placement="left">
+                <IconButton 
+                    onClick={() => setOpen1(true)}
+                >
+                    <EditIcon sx={{ color: grey[600] }}/>
+                </IconButton>
+            </Tooltip>
 
             {/* basic process editor */}
             <Modal open={open1} onClose={() => {setOpen1(false); setShowAlert1(false)}}>
@@ -682,7 +684,8 @@ export default function EditingEditor({ processName, ruleName }) {
                         <EditorSummary allEmpty={allEmpty} ruleData={ruleData} />
                         <Stack 
                             direction='row' 
-                            justifyContent='space-evenly' 
+                            justifyContent='flex-end' 
+                            spacing={3}
                             alignItems='center'
                             sx={{ m: 2, mt: 6 }}
                         >
@@ -877,7 +880,8 @@ export default function EditingEditor({ processName, ruleName }) {
                         <EditorSummary allEmpty={allEmpty} ruleData={ruleData} />
                         <Stack 
                             direction='row' 
-                            justifyContent='space-evenly' 
+                            justifyContent='flex-end' 
+                            spacing={3} 
                             alignItems='center'
                             sx={{ m: 2, mt: 6 }}
                         >
