@@ -2,8 +2,8 @@
 
 **Procellar** is a part of a framework for embedding analyst-defined process scopes into object-centric event log (OCEL). You can learn more about our initiative in our paper.
 
-**"Process-Level Aggregation and Analysis of Object-Centric Event Data"**  
-*Shahrzad Khayatbashi, Majid Rafiei, Jiayuan Chen, and Amin Jalali*
+**"Enriching Object-Centric Event Data with Process Scopes: A Framework for Aggregation and Analysis"**  
+*Shahrzad Khayatbashi, Majid Rafiei, Jiayuan Chen, Timotheus Kampik, Gregor Berg, and Amin Jalali*
 
 Submitted to the [10th International Workshop on Process Querying, Manipulation, and Intelligence (PQMI 2025)](http://processquerying.com/pqmi2025/)
 
