@@ -41,7 +41,13 @@ export default function Top() {
                 <FailureAlert
                     showAlert={showAlert}
                     setShowAlert={setShowAlert}
-                    alertText='File is not imported.'
+                    alertText='Something wrong with the file(s).'
+                />
+                ) : alertStatus === 'imcompatible' ? (
+                <FailureAlert
+                    showAlert={showAlert}
+                    setShowAlert={setShowAlert}
+                    alertText='The definition file is imcompatible.'
                 />
                 ) : null
             }

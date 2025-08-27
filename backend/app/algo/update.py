@@ -18,7 +18,7 @@ def _update_event_log(object_type_map, object_attr_map, event_log, process_data,
     Process.update_object_types(event_log["objectTypes"])
     Process.clear_process_objects(objects=event_log["objects"], deleted_processes=deleted_processes)
 
-    REQUIRED_KEYS = ["processName", "imported", "rules", "relations"]
+    REQUIRED_KEYS = ["processName", "rules"]
 
     for p in process_data:
         if set(REQUIRED_KEYS) <= p.keys():

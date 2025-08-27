@@ -66,8 +66,15 @@ export default function ImportButton() {
             formDataRef.current = new FormData();
         
             const result = await response.json();
-            if (!response.ok || result.error) {
-                throw new Error(result.error || `Upload failed with status ${response.status}`);
+
+            if (!response.ok && result.status === "imcompatible") {
+                setUploadStatus(prev => [...prev, 'imcompatible']);
+                throw new Error(result.message || "Error");
+            }
+
+            if (!response.ok && result.status === "error") {
+                setUploadStatus(prev => [...prev, 'failure']);
+                throw new Error(result.message || "Error");
             }
 
             const res = await fetch("http://localhost:5001/get_data");
@@ -88,8 +95,7 @@ export default function ImportButton() {
             setUploadStatus(prev => [...prev, 'success']);
         } 
         catch (err) {
-            console.error("Fail", err)
-            setUploadStatus(prev => [...prev, 'failure'])
+            console.error("Fail", err);
             setFileInfo({});
             setObjectTypes([]);
             setActivities([]);

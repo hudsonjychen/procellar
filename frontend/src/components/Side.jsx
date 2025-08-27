@@ -114,7 +114,7 @@ export default function Side() {
                                             <HideSourceRoundedIcon sx={{ fontSize: 18, color: '#999' }}/>
                                         </Tooltip>
                                     }
-                                    {item.imported &&
+                                    {item.imported === true &&
                                         <Tooltip title='Embedded in the OCEL' variant="outlined">
                                             <DataObjectRoundedIcon sx={{ fontSize: 18, color: '#999' }}/>
                                         </Tooltip>

@@ -10,6 +10,7 @@ import traceback
 from app.algo.entity import get_activities, get_object_count_list, get_object_types, get_processes
 from app.algo.map import map_object_id_to_type, map_attribute, map_attribute_to_object
 from app.algo.update import update
+from app.algo.check import compatibility_check, CompatibilityError
 from .cache import cachedFile, cachedFileInfo, cachedProcessList, cachedObjectTypeList, cachedObjectTypes, cachedActivities, cachedObjectTypeMap, cachedObjectAttrMap, cachedAttrMap, cachedProcessData, cachedDeletedProcesses
 
 main = Blueprint('main', __name__)
@@ -28,10 +29,6 @@ def upload():
             file.save(temp.name)
             temp_path = temp.name
         
-        if df:
-            df.seek(0)
-            cachedFile['df'] = json.load(df)
-        
         filename = file.filename
         size = round(os.path.getsize(temp_path) / 1024 / 1024, 2)
         uploadtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -44,6 +41,11 @@ def upload():
             cachedFile['json']['original'] = json.load(f)
 
         log = pm4py.read_ocel2_json(temp_path)
+
+        if df:
+            df.seek(0)
+            cachedFile['df'] = json.load(df)
+            compatibility_check(log, cachedFile['df'])
 
         cachedObjectTypeList.clear()
         cachedObjectTypeList.extend(get_object_count_list(log)) # displayed on the left side
@@ -81,6 +83,10 @@ def upload():
         cachedAttrMap.extend(map_attribute(event_log))
 
         return jsonify({"status": "success"}), 200
+    
+    except CompatibilityError as e:
+        print("Fail", e)
+        return jsonify({"status": "imcompatible", "message": str(e)}), 422
     
     except Exception as e:
         print("Fail", e)

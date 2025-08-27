@@ -1,4 +1,4 @@
-import { IconButton, DialogTitle, Divider, Autocomplete, AutocompleteOption, ListItemDecorator, Input, Modal, ModalDialog, Box, Stack, Typography, Button } from "@mui/joy";
+import { IconButton, DialogTitle, Divider, Autocomplete, AutocompleteOption, ListItemDecorator, Input, Modal, ModalDialog, Box, Stack, Typography, Button, Tooltip } from "@mui/joy";
 import { createFilterOptions } from '@mui/joy/Autocomplete';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 import Add from '@mui/icons-material/Add';
@@ -11,6 +11,7 @@ import Option from '@mui/joy/Option'
 import { ErrorAlert } from "./Alert";
 import EditorSummary from "./EditorSummary";
 import { ErrorBoundary, FallbackUI } from '../ErrorBoundary';
+import HelpOutlinedIcon from '@mui/icons-material/HelpOutlined';
 
 
 const RuleNameInput = ({ ruleData, setRuleData }) => (
@@ -559,9 +560,25 @@ export default function Editor() {
                                     spacing={2} 
                                     sx={{ pt: 1, pb: 1 }}
                                 >
-                                    <Box sx={{ width: 86 }}>
+                                    <Stack 
+                                        direction='row'
+                                        alignItems='center' 
+                                        sx={{ width: 86 }}
+                                    >
                                         <Typography level="title-md"> Include </Typography>
-                                    </Box>
+                                        <Tooltip
+                                            variant="outlined"
+                                            title={
+                                                <>
+                                                Multiple object types are combined with AND.
+                                                <br />
+                                                Multiple activities are combined with OR.
+                                                </>
+                                            }
+                                        >
+                                            <HelpOutlinedIcon fontSize="sm" sx={{ color: '#999' }}/>
+                                        </Tooltip>
+                                    </Stack>
                                     <Select
                                         multiple
                                         placeholder={placeholderMap['objectTypes'] || 'Select...'}
@@ -602,9 +619,25 @@ export default function Editor() {
                                     spacing={2} 
                                     sx={{ pt: 1, pb: 1 }}
                                 >
-                                    <Box  sx={{ width: 86 }}>
+                                    <Stack 
+                                        direction='row'
+                                        alignItems='center' 
+                                        sx={{ width: 86 }}
+                                    >
                                         <Typography level="title-md"> Exclude </Typography>
-                                    </Box>
+                                        <Tooltip
+                                            variant="outlined"
+                                            title={
+                                                <>
+                                                Multiple object types are combined with AND.
+                                                <br />
+                                                Multiple activities are combined with OR.
+                                                </>
+                                            }
+                                        >
+                                            <HelpOutlinedIcon fontSize="sm" sx={{ color: '#999' }}/>
+                                        </Tooltip>
+                                    </Stack>
                                     <Select
                                         multiple
                                         placeholder={placeholderMap['objectTypes'] || 'Select...'}
@@ -739,9 +772,25 @@ export default function Editor() {
                                 spacing={2} 
                                 sx={{ pt: 1, pb: 1 }}
                             >
-                                <Box sx={{ width: 126 }}>
+                                <Stack 
+                                    direction='row'
+                                    alignItems='center' 
+                                    sx={{ width: 86 }}
+                                >
                                     <Typography level="title-md"> Include </Typography>
-                                </Box>
+                                    <Tooltip
+                                        variant="outlined"
+                                        title={
+                                            <>
+                                            Multiple object types are combined with AND.
+                                            <br />
+                                            Multiple activities are combined with OR.
+                                            </>
+                                        }
+                                    >
+                                        <HelpOutlinedIcon fontSize="sm" sx={{ color: '#999' }}/>
+                                    </Tooltip>
+                                </Stack>
                                 <Select
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
@@ -789,9 +838,25 @@ export default function Editor() {
                                 spacing={2} 
                                 sx={{ mt: 2, pt: 1, pb: 1 }}
                             >
-                                <Box  sx={{ width: 126 }}>
+                                <Stack 
+                                    direction='row'
+                                    alignItems='center' 
+                                    sx={{ width: 86 }}
+                                >
                                     <Typography level="title-md"> Exclude </Typography>
-                                </Box>
+                                    <Tooltip
+                                        variant="outlined"
+                                        title={
+                                            <>
+                                            Multiple object types are combined with AND.
+                                            <br />
+                                            Multiple activities are combined with OR.
+                                            </>
+                                        }
+                                    >
+                                        <HelpOutlinedIcon fontSize="sm" sx={{ color: '#999' }}/>
+                                    </Tooltip>
+                                </Stack>
                                 <Select
                                     multiple
                                     placeholder={placeholderMap['objectTypes'] || 'Select...'}
