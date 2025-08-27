@@ -86,7 +86,7 @@ def upload():
     
     except CompatibilityError as e:
         print("Fail", e)
-        return jsonify({"status": "imcompatible", "message": str(e)}), 422
+        return jsonify({"status": "incompatible", "message": str(e)}), 422
     
     except Exception as e:
         print("Fail", e)

@@ -48,7 +48,10 @@ To begin, import a file into Procellar. Currently, Procellar supports importing 
 
 If you’d like to try the tool with example data, you can download sample files from the [OCEL Standard Event Logs](https://ocel-standard.org/event-logs/overview/) page.
 
-Click the Import button located in the top-right corner of the interface. Import an OCEL and a definition file. Please be aware that an OCEL is required and a definition file is optional.
+Click the **Import** button in the top-right corner of the interface to open the **Import Dialog**. From there, you can import an **OCEL file** and an optional **definition file**.
+- **OCEL file**: Required.
+- **Definition file**: Optional, but must be compatible with the OCEL. This means it can only reference entities (object types and activities) that exist in the OCEL.
+If you attempt to import a definition file that is incompatible with the OCEL, the system will display an alert and prevent the import.
 
 ![Import Files](./images/import-files.png)
 

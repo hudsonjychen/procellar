@@ -7,7 +7,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import { Box, Button, DialogTitle, Modal, ModalDialog, Typography, Stack, IconButton, Select, Option } from '@mui/joy';
 
 export default function ImportButton() {
-    const { setFileInfo, setUploadStatus, setObjectTypes, setActivities, setObjectTypeList, setAttrMap, setProcessData, setProcessAcList, setProcesses } = useGlobal();
+    const { setFileInfo, setUploadStatus, setObjectTypes, setActivities, setObjectTypeList, setAttrMap, setProcessData, setProcessAcList, setProcesses, setDeletedProcesses } = useGlobal();
     const fileInputRef = useRef(null);
     const [fileType, setFileType] = useState('ocel');
 
@@ -67,8 +67,8 @@ export default function ImportButton() {
         
             const result = await response.json();
 
-            if (!response.ok && result.status === "imcompatible") {
-                setUploadStatus(prev => [...prev, 'imcompatible']);
+            if (!response.ok && result.status === "incompatible") {
+                setUploadStatus(prev => [...prev, 'incompatible']);
                 throw new Error(result.message || "Error");
             }
 
@@ -91,6 +91,8 @@ export default function ImportButton() {
             const processAcList = processData.map(data => {return {title: data.processName}});
             setProcessData(processData);
             setProcessAcList(processAcList);
+
+            setDeletedProcesses([]);
             
             setUploadStatus(prev => [...prev, 'success']);
         } 
@@ -104,6 +106,7 @@ export default function ImportButton() {
             setProcessData([]);
             setProcessAcList([]);
             setProcesses([]);
+            setDeletedProcesses([]);
         }
     };
 

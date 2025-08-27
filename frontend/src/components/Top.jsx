@@ -43,11 +43,11 @@ export default function Top() {
                     setShowAlert={setShowAlert}
                     alertText='Something wrong with the file(s).'
                 />
-                ) : alertStatus === 'imcompatible' ? (
+                ) : alertStatus === 'incompatible' ? (
                 <FailureAlert
                     showAlert={showAlert}
                     setShowAlert={setShowAlert}
-                    alertText='The definition file is imcompatible.'
+                    alertText='The definition file is incompatible.'
                 />
                 ) : null
             }
