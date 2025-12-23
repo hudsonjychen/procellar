@@ -1,6 +1,6 @@
 import './App.css'
 import { Box } from "@mui/joy";
-import Editor from './components/Editor'
+import { Editor } from './components/Editor/index'
 import Main from './components/Main'
 import Side from './components/Side'
 import Top from './components/Top'

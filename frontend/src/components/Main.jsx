@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import { grey } from '@mui/material/colors';
 import { useGlobal } from '../GlobalContext';
-import EditingEditor from "./EditingEditor";
+import { EditingEditor } from "./Editor/index";
 
 export default function Main() {
     const { processData, setProcessData, setProcessLogicData, setProcesses, setDeletedProcesses } = useGlobal()
