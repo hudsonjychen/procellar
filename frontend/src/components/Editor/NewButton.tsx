@@ -1,34 +1,36 @@
-import { Button } from '@mui/joy'
-import Add from '@mui/icons-material/Add'
+import { Button } from "@mui/joy";
+import Add from "@mui/icons-material/Add";
 
 interface NewButtonProps {
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setOpen1: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function NewButton({ setOpen }: NewButtonProps) {
-    return (
-        <Button
-            size="lg"
-            variant="soft"
-            color="neutral"
-            startDecorator={<Add />}
-            sx={{
-                width: '160px',
-                height: '62px',
-                borderRadius: 'xl',
-                bgcolor: 'white',
-                '&:hover': { bgcolor: 'neutral.100' },
-                position: 'fixed',
-                right: '68px',
-                bottom: '68px',
-                boxShadow: '0px 4px 10px rgba(0,0,0,0.3)',
-                fontSize: '120',
-                fontWeight: 'bold',
-                '--Button-gap': '12px',
-            }}
-            onClick={() => setOpen(true)}
-        >
-            Add New
-        </Button>
-    )
+export default function NewButton({ setOpen1 }: NewButtonProps) {
+  return (
+    <Button
+      size="lg"
+      variant="soft"
+      color="neutral"
+      startDecorator={<Add />}
+      sx={{
+        width: "160px",
+        height: "62px",
+        borderRadius: "xl",
+        bgcolor: "white",
+        "&:hover": { bgcolor: "neutral.100" },
+        position: "fixed",
+        right: "68px",
+        bottom: "68px",
+        boxShadow: "0px 4px 10px rgba(0,0,0,0.3)",
+        fontSize: "120",
+        fontWeight: "bold",
+        "--Button-gap": "12px",
+      }}
+      onClick={() => {
+        setOpen1(true);
+      }}
+    >
+      Add New
+    </Button>
+  );
 }

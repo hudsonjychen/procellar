@@ -48,7 +48,7 @@ export interface SelectedConditions {
 
 export interface RuleInfo {
     ruleName: string
-    parentProcess: string
+    parentProcess: {title: string, inputValue?: string} | null
 }
 
 export type AttributeType = 'string' | 'int64' | 'float64'
