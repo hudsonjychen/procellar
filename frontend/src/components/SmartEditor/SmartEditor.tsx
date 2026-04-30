@@ -23,15 +23,13 @@ import { useRef, useState } from "react";
 import EntityChip from "./EntityChip";
 import ConnectorArrow from "./ConnectorArrow";
 
-interface BasicEditorProps {
+interface SmartEditorProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   showAlert: boolean;
   setShowAlert: React.Dispatch<React.SetStateAction<boolean>>;
   ruleInfo: RuleInfo;
   setRuleInfo: React.Dispatch<React.SetStateAction<RuleInfo>>;
-  selectedEntities: SelectedEntities;
-  setSelectedEntities: React.Dispatch<React.SetStateAction<SelectedEntities>>;
   handleCancel: () => void;
 }
 
@@ -39,17 +37,15 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 };
 
-export default function BasicEditor({
+export default function SmartEditor({
   open,
   setOpen,
   showAlert,
   setShowAlert,
   ruleInfo,
   setRuleInfo,
-  selectedEntities,
-  setSelectedEntities,
   handleCancel,
-}: BasicEditorProps) {
+}: SmartEditorProps) {
   const processNames = useProcessStore((state) => state.processNames);
   const setProcessNames = useProcessStore((state) => state.setProcessNames);
   const processData = useProcessStore((state) => state.processData);
@@ -189,12 +185,12 @@ export default function BasicEditor({
                 alignItems="center"
                 sx={{ pt: 1, pb: 1 }}
               >
-                <Typography level="title-md">Trace name</Typography>
+                <Typography level="title-md">Rule name</Typography>
                 <Box sx={{ width: "224px" }}>
                   <RuleNameInput
                     ruleInfo={ruleInfo}
                     setRuleInfo={setRuleInfo}
-                    text="Enter trace name..."
+                    text="Enter rule name..."
                   />
                 </Box>
               </Stack>
@@ -205,6 +201,7 @@ export default function BasicEditor({
               className="editor-container"
             >
               <ConnectorArrow startRef={startTextRef} endRef={endTextRef} />
+
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -215,6 +212,7 @@ export default function BasicEditor({
                   <Typography level="title-md" ref={startTextRef}>
                     Start
                   </Typography>
+
                   <Tooltip
                     variant="outlined"
                     title={
@@ -224,18 +222,23 @@ export default function BasicEditor({
                     <HelpOutlinedIcon fontSize="small" sx={{ color: "#999" }} />
                   </Tooltip>
                 </Stack>
-                <SelectCard
-                  checkedOTList={checkedStartOTList}
-                  setCheckedOTList={setCheckedStartOTList}
-                  checkedActList={checkedStartActList}
-                  setCheckedActList={setCheckedStartActList}
-                />
+                <Stack sx={{ width: 320 }}>
+                  <SelectCard
+                    objectTypeList={objectTypeList}
+                    activityList={activityList}
+                    checkedOTList={checkedStartOTList}
+                    setCheckedOTList={setCheckedStartOTList}
+                    checkedActList={checkedStartActList}
+                    setCheckedActList={setCheckedStartActList}
+                  />
+                </Stack>
               </Stack>
 
               <Stack sx={{ ml: 22, alignItems: "flex-start" }}>
                 {checkedStartOTList.map((item) => (
                   <EntityChip entityType="objectType" label={item} />
                 ))}
+
                 {checkedStartActList.map((item) => (
                   <EntityChip entityType="activity" label={item} />
                 ))}
@@ -252,6 +255,7 @@ export default function BasicEditor({
                   <Typography level="title-md" ref={endTextRef}>
                     End
                   </Typography>
+
                   <Tooltip
                     variant="outlined"
                     title={
@@ -261,18 +265,23 @@ export default function BasicEditor({
                     <HelpOutlinedIcon fontSize="small" sx={{ color: "#999" }} />
                   </Tooltip>
                 </Stack>
-                <SelectCard
-                  checkedOTList={checkedEndOTList}
-                  setCheckedOTList={setCheckedEndOTList}
-                  checkedActList={checkedEndActList}
-                  setCheckedActList={setCheckedEndActList}
-                />
+                <Stack sx={{ width: 320 }}>
+                  <SelectCard
+                    objectTypeList={objectTypeList}
+                    activityList={activityList}
+                    checkedOTList={checkedEndOTList}
+                    setCheckedOTList={setCheckedEndOTList}
+                    checkedActList={checkedEndActList}
+                    setCheckedActList={setCheckedEndActList}
+                  />
+                </Stack>
               </Stack>
 
               <Stack sx={{ ml: 22, alignItems: "flex-start" }}>
                 {checkedEndOTList.map((item) => (
                   <EntityChip entityType="objectType" label={item} />
                 ))}
+
                 {checkedEndActList.map((item) => (
                   <EntityChip entityType="activity" label={item} />
                 ))}
@@ -311,13 +320,17 @@ export default function BasicEditor({
                       />
                     </Tooltip>
                   </Stack>
-                  <SelectCard
-                    checkedOTList={includeOTList}
-                    setCheckedOTList={setIncludeOTList}
-                    checkedActList={includeActList}
-                    setCheckedActList={setIncludeActList}
-                    buttonSize="sm"
-                  />
+                  <Stack sx={{ width: 310 }}>
+                    <SelectCard
+                      objectTypeList={objectTypeList}
+                      activityList={activityList}
+                      checkedOTList={includeOTList}
+                      setCheckedOTList={setIncludeOTList}
+                      checkedActList={includeActList}
+                      setCheckedActList={setIncludeActList}
+                      buttonSize="sm"
+                    />
+                  </Stack>
                 </Stack>
                 {includeOTList.length > 0 && (
                   <Stack
@@ -364,13 +377,17 @@ export default function BasicEditor({
                       />
                     </Tooltip>
                   </Stack>
-                  <SelectCard
-                    checkedOTList={excludeOTList}
-                    setCheckedOTList={setExcludeOTList}
-                    checkedActList={excludeActList}
-                    setCheckedActList={setExcludeActList}
-                    buttonSize="sm"
-                  />
+                  <Stack sx={{ width: 310 }}>
+                    <SelectCard
+                      objectTypeList={objectTypeList}
+                      activityList={activityList}
+                      checkedOTList={excludeOTList}
+                      setCheckedOTList={setExcludeOTList}
+                      checkedActList={excludeActList}
+                      setCheckedActList={setExcludeActList}
+                      buttonSize="sm"
+                    />
+                  </Stack>
                 </Stack>
                 {excludeOTList.length > 0 && (
                   <Stack

@@ -14,20 +14,20 @@ import {
 } from "@mui/joy";
 
 interface EditorSelectProps {
-  open1: boolean;
-  setOpen1: React.Dispatch<React.SetStateAction<boolean>>;
-  setOpen2: React.Dispatch<React.SetStateAction<boolean>>;
-  setOpen3: React.Dispatch<React.SetStateAction<boolean>>;
+  selectOpen: boolean;
+  setSelectOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setStandardEditorOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setAdvancedEditorOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function EditorSelect({
-  open1,
-  setOpen1,
-  setOpen2,
-  setOpen3,
+  selectOpen,
+  setSelectOpen,
+  setStandardEditorOpen,
+  setAdvancedEditorOpen,
 }: EditorSelectProps) {
   return (
-    <Modal open={open1} onClose={() => setOpen1(false)}>
+    <Modal open={selectOpen} onClose={() => setSelectOpen(false)}>
       <ModalDialog
         sx={{
           maxWidth: 500,
@@ -52,8 +52,8 @@ export default function EditorSelect({
           <Card
             variant="outlined"
             onClick={() => {
-              setOpen3(true);
-              setOpen1(false);
+              setStandardEditorOpen(true);
+              setSelectOpen(false);
             }}
             sx={{
               flex: 1,
@@ -73,7 +73,7 @@ export default function EditorSelect({
             </Box>
             <CardContent>
               <Typography level="title-md" textAlign="center">
-                Standard Editor
+                Basic Editor
               </Typography>
               <Typography
                 level="body-xs"
@@ -89,8 +89,8 @@ export default function EditorSelect({
           <Card
             variant="outlined"
             onClick={() => {
-              setOpen2(true);
-              setOpen1(false);
+              setAdvancedEditorOpen(true);
+              setSelectOpen(false);
             }}
             sx={{
               flex: 1,

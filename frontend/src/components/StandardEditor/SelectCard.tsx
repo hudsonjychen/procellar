@@ -15,14 +15,15 @@ import {
   Box,
 } from "@mui/joy";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import { EntityList } from "./types";
 
 interface SelectCardProps {
-  objectTypeList: string[];
-  activityList: string[];
-  checkedOTList: string[];
-  setCheckedOTList: React.Dispatch<React.SetStateAction<string[]>>;
-  checkedActList: string[];
-  setCheckedActList: React.Dispatch<React.SetStateAction<string[]>>;
+  objectTypeList: EntityList;
+  activityList: EntityList;
+  checkedOTList: EntityList;
+  setCheckedOTList: React.Dispatch<React.SetStateAction<EntityList>>;
+  checkedActList: EntityList;
+  setCheckedActList: React.Dispatch<React.SetStateAction<EntityList>>;
   buttonSize?: "sm" | "md" | "lg";
 }
 

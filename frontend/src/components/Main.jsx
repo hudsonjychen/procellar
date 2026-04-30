@@ -27,6 +27,8 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import BlockIcon from "@mui/icons-material/Block";
 import StopCircleIcon from "@mui/icons-material/StopCircle";
+import PolylineRoundedIcon from "@mui/icons-material/PolylineRounded";
+import RuleRoundedIcon from "@mui/icons-material/RuleRounded";
 
 export default function Main() {
   const { setProcessLogicData, setProcesses, setDeletedProcesses } =
@@ -96,7 +98,7 @@ export default function Main() {
     );
   };
 
-  const RuleCard = ({ rule }) => {
+  const RuleCardDiscarded = ({ rule }) => {
     return (
       <Box
         sx={{
@@ -662,11 +664,12 @@ export default function Main() {
               gap: 1,
             }}
           >
+            <PolylineRoundedIcon />
             <Typography
               level="h4"
               sx={{ fontWeight: "xl", color: "neutral.800" }}
             >
-              Trace: {trace.traceName}
+              Rule: {trace.traceName}
             </Typography>
           </Box>
 
@@ -755,6 +758,110 @@ export default function Main() {
         <ButtonBar
           ruleName={trace.traceName}
           parentProcess={trace.parentProcess}
+        />
+      </Box>
+    );
+  };
+
+  const RuleCard = ({ rule }) => {
+    const hasInclude =
+      rule.includeOT?.entities?.length > 0 ||
+      rule.includeAct?.entities?.length > 0;
+    const hasExclude =
+      rule.excludeOT?.entities?.length > 0 ||
+      rule.excludeAct?.entities?.length > 0;
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "flex-start",
+          gap: 2,
+        }}
+      >
+        <Card
+          variant="soft"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            width: "91%",
+            bgcolor: "white",
+            boxShadow: "md",
+            borderRadius: "xl",
+            p: 2.5,
+            pb: 1,
+            mb: 1.6,
+            overflowX: "auto",
+          }}
+        >
+          <Box
+            sx={{
+              ml: 1,
+              mb: 0.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <RuleRoundedIcon />
+            <Typography
+              level="h4"
+              sx={{ fontWeight: "xl", color: "neutral.800" }}
+            >
+              Rule: {rule.ruleName}
+            </Typography>
+          </Box>
+
+          {hasInclude && (
+            <TimelineNode
+              title="To Include"
+              icon={<TaskAltIcon />}
+              color="success"
+              isLast={!hasExclude}
+            >
+              <EntityRow
+                label="Objects"
+                items={rule.includeOT?.entities}
+                icon={<ObjectIcon />}
+                color="success"
+              />
+              <EntityRow
+                label="Activities"
+                items={rule.includeAct?.entities}
+                icon={<ActivityIcon />}
+                color="success"
+              />
+            </TimelineNode>
+          )}
+
+          {hasExclude && (
+            <TimelineNode
+              title="To Exclude"
+              icon={<BlockIcon />}
+              color="danger"
+              isLast={true}
+            >
+              <EntityRow
+                label="Objects"
+                items={rule.excludeOT?.entities}
+                icon={<ObjectIcon />}
+                color="danger"
+              />
+              <EntityRow
+                label="Activities"
+                items={rule.excludeAct?.entities}
+                icon={<ActivityIcon />}
+                color="danger"
+              />
+            </TimelineNode>
+          )}
+        </Card>
+
+        <ButtonBar
+          ruleName={rule.ruleName}
+          parentProcess={rule.parentProcess}
         />
       </Box>
     );
