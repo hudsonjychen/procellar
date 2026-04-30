@@ -1,6 +1,7 @@
 import { Stack, Box, Select, Option, Input, IconButton } from "@mui/joy";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import React from "react";
 import { useEffect, useState } from "react";
 import {
   ActionType,
@@ -13,7 +14,7 @@ import {
 import { operatorMap, placeholderMap } from "./constants";
 
 interface ConditionEditorProps {
-  handleDelete: (index: number, id: string) => void;
+  handleDelete: () => void;
   action: ActionType;
   id: number;
   selectedConditions: SelectedConditions;
@@ -173,7 +174,7 @@ const ConditionEditor = ({
           borderRadius: "50%",
           backgroundColor: "neutral",
         }}
-        onClick={() => handleDelete}
+        onClick={handleDelete}
       >
         <DeleteOutlineOutlinedIcon />
       </IconButton>

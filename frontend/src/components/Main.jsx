@@ -18,8 +18,7 @@ import { useProcessStore } from "../stores/processStore";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import { grey } from "@mui/material/colors";
 import { useGlobal } from "../GlobalContext";
-import { EditingEditor } from "./Editor/index";
-import SelectCard from "./SmartEditor/SelectBar";
+import SelectCard from "./AdvancedEditor/SelectBar";
 import { useState } from "react";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import FlagCircleIcon from "@mui/icons-material/FlagCircle";
@@ -36,50 +35,94 @@ export default function Main() {
 
   const processData = useProcessStore((state) => state.processData);
   const setProcessData = useProcessStore((state) => state.setProcessData);
+  const requestEditRule = useProcessStore((state) => state.requestEditRule);
+  const requestEditTrace = useProcessStore((state) => state.requestEditTrace);
 
   const handleDelete = ({ ruleName, parentProcess }) => {
-    setProcessData((prev) => {
-      return prev.map((process) => {
+    const updatedProcesses = (Array.isArray(processData) ? processData : []).map(
+      (process) => {
         if (process.processName === parentProcess) {
+          if (Array.isArray(process.rules)) {
+            return {
+              ...process,
+              rules: process.rules.filter((rule) => rule.ruleName != ruleName),
+              relations: {},
+            };
+          }
+          if (Array.isArray(process.traces)) {
+            return {
+              ...process,
+              traces: process.traces.filter((trace) => trace.traceName != ruleName),
+              relations: {},
+            };
+          }
           return {
             ...process,
-            rules: process.rules.filter((rule) => rule.ruleName != ruleName),
             relations: {},
           };
         } else {
           return process;
         }
+      },
+    );
+
+    const deletedProcesses = updatedProcesses
+      .filter(
+        (process) =>
+          (Array.isArray(process.rules) && process.rules.length === 0) ||
+          (Array.isArray(process.traces) && process.traces.length === 0),
+      )
+      .map((process) => process.processName);
+
+    setDeletedProcesses((pr) => [...pr, ...deletedProcesses]);
+
+    setProcessLogicData((prevLogic) => {
+      const safeLogic = prevLogic ?? {};
+      const nextLogic = { ...safeLogic };
+      deletedProcesses.forEach((processName) => {
+        delete nextLogic[processName];
       });
+      return nextLogic;
     });
-    setProcessLogicData((prev) => {
-      const { [parentProcess]: _, ...rest } = prev;
-      return rest;
+
+    const newProcessData = updatedProcesses.filter((process) => {
+      if (Array.isArray(process.rules)) return process.rules.length !== 0;
+      if (Array.isArray(process.traces)) return process.traces.length !== 0;
+      return true;
     });
+
+    setProcesses((pr) => {
+      return pr.filter((p) => !deletedProcesses.includes(p.name));
+    });
+    setProcessData(newProcessData);
   };
 
-  const cleanEmptyProcess = () => {
-    setProcessData((prev) => {
-      const deletedProcesses = prev
-        .filter((process) => process.rules.length == 0)
-        .map((pr) => pr.processName);
-      console.log(deletedProcesses);
-      setDeletedProcesses((pr) => [...pr, ...deletedProcesses]);
-      const newProcessData = prev.filter(
-        (process) => process.rules.length != 0,
-      );
-      const updatedProcessList = newProcessData.map((data) => data.processName);
-      setProcesses((pr) => {
-        return pr.filter((p) => !deletedProcesses.includes(p.name));
-      });
-      return newProcessData;
-    });
-  };
-
-  const ButtonBar = ({ ruleName, parentProcess }) => {
+  const ButtonBar = ({
+    ruleName,
+    parentProcess,
+    editable = true,
+    editType = "rule",
+  }) => {
     return (
       <Stack>
-        <EditingEditor ruleName={ruleName} processName={parentProcess} />
-        <Divider sx={{ ml: 0.6, mr: 0.6 }} />
+        {editable && (
+          <>
+            <Tooltip title="Edit" variant="outlined" placement="left">
+              <IconButton
+                onClick={() => {
+                  if (editType === "trace") {
+                    requestEditTrace(parentProcess, ruleName);
+                  } else {
+                    requestEditRule(parentProcess, ruleName);
+                  }
+                }}
+              >
+                <EditIcon sx={{ color: grey[600] }} />
+              </IconButton>
+            </Tooltip>
+            <Divider sx={{ ml: 0.6, mr: 0.6 }} />
+          </>
+        )}
         <Tooltip title="Delete" variant="outlined" placement="left">
           <IconButton
             onClick={() => {
@@ -88,428 +131,12 @@ export default function Main() {
                 ruleName: ruleName,
                 parentProcess: parentProcess,
               });
-              cleanEmptyProcess();
             }}
           >
             <DeleteIcon sx={{ color: grey[600] }} />
           </IconButton>
         </Tooltip>
       </Stack>
-    );
-  };
-
-  const RuleCardDiscarded = ({ rule }) => {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          direction: "row",
-          justifyContent: "flex-start",
-          gap: 2,
-        }}
-      >
-        <Card
-          variant="soft"
-          sx={{
-            display: "flex",
-            direction: "column",
-            alignItems: "flex-start",
-            width: "91%",
-            bgcolor: "white",
-            boxShadow: "md",
-            borderRadius: "xl",
-            overflow: "hidden",
-            p: 2,
-            pb: 3,
-            mb: 1.6,
-            overflowX: "auto",
-          }}
-        >
-          <Box sx={{ ml: 1 }}>
-            <Typography level="title-lg">Rule: {rule.ruleName}</Typography>
-          </Box>
-          {/* include object type section */}
-          {rule.includeOT.entities.length > 0 && (
-            <Stack direction="row" spacing={1} m={1} mb={-1}>
-              <Box sx={{ display: "flex", width: 162 }}>
-                <Typography level="title-md" color="neutral">
-                  Include
-                </Typography>
-              </Box>
-              {rule.includeOT.entities.map((entity, index) => (
-                <Chip
-                  key={entity}
-                  variant="outlined"
-                  size="lg"
-                  startDecorator={<ObjectIcon />}
-                  sx={{
-                    border: "1.6px solid",
-                    fontWeight: "bold",
-                    borderColor: "success.300",
-                    color: "success.500",
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  {entity}
-                </Chip>
-              ))}
-            </Stack>
-          )}
-          {/* include object type condition section */}
-          {rule.includeOT.condition.length > 0 && (
-            <Box>
-              {rule.includeOT.condition.map((cond, index) => (
-                <Stack direction="row" spacing={1} ml={22.3} mb={0.2}>
-                  <Chip
-                    key={index}
-                    variant="outlined"
-                    size="md"
-                    startDecorator={<FilterAltOutlinedIcon />}
-                    sx={{
-                      border: "1.6px solid",
-                      fontWeight: "bold",
-                      borderColor: "neutral.300",
-                      color: "neutral.500",
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      startDecorator={<ObjectIcon />}
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.entity}
-                    </Chip>
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      startDecorator={<AttributeIcon />}
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.attribute}
-                    </Chip>
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.operator + " " + cond.value}
-                    </Chip>
-                  </Chip>
-                </Stack>
-              ))}
-            </Box>
-          )}
-          {/* include activity section */}
-          {rule.includeAct.entities.length > 0 && (
-            <Stack direction="row" spacing={1} m={1} mb={-1}>
-              <Box sx={{ display: "flex", width: 162 }}>
-                <Typography level="title-md" color="neutral">
-                  Include
-                </Typography>
-              </Box>
-              {rule.includeAct.entities.map((entity) => (
-                <Chip
-                  key={entity}
-                  variant="outlined"
-                  size="lg"
-                  startDecorator={<ActivityIcon />}
-                  sx={{
-                    border: "1.6px solid",
-                    fontWeight: "bold",
-                    borderColor: "success.300",
-                    color: "success.500",
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  {entity}
-                </Chip>
-              ))}
-            </Stack>
-          )}
-          {/* include activity condition section */}
-          {rule.includeAct.condition.length > 0 && (
-            <Box>
-              {rule.includeAct.condition.map((cond, index) => (
-                <Stack direction="row" spacing={1} ml={22.3} mb={0.2}>
-                  <Chip
-                    key={index}
-                    variant="outlined"
-                    size="md"
-                    startDecorator={<FilterAltOutlinedIcon />}
-                    sx={{
-                      border: "1.6px solid",
-                      fontWeight: "bold",
-                      borderColor: "neutral.300",
-                      color: "neutral.500",
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      startDecorator={<ActivityIcon />}
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.entity}
-                    </Chip>
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      startDecorator={<AttributeIcon />}
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.attribute}
-                    </Chip>
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.operator + " " + cond.value}
-                    </Chip>
-                  </Chip>
-                </Stack>
-              ))}
-            </Box>
-          )}
-          {/* exclude object type section */}
-          {rule.excludeOT.entities.length > 0 && (
-            <Stack direction="row" spacing={1} m={1} mb={-1}>
-              <Box sx={{ display: "flex", width: 162 }}>
-                <Typography level="title-md" color="neutral">
-                  Exclude
-                </Typography>
-              </Box>
-              {rule.excludeOT.entities.map((entity) => (
-                <Chip
-                  key={entity}
-                  variant="outlined"
-                  size="lg"
-                  startDecorator={<ObjectIcon />}
-                  sx={{
-                    border: "1.6px solid",
-                    fontWeight: "bold",
-                    borderColor: "danger.300",
-                    color: "danger.500",
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  {entity}
-                </Chip>
-              ))}
-            </Stack>
-          )}
-          {/* exclude object type condition section */}
-          {rule.excludeOT.condition.length > 0 && (
-            <Box>
-              {rule.excludeOT.condition.map((cond, index) => (
-                <Stack direction="row" spacing={1} ml={22.3} mb={0.2}>
-                  <Chip
-                    key={index}
-                    variant="outlined"
-                    size="md"
-                    startDecorator={<FilterAltOutlinedIcon />}
-                    sx={{
-                      border: "1.6px solid",
-                      fontWeight: "bold",
-                      borderColor: "neutral.300",
-                      color: "neutral.500",
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      startDecorator={<ObjectIcon />}
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.entity}
-                    </Chip>
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      startDecorator={<AttributeIcon />}
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.attribute}
-                    </Chip>
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.operator + " " + cond.value}
-                    </Chip>
-                  </Chip>
-                </Stack>
-              ))}
-            </Box>
-          )}
-          {/* exclude activiy section */}
-          {rule.excludeAct.entities.length > 0 && (
-            <Stack direction="row" spacing={1} m={1} mb={-1}>
-              <Box sx={{ display: "flex", width: 162 }}>
-                <Typography level="title-md" color="neutral">
-                  Exclude
-                </Typography>
-              </Box>
-              {rule.excludeAct.entities.map((entity) => (
-                <Chip
-                  key={entity}
-                  variant="outlined"
-                  size="lg"
-                  startDecorator={<ActivityIcon />}
-                  sx={{
-                    border: "1.6px solid",
-                    fontWeight: "bold",
-                    borderColor: "danger.300",
-                    color: "danger.500",
-                    backgroundColor: "transparent",
-                  }}
-                >
-                  {entity}
-                </Chip>
-              ))}
-            </Stack>
-          )}
-          {/* exclude activity condition section */}
-          {rule.excludeAct.condition.length > 0 && (
-            <Box>
-              {rule.excludeAct.condition.map((cond, index) => (
-                <Stack direction="row" spacing={1} ml={22.3} mb={0.2}>
-                  <Chip
-                    key={index}
-                    variant="outlined"
-                    size="md"
-                    startDecorator={<FilterAltOutlinedIcon />}
-                    sx={{
-                      border: "1.6px solid",
-                      fontWeight: "bold",
-                      borderColor: "neutral.300",
-                      color: "neutral.500",
-                      backgroundColor: "transparent",
-                    }}
-                  >
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      startDecorator={<ActivityIcon />}
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.entity}
-                    </Chip>
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      startDecorator={<AttributeIcon />}
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.attribute}
-                    </Chip>
-                    <Chip
-                      key={index}
-                      variant="outlined"
-                      size="md"
-                      sx={{
-                        border: "1.6px solid",
-                        fontWeight: "bold",
-                        borderColor: "transparent",
-                        color: "neutral.500",
-                        backgroundColor: "transparent",
-                      }}
-                    >
-                      {cond.operator + " " + cond.value}
-                    </Chip>
-                  </Chip>
-                </Stack>
-              ))}
-            </Box>
-          )}
-        </Card>
-        <ButtonBar
-          ruleName={rule.ruleName}
-          parentProcess={rule.parentProcess}
-        />
-      </Box>
     );
   };
 
@@ -758,6 +385,7 @@ export default function Main() {
         <ButtonBar
           ruleName={trace.traceName}
           parentProcess={trace.parentProcess}
+          editType="trace"
         />
       </Box>
     );
@@ -924,7 +552,7 @@ export default function Main() {
         </Typography>
       </Box>
       <Box sx={{ p: 1.2, width: "100%" }}>
-        {processData.map((process) => (
+        {(Array.isArray(processData) ? processData : []).map((process) => (
           <ProcessCard key={process.processName} process={process} />
         ))}
       </Box>

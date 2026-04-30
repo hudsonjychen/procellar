@@ -21,6 +21,7 @@ import EditorNavigate from "./EditorNavigate";
 import EditorSummary from "./EditorSummary";
 import SelectCard from "./SelectCard";
 import EntityChip from "./EntityChip";
+import { useState } from "react";
 
 interface StandardEditorProps {
   standardEditorOpen: boolean;
@@ -38,6 +39,10 @@ interface StandardEditorProps {
   excludeAct: EntityList;
   setIncludeAct: React.Dispatch<React.SetStateAction<EntityList>>;
   setExcludeAct: React.Dispatch<React.SetStateAction<EntityList>>;
+  editingSource: {
+    processName: string;
+    ruleName: string;
+  } | null;
   handleCancel: () => void;
 }
 
@@ -69,6 +74,9 @@ function StandardEditor1({
   const setProcessData = useProcessStore((state) => state.setProcessData);
   const objectTypeList = useDataStore((state) => state.objectTypeList);
   const activityList = useDataStore((state) => state.activityList);
+  const [alertText, setAlertText] = useState(
+    "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+  );
 
   const { ruleName, parentProcess } = ruleInfo;
   const allEmpty =
@@ -386,6 +394,7 @@ export default function StandardEditor({
   excludeAct,
   setIncludeAct,
   setExcludeAct,
+  editingSource,
   handleCancel,
 }: StandardEditorProps) {
   const processNames = useProcessStore((state) => state.processNames);
@@ -394,6 +403,9 @@ export default function StandardEditor({
   const setProcessData = useProcessStore((state) => state.setProcessData);
   const objectTypeList = useDataStore((state) => state.objectTypeList);
   const activityList = useDataStore((state) => state.activityList);
+  const [alertText, setAlertText] = useState(
+    "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+  );
 
   const { ruleName, parentProcess } = ruleInfo;
   const allEmpty =
@@ -417,12 +429,17 @@ export default function StandardEditor({
   };
   const a = false;
   const handleSave = () => {
-    if (a) {
+    const processName = ruleInfo.parentProcess?.title?.trim() || "";
+    const trimmedRuleName = ruleInfo.ruleName.trim();
+    if (!processName || !trimmedRuleName || allEmpty) {
+      setAlertText(
+        "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+      );
       setShowAlert(true);
     } else {
       const newRule: RuleData = {
-        ruleName: ruleInfo.ruleName,
-        parentProcess: ruleInfo.parentProcess?.title || "",
+        ruleName: trimmedRuleName,
+        parentProcess: processName,
         includeOT: {
           entities: includeOT,
           condition: [],
@@ -440,15 +457,44 @@ export default function StandardEditor({
           condition: [],
         },
       };
-      const existingIndex = processData.findIndex(
-        (process) =>
-          process.processName === ruleInfo.parentProcess?.title || "",
+      const baseProcessData = editingSource
+        ? processData.map((process) => {
+            if (
+              process.processName === editingSource.processName &&
+              "rules" in process
+            ) {
+              return {
+                ...process,
+                rules: (process.rules ?? []).filter(
+                  (rule) => rule.ruleName !== editingSource.ruleName,
+                ),
+              };
+            }
+            return process;
+          })
+        : processData;
+
+      const existingIndex = baseProcessData.findIndex(
+        (process) => process.processName === processName,
       );
       if (existingIndex !== -1) {
-        const existingProcess = processData.find(
-          (process) => process.processName === parentProcess?.title || "",
-        );
+        const existingProcess = baseProcessData.find((process) => process.processName === processName);
         if (!existingProcess) return;
+        if ("traces" in existingProcess) {
+          setAlertText(
+            "A process that contains trace-based rules cannot contain standard rules.",
+          );
+          setShowAlert(true);
+          return;
+        }
+        if (
+          "rules" in existingProcess &&
+          (existingProcess.rules ?? []).some((rule) => rule.ruleName === trimmedRuleName)
+        ) {
+          setAlertText("Rule name must be unique within the same process.");
+          setShowAlert(true);
+          return;
+        }
         const updatedExistingProcess = {
           ...existingProcess,
           rules:
@@ -456,16 +502,16 @@ export default function StandardEditor({
               ? [...(existingProcess.rules ?? []), newRule]
               : [newRule],
         };
-        const updatedProcesses = processData.filter(
-          (process) => process.processName !== parentProcess?.title || "",
+        const updatedProcesses = baseProcessData.filter(
+          (process) => process.processName !== processName,
         );
         setProcessData([...updatedProcesses, updatedExistingProcess]);
       } else {
-        const processes = [...processData];
+        const processes = [...baseProcessData];
         setProcessData([
           ...processes,
           {
-            processName: parentProcess?.title || "",
+            processName,
             imported: false,
             rules: [newRule],
             relations: {},
@@ -490,7 +536,7 @@ export default function StandardEditor({
         <ErrorAlert
           showAlert={showAlert}
           setShowAlert={setShowAlert}
-          alertText="Please provide a process name, a unique rule name, and select at least one entity before saving."
+          alertText={alertText}
         />
         <DialogTitle sx={{ fontSize: 22, fontWeight: "bold", ml: 2, mt: 2 }}>
           Basic Editor

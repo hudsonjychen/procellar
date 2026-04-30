@@ -30,11 +30,18 @@ import { useDataStore } from "../stores/dataStore";
 import { useProcessStore } from "../stores/processStore";
 
 export default function Side() {
-  const { fileInfo, processData, processes } = useGlobal();
+  const { fileInfo } = useGlobal();
+  const processData = useProcessStore((state) => state.processData);
   const [open1, setOpen1] = useState(true);
   const [open2, setOpen2] = useState(true);
   const [open3, setOpen3] = useState(false);
   const objectTypeOverview = useDataStore((state) => state.objectTypeOverview);
+  const processList = (Array.isArray(processData) ? processData : []).map(
+    (process) => ({
+      name: process.processName,
+      imported: Boolean(process.imported),
+    }),
+  );
 
   const FileInfo = () => {
     return (
@@ -102,7 +109,17 @@ export default function Side() {
   const ProcessList = () => {
     return (
       <Box>
-        {processes.map((item, index) => (
+        {processList.map((item, index) => (
+          (() => {
+            const matchedProcess = processData.find(
+              (process) => process.processName === item.name,
+            );
+            const itemCount = Array.isArray(matchedProcess?.rules)
+              ? matchedProcess.rules.length
+              : Array.isArray(matchedProcess?.traces)
+                ? matchedProcess.traces.length
+                : 0;
+            return (
           <Fragment key={item.name}>
             <ListItem
               sx={{
@@ -123,19 +140,13 @@ export default function Side() {
                 {item.name}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                {processData.find(
-                  (process) => process.processName === item.name,
-                ) ? (
+                {matchedProcess ? (
                   <Tooltip
-                    title={`${processData.find((process) => process.processName === item.name)?.rules.length ?? 0} rules`}
+                    title={`${itemCount} rules`}
                     variant="outlined"
                   >
                     <Typography>
-                      {
-                        processData.find(
-                          (process) => process.processName === item.name,
-                        )?.rules.length
-                      }{" "}
+                      {itemCount}{" "}
                       <span style={{ color: "#999" }}> rs</span>
                     </Typography>
                   </Tooltip>
@@ -155,8 +166,10 @@ export default function Side() {
                 )}
               </Stack>
             </ListItem>
-            {index != processes.length - 1 && <ListDivider inset="gutter" />}
+            {index != processList.length - 1 && <ListDivider inset="gutter" />}
           </Fragment>
+            );
+          })()
         ))}
       </Box>
     );
@@ -264,7 +277,7 @@ export default function Side() {
         <ErrorBoundary fallback={<FallbackUI />}>
           <Collapse in={open2}>
             <List sx={{ ml: 4.5 }}>
-              {processData.length || processes.length ? (
+              {processList.length ? (
                 <ProcessList />
               ) : (
                 <ListItem>

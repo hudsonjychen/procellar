@@ -9,6 +9,7 @@ import {
   Button,
   Tooltip,
 } from "@mui/joy";
+import React from "react";
 import { ErrorAlert } from "./Alert";
 import { ErrorBoundary, FallbackUI } from "./ErrorBoundary";
 import ProcessNameInput from "./ProcessNameInput";
@@ -53,6 +54,10 @@ interface AdvancedEditorProps {
   setSelectedConditions: React.Dispatch<
     React.SetStateAction<SelectedConditions>
   >;
+  editingSource: {
+    processName: string;
+    ruleName: string;
+  } | null;
   handleCancel: () => void;
 }
 
@@ -78,6 +83,7 @@ export default function AdvancedEditor({
   setExcludeAct,
   selectedConditions,
   setSelectedConditions,
+  editingSource,
   handleCancel,
 }: AdvancedEditorProps) {
   const [includeConditionList, setIncludeConditionList] = useState<number[]>([
@@ -86,6 +92,9 @@ export default function AdvancedEditor({
   const [excludeConditionList, setExcludeConditionList] = useState<number[]>([
     0,
   ]);
+  const [alertText, setAlertText] = useState(
+    "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+  );
 
   const processNames = useProcessStore((state) => state.processNames);
   const setProcessNames = useProcessStore((state) => state.setProcessNames);
@@ -118,7 +127,12 @@ export default function AdvancedEditor({
     setExcludeAct([]);
   };
   const handleSave = () => {
-    if (allEmpty || noName) {
+    const processName = ruleInfo.parentProcess?.title?.trim() || "";
+    const trimmedRuleName = ruleInfo.ruleName.trim();
+    if (!processName || !trimmedRuleName || allEmpty) {
+      setAlertText(
+        "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+      );
       setShowAlert(true);
     } else {
       const constructCondition = (action: ActionType, type: EntityType) => {
@@ -148,8 +162,8 @@ export default function AdvancedEditor({
         return condition;
       };
       const newRule: RuleData = {
-        ruleName: ruleInfo.ruleName,
-        parentProcess: ruleInfo.parentProcess?.title || "",
+        ruleName: trimmedRuleName,
+        parentProcess: processName,
         includeOT: {
           entities: includeOT,
           condition: constructCondition("include", "objectType"),
@@ -167,15 +181,46 @@ export default function AdvancedEditor({
           condition: constructCondition("exclude", "activity"),
         },
       };
-      const existingIndex = processData.findIndex(
-        (process) =>
-          process.processName === ruleInfo.parentProcess?.title || "",
+      const baseProcessData = editingSource
+        ? processData.map((process) => {
+            if (
+              process.processName === editingSource.processName &&
+              "rules" in process
+            ) {
+              return {
+                ...process,
+                rules: (process.rules ?? []).filter(
+                  (rule) => rule.ruleName !== editingSource.ruleName,
+                ),
+              };
+            }
+            return process;
+          })
+        : processData;
+
+      const existingIndex = baseProcessData.findIndex(
+        (process) => process.processName === processName,
       );
       if (existingIndex !== -1) {
-        const existingProcess = processData.find(
-          (process) => process.processName === parentProcess?.title || "",
+        const existingProcess = baseProcessData.find(
+          (process) => process.processName === processName,
         );
         if (!existingProcess) return;
+        if ("traces" in existingProcess) {
+          setAlertText(
+            "A process that contains trace-based rules cannot contain standard rules.",
+          );
+          setShowAlert(true);
+          return;
+        }
+        if (
+          "rules" in existingProcess &&
+          (existingProcess.rules ?? []).some((rule) => rule.ruleName === trimmedRuleName)
+        ) {
+          setAlertText("Rule name must be unique within the same process.");
+          setShowAlert(true);
+          return;
+        }
         const updatedExistingProcess = {
           ...existingProcess,
           rules:
@@ -183,16 +228,16 @@ export default function AdvancedEditor({
               ? [...(existingProcess.rules ?? []), newRule]
               : [newRule],
         };
-        const updatedProcesses = processData.filter(
-          (process) => process.processName !== parentProcess?.title || "",
+        const updatedProcesses = baseProcessData.filter(
+          (process) => process.processName !== processName,
         );
         setProcessData([...updatedProcesses, updatedExistingProcess]);
       } else {
-        const processes = [...processData];
+        const processes = [...baseProcessData];
         setProcessData([
           ...processes,
           {
-            processName: parentProcess?.title || "",
+            processName,
             imported: false,
             rules: [newRule],
             relations: {},
@@ -217,10 +262,10 @@ export default function AdvancedEditor({
         <ErrorAlert
           showAlert={showAlert}
           setShowAlert={setShowAlert}
-          alertText="Please provide a process name, a unique rule name, and select at least one entity before saving."
+          alertText={alertText}
         />
         <DialogTitle sx={{ fontSize: 22, fontWeight: "bold", ml: 2, mt: 2 }}>
-          Standard Editor with Conditions
+          Basic Editor with Conditions
         </DialogTitle>
         <ErrorBoundary fallback={<FallbackUI />}>
           <form onSubmit={handleSubmit}>
@@ -265,7 +310,7 @@ export default function AdvancedEditor({
                 justifyContent="flex-start"
                 alignItems="center"
                 spacing={2}
-                sx={{ pt: 1, pb: 1 }}
+                sx={{ pt: 1, pb: 1, width: "100%" }}
               >
                 <Stack direction="row" alignItems="center" sx={{ width: 86 }}>
                   <Typography level="title-md">Include</Typography>
@@ -282,21 +327,31 @@ export default function AdvancedEditor({
                     <HelpOutlinedIcon fontSize="small" sx={{ color: "#999" }} />
                   </Tooltip>
                 </Stack>
-                <SelectCard
-                  objectTypeList={objectTypeList}
-                  activityList={activityList}
-                  checkedOTList={includeOT}
-                  setCheckedOTList={setIncludeOT}
-                  checkedActList={includeAct}
-                  setCheckedActList={setIncludeAct}
-                  buttonSize="lg"
-                />
-                <AddButton setItems={setIncludeConditionList} />
+                <Box
+                  sx={{
+                    flexGrow: 1,
+                    mx: 1,
+                    "& > button": { width: "100%", justifyContent: "flex-start" },
+                  }}
+                >
+                  <SelectCard
+                    objectTypeList={objectTypeList}
+                    activityList={activityList}
+                    checkedOTList={includeOT}
+                    setCheckedOTList={setIncludeOT}
+                    checkedActList={includeAct}
+                    setCheckedActList={setIncludeAct}
+                    buttonSize="lg"
+                  />
+                </Box>
+                <Box sx={{ ml: "auto" }}>
+                  <AddButton setItems={setIncludeConditionList} />
+                </Box>
               </Stack>
               {includeOT.length > 0 && (
                 <Stack
                   direction="row"
-                  sx={{ ml: 12, mb: -1, alignItems: "flex-start" }}
+                  sx={{ ml: 13, alignItems: "flex-start" }}
                 >
                   {includeOT.map((item) => (
                     <EntityChip entityType="objectType" label={item} />
@@ -307,7 +362,7 @@ export default function AdvancedEditor({
               {includeAct.length > 0 && (
                 <Stack
                   direction="row"
-                  sx={{ ml: 12, alignItems: "flex-start" }}
+                  sx={{ ml: 13, alignItems: "flex-start" }}
                 >
                   {includeAct.map((item) => (
                     <EntityChip entityType="activity" label={item} />
@@ -331,7 +386,7 @@ export default function AdvancedEditor({
                 justifyContent="flex-start"
                 alignItems="center"
                 spacing={2}
-                sx={{ pt: 1, pb: 1 }}
+                sx={{ pt: 1, pb: 1, width: "100%" }}
               >
                 <Stack direction="row" alignItems="center" sx={{ width: 86 }}>
                   <Typography level="title-md">Exclude</Typography>
@@ -348,21 +403,31 @@ export default function AdvancedEditor({
                     <HelpOutlinedIcon fontSize="small" sx={{ color: "#999" }} />
                   </Tooltip>
                 </Stack>
-                <SelectCard
-                  objectTypeList={objectTypeList}
-                  activityList={activityList}
-                  checkedOTList={excludeOT}
-                  setCheckedOTList={setExcludeOT}
-                  checkedActList={excludeAct}
-                  setCheckedActList={setExcludeAct}
-                  buttonSize="lg"
-                />
-                <AddButton setItems={setExcludeConditionList} />
+                <Box
+                  sx={{
+                    flexGrow: 1,
+                    mx: 1,
+                    "& > button": { width: "100%", justifyContent: "flex-start" },
+                  }}
+                >
+                  <SelectCard
+                    objectTypeList={objectTypeList}
+                    activityList={activityList}
+                    checkedOTList={excludeOT}
+                    setCheckedOTList={setExcludeOT}
+                    checkedActList={excludeAct}
+                    setCheckedActList={setExcludeAct}
+                    buttonSize="lg"
+                  />
+                </Box>
+                <Box sx={{ ml: "auto" }}>
+                  <AddButton setItems={setExcludeConditionList} />
+                </Box>
               </Stack>
               {excludeOT.length > 0 && (
                 <Stack
                   direction="row"
-                  sx={{ ml: 12, mb: -1, alignItems: "flex-start" }}
+                  sx={{ ml: 13, alignItems: "flex-start" }}
                 >
                   {excludeOT.map((item) => (
                     <EntityChip entityType="objectType" label={item} />
@@ -373,7 +438,7 @@ export default function AdvancedEditor({
               {excludeAct.length > 0 && (
                 <Stack
                   direction="row"
-                  sx={{ ml: 12, alignItems: "flex-start" }}
+                  sx={{ ml: 13, alignItems: "flex-start" }}
                 >
                   {excludeAct.map((item) => (
                     <EntityChip entityType="activity" label={item} />
@@ -398,7 +463,7 @@ export default function AdvancedEditor({
               <EditorNavigate
                 setFromOpen={setConditionEditorOpen}
                 setToOpen={setStandardEditorOpen}
-                text="Go Back to Process Editor"
+                text="Go Back to Basic Editor"
               />
             </Box>
             <EditorSummary

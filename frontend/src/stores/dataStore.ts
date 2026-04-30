@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { AttributeMapList } from "../components/Editor/types";
+import { AttributeMapList } from "../components/StandardEditor/types";
 
 type EntityList = string[];
 type ObjectTypeCount = { name: string; count: number };

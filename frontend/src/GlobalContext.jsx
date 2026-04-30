@@ -16,17 +16,11 @@ export const GlobalProvider = ({ children }) => {
     const [fileInfo, setFileInfo] = useState({});
     const [uploadStatus, setUploadStatus] = useState([]);
 
-    const [objectTypes, setObjectTypes] = useState([]);
-    const [activities, setActivities] = useState([]);
-    const [objectTypeList, setObjectTypeList] = useState([]);
-
     {/* not used */}
     const [relations, setRelations] = useState({});
 
     {/* operators for logic editor */}
     const [ops, setOps] = useState({});
-
-    const [attrMap, setAttrMap] = useState([]);
 
     {/* innitialization for ops {processName: []} */}
     useEffect(() => {
@@ -59,12 +53,8 @@ export const GlobalProvider = ({ children }) => {
                 deletedProcesses, setDeletedProcesses,
                 fileInfo, setFileInfo,
                 uploadStatus, setUploadStatus,
-                objectTypes, setObjectTypes,
-                activities, setActivities,
-                objectTypeList, setObjectTypeList,
                 relations, setRelations,
                 ops, setOps,
-                attrMap, setAttrMap,
                 processLogicData, setProcessLogicData
             }}>
             {children}

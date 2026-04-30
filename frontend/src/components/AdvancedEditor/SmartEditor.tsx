@@ -19,7 +19,7 @@ import { useDataStore } from "../../stores/dataStore";
 import RuleNameInput from "./RuleNameInput";
 import HelpOutlinedIcon from "@mui/icons-material/HelpOutlined";
 import SelectCard from "./SelectBar";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EntityChip from "./EntityChip";
 import ConnectorArrow from "./ConnectorArrow";
 
@@ -50,6 +50,10 @@ export default function SmartEditor({
   const setProcessNames = useProcessStore((state) => state.setProcessNames);
   const processData = useProcessStore((state) => state.processData);
   const setProcessData = useProcessStore((state) => state.setProcessData);
+  const traceEditPayload = useProcessStore((state) => state.traceEditPayload);
+  const setTraceEditPayload = useProcessStore(
+    (state) => state.setTraceEditPayload,
+  );
   const objectTypeList = useDataStore((state) => state.objectTypeList);
   const activityList = useDataStore((state) => state.activityList);
 
@@ -62,6 +66,9 @@ export default function SmartEditor({
   const [includeActList, setIncludeActList] = useState<string[]>([]);
   const [excludeOTList, setExcludeOTList] = useState<string[]>([]);
   const [excludeActList, setExcludeActList] = useState<string[]>([]);
+  const [alertText, setAlertText] = useState(
+    "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+  );
 
   const { ruleName, parentProcess } = ruleInfo;
   const allEmptyStart =
@@ -86,13 +93,34 @@ export default function SmartEditor({
     setExcludeActList([]);
   };
 
+  useEffect(() => {
+    if (!traceEditPayload) return;
+    setRuleInfo({
+      ruleName: traceEditPayload.traceName,
+      parentProcess: { title: traceEditPayload.parentProcess },
+    });
+    setCheckedStartOTList([...(traceEditPayload.startOT ?? [])]);
+    setCheckedStartActList([...(traceEditPayload.startAct ?? [])]);
+    setCheckedEndOTList([...(traceEditPayload.endOT ?? [])]);
+    setCheckedEndActList([...(traceEditPayload.endAct ?? [])]);
+    setIncludeOTList([...(traceEditPayload.includeOT ?? [])]);
+    setIncludeActList([...(traceEditPayload.includeAct ?? [])]);
+    setExcludeOTList([...(traceEditPayload.excludeOT ?? [])]);
+    setExcludeActList([...(traceEditPayload.excludeAct ?? [])]);
+  }, [traceEditPayload, setRuleInfo]);
+
   const handleSave = () => {
-    if (allEmptyStart || allEmptyEnd) {
+    const processName = ruleInfo.parentProcess?.title?.trim() || "";
+    const trimmedTraceName = ruleInfo.ruleName.trim();
+    if (!processName || !trimmedTraceName || allEmptyStart || allEmptyEnd) {
+      setAlertText(
+        "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+      );
       setShowAlert(true);
     } else {
       const newTrace: TraceData = {
-        traceName: ruleInfo.ruleName,
-        parentProcess: ruleInfo.parentProcess?.title || "",
+        traceName: trimmedTraceName,
+        parentProcess: processName,
         startOT: checkedStartOTList,
         startAct: checkedStartActList,
         endOT: checkedEndOTList,
@@ -102,15 +130,38 @@ export default function SmartEditor({
         excludeOT: excludeOTList,
         excludeAct: excludeActList,
       };
-      const existingIndex = processData.findIndex(
-        (process) =>
-          process.processName === ruleInfo.parentProcess?.title || "",
+      const baseProcessData = traceEditPayload
+        ? processData.map((process) => {
+            if (
+              process.processName === traceEditPayload.sourceProcessName &&
+              "traces" in process
+            ) {
+              return {
+                ...process,
+                traces: (process.traces ?? []).filter(
+                  (trace) => trace.traceName !== traceEditPayload.sourceTraceName,
+                ),
+              };
+            }
+            return process;
+          })
+        : processData;
+
+      const existingIndex = baseProcessData.findIndex(
+        (process) => process.processName === processName,
       );
       if (existingIndex !== -1) {
-        const existingProcess = processData.find(
-          (process) => process.processName === parentProcess?.title || "",
+        const existingProcess = baseProcessData.find(
+          (process) => process.processName === processName,
         );
         if (!existingProcess) return;
+        if ("rules" in existingProcess) {
+          setAlertText(
+            "A process that contains standard rules cannot contain trace-based rules.",
+          );
+          setShowAlert(true);
+          return;
+        }
         const updatedExistingProcess = {
           ...existingProcess,
           traces:
@@ -118,16 +169,16 @@ export default function SmartEditor({
               ? [...(existingProcess.traces ?? []), newTrace]
               : [newTrace],
         };
-        const updatedProcesses = processData.filter(
-          (process) => process.processName !== parentProcess?.title || "",
+        const updatedProcesses = baseProcessData.filter(
+          (process) => process.processName !== processName,
         );
         setProcessData([...updatedProcesses, updatedExistingProcess]);
       } else {
-        const processes = [...processData];
+        const processes = [...baseProcessData];
         setProcessData([
           ...processes,
           {
-            processName: parentProcess?.title || "",
+            processName,
             imported: false,
             traces: [newTrace],
             relations: {},
@@ -136,7 +187,15 @@ export default function SmartEditor({
       }
       setOpen(false);
       clearEditor();
+      setTraceEditPayload(null);
     }
+  };
+
+  const handleCloseEditor = () => {
+    clearEditor();
+    setShowAlert(false);
+    setTraceEditPayload(null);
+    setOpen(false);
   };
 
   const startTextRef = useRef<HTMLSpanElement>(null);
@@ -145,16 +204,13 @@ export default function SmartEditor({
   return (
     <Modal
       open={open}
-      onClose={() => {
-        setOpen(false);
-        setShowAlert(false);
-      }}
+      onClose={handleCloseEditor}
     >
       <ModalDialog sx={{ display: "flex", width: "560px", overflowY: "auto" }}>
         <ErrorAlert
           showAlert={showAlert}
           setShowAlert={setShowAlert}
-          alertText="Please provide a process name, a unique rule name, and select at least one entity before saving."
+          alertText={alertText}
         />
         <DialogTitle sx={{ fontSize: 22, fontWeight: "bold", ml: 2, mt: 2 }}>
           Advanced Editor
@@ -234,7 +290,12 @@ export default function SmartEditor({
                 </Stack>
               </Stack>
 
-              <Stack sx={{ ml: 22, alignItems: "flex-start" }}>
+              <Stack
+                direction="row"
+                useFlexGap
+                spacing={1}
+                sx={{ ml: 19, alignItems: "flex-start", flexWrap: "wrap" }}
+              >
                 {checkedStartOTList.map((item) => (
                   <EntityChip entityType="objectType" label={item} />
                 ))}
@@ -277,7 +338,12 @@ export default function SmartEditor({
                 </Stack>
               </Stack>
 
-              <Stack sx={{ ml: 22, alignItems: "flex-start" }}>
+              <Stack
+                direction="row"
+                useFlexGap
+                spacing={1}
+                sx={{ ml: 19, alignItems: "flex-start", flexWrap: "wrap" }}
+              >
                 {checkedEndOTList.map((item) => (
                   <EntityChip entityType="objectType" label={item} />
                 ))}
@@ -335,10 +401,16 @@ export default function SmartEditor({
                 {includeOTList.length > 0 && (
                   <Stack
                     direction="row"
-                    sx={{ ml: 12, mb: -1, alignItems: "flex-start" }}
+                    useFlexGap
+                    spacing={1}
+                    sx={{ ml: 18, mt: 0.5, flexWrap: "wrap", alignItems: "flex-start" }}
                   >
                     {includeOTList.map((item) => (
-                      <EntityChip entityType="objectType" label={item} />
+                      <EntityChip
+                        entityType="objectType"
+                        label={item}
+                        color="success"
+                      />
                     ))}
                   </Stack>
                 )}
@@ -346,10 +418,16 @@ export default function SmartEditor({
                 {includeActList.length > 0 && (
                   <Stack
                     direction="row"
-                    sx={{ ml: 12, alignItems: "flex-start" }}
+                    useFlexGap
+                    spacing={1}
+                    sx={{ ml: 18, mt: 0.5, flexWrap: "wrap", alignItems: "flex-start" }}
                   >
                     {includeActList.map((item) => (
-                      <EntityChip entityType="activity" label={item} />
+                      <EntityChip
+                        entityType="activity"
+                        label={item}
+                        color="success"
+                      />
                     ))}
                   </Stack>
                 )}
@@ -392,10 +470,16 @@ export default function SmartEditor({
                 {excludeOTList.length > 0 && (
                   <Stack
                     direction="row"
-                    sx={{ ml: 12, mb: -1, alignItems: "flex-start" }}
+                    useFlexGap
+                    spacing={1}
+                    sx={{ ml: 18, mt: 0.5, flexWrap: "wrap", alignItems: "flex-start" }}
                   >
                     {excludeOTList.map((item) => (
-                      <EntityChip entityType="objectType" label={item} />
+                      <EntityChip
+                        entityType="objectType"
+                        label={item}
+                        color="danger"
+                      />
                     ))}
                   </Stack>
                 )}
@@ -403,10 +487,16 @@ export default function SmartEditor({
                 {excludeActList.length > 0 && (
                   <Stack
                     direction="row"
-                    sx={{ ml: 12, alignItems: "flex-start" }}
+                    useFlexGap
+                    spacing={1}
+                    sx={{ ml: 18, mt: 0.5, flexWrap: "wrap", alignItems: "flex-start" }}
                   >
                     {excludeActList.map((item) => (
-                      <EntityChip entityType="activity" label={item} />
+                      <EntityChip
+                        entityType="activity"
+                        label={item}
+                        color="danger"
+                      />
                     ))}
                   </Stack>
                 )}
@@ -424,7 +514,10 @@ export default function SmartEditor({
               <Button
                 color="neutral"
                 sx={{ width: 126 }}
-                onClick={handleCancel}
+                onClick={() => {
+                  handleCloseEditor();
+                  handleCancel();
+                }}
               >
                 Cancel
               </Button>

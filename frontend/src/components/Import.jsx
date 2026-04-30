@@ -8,14 +8,15 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import {
   Box,
   Button,
+  Card,
   DialogTitle,
+  Divider,
+  Chip,
   Modal,
   ModalDialog,
   Typography,
   Stack,
   IconButton,
-  Select,
-  Option,
 } from "@mui/joy";
 
 export default function ImportButton() {
@@ -37,6 +38,7 @@ export default function ImportButton() {
   const [fileType, setFileType] = useState("ocel");
 
   const [open, setOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
 
   const [ocelName, setOcelName] = useState(null);
   const [dfName, setDfName] = useState(null);
@@ -60,6 +62,7 @@ export default function ImportButton() {
     setFileType("ocel");
     setOcelName(null);
     setDfName(null);
+    setCurrentStep(1);
   };
 
   const handleChange = (event) => {
@@ -107,7 +110,7 @@ export default function ImportButton() {
       setObjectTypeList(data.objectTypes);
       setActivityList(data.activities);
       setObjectTypeOverview(data.objectTypeList);
-      setAttrMap(data.attributes);
+      setAttrMapList(data.attributes);
       setProcesses(data.processList);
 
       const processData = data.processData;
@@ -124,10 +127,9 @@ export default function ImportButton() {
     } catch (err) {
       console.error("Fail", err);
       setFileInfo({});
-      setObjectTypes([]);
-      setActivities([]);
       setObjectTypeList([]);
-      setAttrMap({});
+      setActivityList([]);
+      setAttrMapList([]);
       setProcessData([]);
       setProcessAcList([]);
       setProcesses([]);
@@ -136,197 +138,167 @@ export default function ImportButton() {
   };
 
   const ImportPanel = () => {
+    const isStep1 = currentStep === 1;
+    const isStep2 = currentStep === 2;
+
+    const handleStepContinue = () => {
+      if (isStep1) {
+        if (!ocelName) return;
+        setCurrentStep(2);
+        return;
+      }
+      handleContinue();
+      handleClose();
+    };
+
+    const continueLabel = isStep1 ? "Continue" : "Import";
+
     return (
       <Modal open={open} onClose={() => handleClose()}>
-        <ModalDialog sx={{ overflowY: "auto", overflowX: "auto" }}>
+        <ModalDialog sx={{ width: 640, maxWidth: "92vw", overflowY: "auto" }}>
+          <Stack sx={{ mx: 2, mt: 2, mb: 2 }}>
+            <DialogTitle sx={{ fontSize: 22, fontWeight: "bold", p: 0 }}>
+              Import
+            </DialogTitle>
+          </Stack>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mx: 2, mb: 1 }}>
+            <Chip
+              size="sm"
+              variant="soft"
+              color={currentStep >= 1 ? "primary" : "neutral"}
+            >
+              1
+            </Chip>
+            <Typography level="title-sm">Import OCEL</Typography>
+            <Divider sx={{ flex: 1, ml: 1 }} />
+            <Chip
+              size="sm"
+              variant="soft"
+              color={currentStep >= 2 ? "primary" : "neutral"}
+            >
+              2
+            </Chip>
+            <Typography level="title-sm">Import DF (Optional)</Typography>
+          </Stack>
+
+          {isStep1 && (
+            <Card variant="soft" sx={{ mx: 2, mt: 2, p: 2 }}>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                <Chip size="sm" color="primary">
+                  Step 1
+                </Chip>
+                <Typography level="title-sm">Import OCEL</Typography>
+              </Stack>
+              <Box
+                sx={{
+                  borderRadius: "12px",
+                  backgroundColor: "neutral.100",
+                  p: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <AttachFileRoundedIcon sx={{ color: "#a2a2a2ff" }} />
+                  <Typography level="body-sm">
+                    {ocelName ? ocelName : "No OCEL File Uploaded"}
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {ocelName && <CheckCircleRoundedIcon sx={{ color: "#00b140" }} />}
+                  <Button
+                    size="sm"
+                    variant="soft"
+                    color="neutral"
+                    onClick={() => {
+                      setFileType("ocel");
+                      fileInputRef.current.click();
+                    }}
+                  >
+                    Upload OCEL
+                  </Button>
+                </Stack>
+              </Box>
+            </Card>
+          )}
+
+          {isStep2 && (
+            <Card variant="soft" sx={{ mx: 2, mt: 2, p: 2 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+              <Chip size="sm" color="neutral">
+                Step 2
+              </Chip>
+              <Typography level="title-sm">Import Definition File (Optional)</Typography>
+            </Stack>
+            <Stack spacing={1}>
+              <Box
+                sx={{
+                  borderRadius: "12px",
+                  backgroundColor: "neutral.100",
+                  p: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <AttachFileRoundedIcon sx={{ color: "#a2a2a2ff" }} />
+                  <Typography level="body-sm">
+                    {dfName ? dfName : "No Definition File Uploaded"}
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {dfName && <CheckCircleRoundedIcon sx={{ color: "#00b140" }} />}
+                  <Button
+                    size="sm"
+                    variant="soft"
+                    color="neutral"
+                    onClick={() => {
+                      setFileType("df");
+                      fileInputRef.current.click();
+                    }}
+                  >
+                    Upload DF
+                  </Button>
+                </Stack>
+              </Box>
+            </Stack>
+            </Card>
+          )}
+
           <Stack
             direction="row"
             justifyContent="space-between"
-            sx={{ mx: 2, mt: 2, mb: 1 }}
-          >
-            <DialogTitle sx={{ fontSize: 22, fontWeight: "bold" }}>
-              Import
-            </DialogTitle>
-
-            <Select
-              variant="soft"
-              sx={{
-                width: "6rem",
-              }}
-              value={fileType}
-              onChange={(e, newValue) => {
-                setFileType(newValue);
-              }}
-            >
-              <Option value="ocel">OCEL</Option>
-              <Option value="df">DF</Option>
-            </Select>
-          </Stack>
-          <Box
-            sx={{
-              width: "568px",
-              height: "122px",
-              border: "1px dashed #d6d6d6ff",
-              borderRadius: "12px",
-              backgroundColor: "neutral.100",
-              p: 2,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              mx: 2,
-            }}
-          >
-            <IconButton
-              onClick={() => fileInputRef.current.click()}
-              sx={{
-                mb: 0.8,
-                p: 1,
-              }}
-            >
-              <FileOpenOutlinedIcon sx={{ color: "#a2a2a2ff", fontSize: 38 }} />
-            </IconButton>
-            <Typography level="body-lg" fontWeight={500}>
-              Click the Icon to Upload a File
-            </Typography>
-            <Typography level="body-sm" fontSize={14}>
-              Maximum Size: 500MB
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              mx: 2,
-              mt: 1,
-            }}
-          >
-            <Typography
-              level="title-sm"
-              sx={{
-                color: "neutral.600",
-              }}
-            >
-              OCEL
-            </Typography>
-            <Box
-              sx={{
-                width: "568px",
-                height: "18px",
-                borderRadius: "12px",
-                backgroundColor: "neutral.100",
-                p: 2,
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <Stack direction="row" spacing={2} alignItems="center">
-                <AttachFileRoundedIcon sx={{ color: "#a2a2a2ff" }} />
-                <Typography level="body-sm">
-                  {ocelName ? ocelName : "No File Uploaded"}
-                </Typography>
-              </Stack>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                {ocelName && (
-                  <CheckCircleRoundedIcon
-                    sx={{
-                      color: "#00b140",
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              mx: 2,
-              mt: 1,
-            }}
-          >
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography
-                level="title-sm"
-                sx={{
-                  color: "neutral.600",
-                }}
-              >
-                Definition File (DF)
-              </Typography>
-              <Typography
-                level="body-sm"
-                sx={{
-                  color: "neutral.600",
-                }}
-              >
-                Optional
-              </Typography>
-            </Stack>
-            <Box
-              sx={{
-                width: "568px",
-                height: "18px",
-                borderRadius: "12px",
-                backgroundColor: "neutral.100",
-                p: 2,
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <Stack direction="row" spacing={2} alignItems="center">
-                <AttachFileRoundedIcon sx={{ color: "#a2a2a2ff" }} />
-                <Typography level="body-sm">
-                  {dfName ? dfName : "No File Uploaded"}
-                </Typography>
-              </Stack>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                {dfName && (
-                  <CheckCircleRoundedIcon
-                    sx={{
-                      color: "#00b140",
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-          </Box>
-
-          <Stack
-            direction="row"
-            justifyContent="flex-end"
             spacing={3}
             alignItems="center"
             sx={{ mx: 2, mt: 3, mb: 2 }}
           >
+            <Stack direction="row" spacing={1.5}>
+              <Button
+                color="neutral"
+                sx={{ width: 126 }}
+                onClick={() => handleClose()}
+              >
+                Cancel
+              </Button>
+              {currentStep > 1 && (
+                <Button
+                  color="neutral"
+                  variant="outlined"
+                  sx={{ width: 126 }}
+                  onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+                >
+                  Back
+                </Button>
+              )}
+            </Stack>
             <Button
-              color="neutral"
+              disabled={isStep1 && !ocelName}
               sx={{ width: 126 }}
-              onClick={() => handleClose()}
+              onClick={handleStepContinue}
             >
-              Cancel
-            </Button>
-            <Button
-              disabled={!ocelName}
-              sx={{ width: 126 }}
-              onClick={() => {
-                handleContinue();
-                handleClose();
-              }}
-            >
-              Continue
+              {continueLabel}
             </Button>
           </Stack>
         </ModalDialog>
