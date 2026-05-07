@@ -13,6 +13,15 @@ def compatibility_check(ocel, df):
             df_ots.update(list(rule.get('excludeOT', {}).get('entities', [])) or [])
             df_acts.update(list(rule.get('includeAct', {}).get('entities', [])) or [])
             df_acts.update(list(rule.get('excludeAct', {}).get('entities', [])) or [])
+        for trace in process.get('traces', []):
+            df_ots.update(list(trace.get('startOT', [])) or [])
+            df_ots.update(list(trace.get('endOT', [])) or [])
+            df_ots.update(list(trace.get('includeOT', [])) or [])
+            df_ots.update(list(trace.get('excludeOT', [])) or [])
+            df_acts.update(list(trace.get('startAct', [])) or [])
+            df_acts.update(list(trace.get('endAct', [])) or [])
+            df_acts.update(list(trace.get('includeAct', [])) or [])
+            df_acts.update(list(trace.get('excludeAct', [])) or [])
     
     object_types = get_object_types(ocel)
     activities = get_activities(ocel)
