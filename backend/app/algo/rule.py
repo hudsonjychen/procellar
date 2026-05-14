@@ -31,14 +31,15 @@ class Rule:
     ):
         self.parent_process = parent_process
         self.rule_name = rule_name
-        self.include_ot = include_ot
-        self.include_ot_cond = include_ot_cond
-        self.exclude_ot = exclude_ot
-        self.exclude_ot_cond = exclude_ot_cond
-        self.include_act = include_act
-        self.include_act_cond = include_act_cond
-        self.exclude_act = exclude_act
-        self.exclude_act_cond = exclude_act_cond
+        # JSON may use null for empty lists; never store None where we iterate.
+        self.include_ot = list(include_ot or [])
+        self.include_ot_cond = list(include_ot_cond or [])
+        self.exclude_ot = list(exclude_ot or [])
+        self.exclude_ot_cond = list(exclude_ot_cond or [])
+        self.include_act = list(include_act or [])
+        self.include_act_cond = list(include_act_cond or [])
+        self.exclude_act = list(exclude_act or [])
+        self.exclude_act_cond = list(exclude_act_cond or [])
 
     def __repr__(self):
         return (
@@ -76,9 +77,10 @@ class Rule:
     @staticmethod
     def _check_ot_condition(conds, object_type_map, object_attr_map, event):
         context = []
+        conds = conds or []
         if len(conds) > 0:
             for cond in conds:
-                for rel in event['relationships']:
+                for rel in (event.get("relationships") or []):
                     if object_type_map.get(rel.get('objectId')) == cond['entity']:
                         for attr in object_attr_map.get(rel.get('objectId'), []):
                             if attr['name'] == cond['attribute']:
@@ -96,10 +98,11 @@ class Rule:
     @staticmethod
     def _check_act_condition(conds, event):
         context = []
+        conds = conds or []
         if len(conds) > 0:
             for cond in conds:
                 if event['type'] == cond['entity']:
-                    for attr in event['attributes']:
+                    for attr in (event.get("attributes") or []):
                         if attr['name'] == cond['attribute']:
                             op = Rule._operator_convert(cond['operator'])
                             val = Rule._value_convert(cond['operator'])
@@ -113,7 +116,11 @@ class Rule:
             return True
 
     def check_event(self, object_type_map, object_attr_map, event):
-        rel_oid = [rel['objectId'] for rel in event['relationships'] if rel['qualifier'] != 'process']
+        rel_oid = [
+            rel["objectId"]
+            for rel in (event.get("relationships") or [])
+            if rel.get("qualifier") != "process"
+        ]
         rel_ot = [object_type_map[oid] for oid in rel_oid if oid in object_type_map]
 
         # check if all statements are empty, if so, return false

@@ -7,21 +7,31 @@ class CompatibilityError(Exception):
 def compatibility_check(ocel, df):
     df_ots, df_acts = set(), set()
 
-    for process in df:
-        for rule in process.get('rules', []):
-            df_ots.update(list(rule.get('includeOT', {}).get('entities', [])) or [])
-            df_ots.update(list(rule.get('excludeOT', {}).get('entities', [])) or [])
-            df_acts.update(list(rule.get('includeAct', {}).get('entities', [])) or [])
-            df_acts.update(list(rule.get('excludeAct', {}).get('entities', [])) or [])
-        for trace in process.get('traces', []):
-            df_ots.update(list(trace.get('startOT', [])) or [])
-            df_ots.update(list(trace.get('endOT', [])) or [])
-            df_ots.update(list(trace.get('includeOT', [])) or [])
-            df_ots.update(list(trace.get('excludeOT', [])) or [])
-            df_acts.update(list(trace.get('startAct', [])) or [])
-            df_acts.update(list(trace.get('endAct', [])) or [])
-            df_acts.update(list(trace.get('includeAct', [])) or [])
-            df_acts.update(list(trace.get('excludeAct', [])) or [])
+    for process in df or []:
+        if not isinstance(process, dict):
+            continue
+        for rule in (process.get("rules") or []):
+            if not isinstance(rule, dict):
+                continue
+            inc_ot = rule.get("includeOT") or {}
+            exc_ot = rule.get("excludeOT") or {}
+            inc_act = rule.get("includeAct") or {}
+            exc_act = rule.get("excludeAct") or {}
+            df_ots.update(list(inc_ot.get("entities") or []))
+            df_ots.update(list(exc_ot.get("entities") or []))
+            df_acts.update(list(inc_act.get("entities") or []))
+            df_acts.update(list(exc_act.get("entities") or []))
+        for trace in (process.get("traces") or []):
+            if not isinstance(trace, dict):
+                continue
+            df_ots.update(list(trace.get("startOT") or []))
+            df_ots.update(list(trace.get("endOT") or []))
+            df_ots.update(list(trace.get("includeOT") or []))
+            df_ots.update(list(trace.get("excludeOT") or []))
+            df_acts.update(list(trace.get("startAct") or []))
+            df_acts.update(list(trace.get("endAct") or []))
+            df_acts.update(list(trace.get("includeAct") or []))
+            df_acts.update(list(trace.get("excludeAct") or []))
     
     object_types = get_object_types(ocel)
     activities = get_activities(ocel)

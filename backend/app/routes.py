@@ -43,18 +43,16 @@ def _validate_process_data(data):
         if not isinstance(item, dict) or 'processName' not in item:
             return "Invalid format in data"
 
-        has_rules = "rules" in item
-        has_traces = "traces" in item
-        if not has_rules and not has_traces:
-            return "Each process must include either 'rules' or 'traces'"
-        if has_rules and has_traces:
+        rules_list = item.get("rules")
+        traces_list = item.get("traces")
+        rules_ok = isinstance(rules_list, list) and len(rules_list) > 0
+        traces_ok = isinstance(traces_list, list) and len(traces_list) > 0
+
+        if not rules_ok and not traces_ok:
+            return "Each process must include a non-empty 'rules' or 'traces' list"
+
+        if rules_ok and traces_ok:
             return "Each process must include only one of 'rules' or 'traces'"
-
-        if has_rules and not isinstance(item.get("rules"), list):
-            return "'rules' must be a list"
-
-        if has_traces and not isinstance(item.get("traces"), list):
-            return "'traces' must be a list"
 
     return None
 
@@ -168,7 +166,14 @@ def _run_upload_pipeline(temp_path, df_path=None, progress_callback=None, should
     _progress(100, "Done")
 
 
-def _run_process_data(data, deleted_processes, source_file=None, progress_callback=None, should_cancel=None):
+def _run_process_data(
+    data,
+    deleted_processes,
+    source_file=None,
+    progress_callback=None,
+    should_cancel=None,
+    scan_progress_callback=None,
+):
     file = source_file if source_file is not None else cachedFile['json']['original']
     if file is None:
         raise ValueError("No uploaded OCEL found")
@@ -206,6 +211,7 @@ def _run_process_data(data, deleted_processes, source_file=None, progress_callba
             else None
         ),
         should_cancel=should_cancel,
+        scan_progress_callback=scan_progress_callback,
     )
     cachedDeletedProcesses.clear()
     cachedDeletedProcesses.extend(deleted_processes)
@@ -346,6 +352,7 @@ def process_data_async():
             "status": "queued",
             "progress": 0,
             "message": "Queued",
+            "scan_progress": None,
             "eta_seconds": None,
             "error": None,
             "cancel_requested": False,
@@ -355,25 +362,44 @@ def process_data_async():
 
     def worker():
         try:
-            _set_task(task_id, status="running", progress=5, message="Starting")
+            _set_task(task_id, status="running", progress=5, message="Starting", scan_progress=None)
+
+            def scan_cb(p: float):
+                _set_task(task_id, scan_progress=max(0, min(100, int(100 * p))))
+
             _run_process_data(
                 data,
                 deleted_processes,
                 source_file=source_file,
-                progress_callback=lambda progress, msg: _set_task(task_id, progress=progress, message=msg),
+                progress_callback=lambda progress, msg: _set_task(
+                    task_id, progress=progress, message=msg
+                ),
+                scan_progress_callback=scan_cb,
                 should_cancel=lambda: _is_cancelled(task_id),
             )
-            _set_task(task_id, status="completed", progress=100, message="Completed")
+            _set_task(
+                task_id,
+                status="completed",
+                progress=100,
+                message="Completed",
+                scan_progress=None,
+            )
         except CompatibilityError as e:
-            _set_task(task_id, status="incompatible", error=str(e), message=str(e))
+            _set_task(
+                task_id,
+                status="incompatible",
+                error=str(e),
+                message=str(e),
+                scan_progress=None,
+            )
         except RuntimeError as e:
             if str(e) == "Processing cancelled":
-                _set_task(task_id, status="cancelled", message="Cancelled by user")
+                _set_task(task_id, status="cancelled", message="Cancelled by user", scan_progress=None)
             else:
-                _set_task(task_id, status="failed", error=str(e), message="Processing failed")
+                _set_task(task_id, status="failed", error=str(e), message="Processing failed", scan_progress=None)
         except Exception as e:
             traceback.print_exc()
-            _set_task(task_id, status="failed", error=str(e), message="Processing failed")
+            _set_task(task_id, status="failed", error=str(e), message="Processing failed", scan_progress=None)
 
     threading.Thread(target=worker, daemon=True).start()
     return jsonify({"taskId": task_id}), 202

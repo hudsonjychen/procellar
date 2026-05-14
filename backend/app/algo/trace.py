@@ -1,8 +1,10 @@
-from typing import Dict, List, Set
+from typing import Callable, Dict, Hashable, List, Optional, Set
 
 from pm4py.objects.ocel.obj import OCEL
 
+from .edges import list_event_edges
 from .match import match_events
+from .scan import scan_edges
 
 
 class TraceRule:
@@ -21,14 +23,14 @@ class TraceRule:
     ):
         self.parent_process = parent_process
         self.trace_name = trace_name
-        self.start_ot = start_ot
-        self.start_act = start_act
-        self.end_ot = end_ot
-        self.end_act = end_act
-        self.include_ot = include_ot
-        self.include_act = include_act
-        self.exclude_ot = exclude_ot
-        self.exclude_act = exclude_act
+        self.start_ot = list(start_ot or [])
+        self.start_act = list(start_act or [])
+        self.end_ot = list(end_ot or [])
+        self.end_act = list(end_act or [])
+        self.include_ot = list(include_ot or [])
+        self.include_act = list(include_act or [])
+        self.exclude_ot = list(exclude_ot or [])
+        self.exclude_act = list(exclude_act or [])
 
     def __repr__(self):
         return (
@@ -64,40 +66,58 @@ class TraceRule:
             "end": end_matches["end"],
         }
     
-    def get_traces(self, ocel: OCEL, traces):
+    def get_traces(
+        self,
+        ocel: OCEL,
+        scan_progress_callback: Optional[Callable[[float], None]] = None,
+        should_cancel: Optional[Callable[[], bool]] = None,
+    ) -> Set[Hashable]:
+        """
+        Resolve matched event ids via the object-centric edge graph: ``list_event_edges``
+        plus ``scan_edges`` from start/end event sets (same start/end criteria as before).
+
+        ``scan_progress_callback`` receives values in ``[0.0, 1.0]`` for the combined
+        match + edge build + scan phases when provided.
+        """
+        if scan_progress_callback:
+            scan_progress_callback(0.0)
+
         matched_events = self._match_events_by_entities(ocel)
         start_event_ids = matched_events["start"]
         end_event_ids = matched_events["end"]
 
-        recorded_event_ids: Set[str] = set()
+        if scan_progress_callback:
+            scan_progress_callback(0.06)
 
-        for object_type_traces in traces.values():
-            for trace in object_type_traces:
-                if not trace:
-                    continue
+        if should_cancel and should_cancel():
+            raise RuntimeError("Processing cancelled")
 
-                start_index = None
-                for idx, event in enumerate(trace):
-                    event_id = event.get(ocel.event_id_column)
-                    if event_id in start_event_ids:
-                        start_index = idx
-                        break
+        edges = list_event_edges(
+            ocel,
+            progress_callback=(
+                (lambda t: scan_progress_callback(0.06 + 0.44 * t))
+                if scan_progress_callback
+                else None
+            ),
+            should_cancel=should_cancel,
+        )
 
-                end_index = None
-                for idx in range(len(trace) - 1, -1, -1):
-                    event_id = trace[idx].get(ocel.event_id_column)
-                    if event_id in end_event_ids:
-                        end_index = idx
-                        break
+        if scan_progress_callback:
+            scan_progress_callback(0.5)
 
-                if (
-                    start_index is not None
-                    and end_index is not None
-                    and start_index < end_index
-                ):
-                    for event in trace[start_index : end_index + 1]:
-                        event_id = event.get(ocel.event_id_column)
-                        if event_id is not None:
-                            recorded_event_ids.add(event_id)
+        result = scan_edges(
+            edges,
+            start_event_ids,
+            end_event_ids,
+            progress_callback=(
+                (lambda t: scan_progress_callback(0.5 + 0.5 * t))
+                if scan_progress_callback
+                else None
+            ),
+            should_cancel=should_cancel,
+        )
 
-        return recorded_event_ids
+        if scan_progress_callback:
+            scan_progress_callback(1.0)
+
+        return result

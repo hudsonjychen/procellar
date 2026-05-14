@@ -13,6 +13,7 @@ export default function ExportButton() {
     const [status, setStatus] = useState("idle");
     const [progress, setProgress] = useState(0);
     const [message, setMessage] = useState("");
+    const [scanProgress, setScanProgress] = useState(null);
     const [etaSeconds, setEtaSeconds] = useState(null);
     const [errorText, setErrorText] = useState("");
     const pollTimerRef = useRef(null);
@@ -66,6 +67,9 @@ export default function ExportButton() {
                 setStatus(task.status);
                 setProgress(task.progress ?? 0);
                 setMessage(task.message ?? "");
+                setScanProgress(
+                    typeof task.scan_progress === "number" ? task.scan_progress : null
+                );
                 setEtaSeconds(task.eta_seconds ?? null);
 
                 if (task.status === "completed") {
@@ -73,14 +77,17 @@ export default function ExportButton() {
                     await finalizeDownload();
                     setOpen(false);
                     setTaskId(null);
+                    setScanProgress(null);
                 } else if (["failed", "cancelled", "incompatible"].includes(task.status)) {
                     stopPolling();
                     setErrorText(task.error || task.message || "Export failed");
+                    setScanProgress(null);
                 }
             } catch (err) {
                 stopPolling();
                 setErrorText("Failed to poll export status");
                 setStatus("failed");
+                setScanProgress(null);
             }
         }, 1000);
 
@@ -94,6 +101,7 @@ export default function ExportButton() {
         try {
             setErrorText("");
             setProgress(0);
+            setScanProgress(null);
             setEtaSeconds(null);
             setStatus("queued");
             setMessage("Queued");
@@ -159,6 +167,21 @@ export default function ExportButton() {
                         <Typography level="body-xs">
                             {Math.round(progress)}% • ETA: {formatEta(etaSeconds)}
                         </Typography>
+                        {typeof scanProgress === "number" ? (
+                            <Stack spacing={0.5} sx={{ mt: 1 }}>
+                                <Typography level="body-xs" color="neutral">
+                                    Scanning traces
+                                </Typography>
+                                <LinearProgress
+                                    determinate
+                                    value={Math.max(0, Math.min(100, scanProgress))}
+                                    color="primary"
+                                />
+                                <Typography level="body-xs" color="neutral">
+                                    {Math.round(scanProgress)}%
+                                </Typography>
+                            </Stack>
+                        ) : null}
                         {errorText ? (
                             <Typography level="body-sm" color="danger">{errorText}</Typography>
                         ) : null}
@@ -174,7 +197,7 @@ export default function ExportButton() {
                                 </Button>
                             )}
                             {["failed", "cancelled", "incompatible"].includes(status) ? (
-                                <Button color="neutral" onClick={() => { setOpen(false); setTaskId(null); }}>
+                                <Button color="neutral" onClick={() => { setOpen(false); setTaskId(null); setScanProgress(null); }}>
                                     Close
                                 </Button>
                             ) : null}
