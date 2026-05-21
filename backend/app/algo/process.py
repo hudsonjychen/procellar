@@ -1,5 +1,7 @@
 from typing import Callable, Optional
 
+from .edges import list_event_edges
+from .ids import canonical_event_id
 from .rule import Rule
 from .trace import TraceRule
 
@@ -18,6 +20,36 @@ def _ensure_event_log_structure(event_log: dict) -> None:
         event_log["objects"] = []
     if event_log.get("events") is None:
         event_log["events"] = []
+
+
+def _trace_entity_list(value) -> list:
+    """
+    Normalize trace rule object-type / activity fields from the UI or definition JSON.
+
+    Accepts ``string[]`` (normal editor), a single string, or ``{"entities": [...]}`` as
+    used for standard rules. Without this, a bare string becomes ``list(str)`` (per-char
+    garbage), and dict payloads yield wrong matches so activity-based traces never link.
+    """
+    if value is None:
+        return []
+    if isinstance(value, str):
+        s = value.strip()
+        return [s] if s else []
+    if isinstance(value, list):
+        out: list[str] = []
+        for x in value:
+            if x is None:
+                continue
+            sx = str(x).strip()
+            if sx:
+                out.append(sx)
+        return out
+    if isinstance(value, dict):
+        ent = value.get("entities")
+        if isinstance(ent, list):
+            return _trace_entity_list(ent)
+        return []
+    return []
 
 
 def _json_event_id(event: dict, ocel) -> object:
@@ -196,56 +228,74 @@ class TraceProcess:
         return TraceRule(
             parent_process=rule_data.get("parentProcess"),
             trace_name=rule_data.get("traceName"),
-            start_ot=rule_data.get("startOT") or [],
-            start_act=rule_data.get("startAct") or [],
-            end_ot=rule_data.get("endOT") or [],
-            end_act=rule_data.get("endAct") or [],
-            include_ot=rule_data.get("includeOT") or [],
-            include_act=rule_data.get("includeAct") or [],
-            exclude_ot=rule_data.get("excludeOT") or [],
-            exclude_act=rule_data.get("excludeAct") or [],
+            start_ot=_trace_entity_list(rule_data.get("startOT")),
+            start_act=_trace_entity_list(rule_data.get("startAct")),
+            end_ot=_trace_entity_list(rule_data.get("endOT")),
+            end_act=_trace_entity_list(rule_data.get("endAct")),
+            include_ot=_trace_entity_list(rule_data.get("includeOT")),
+            include_act=_trace_entity_list(rule_data.get("includeAct")),
+            exclude_ot=_trace_entity_list(rule_data.get("excludeOT")),
+            exclude_act=_trace_entity_list(rule_data.get("excludeAct")),
         )
 
     def _precompute_rule_matches(
         self,
         ocel,
+        edges=None,
         should_cancel=None,
         scan_progress_callback: Optional[Callable[[float], None]] = None,
     ):
         """
-        Each value is the **exact** set of event ids returned by ``TraceRule.get_traces``
-        (``list_event_edges`` + ``scan_edges``). ``TraceProcess.apply_rules`` only checks
-        membership in these sets when attaching ``qualifier: process`` links.
+        Each value is the set of event ids from ``TraceRule.get_traces``
+        (``list_event_edges`` + ``scan_edges``). ``apply_rules`` checks membership when
+        attaching ``qualifier: process`` links.
         """
         matches = {}
         n_rules = len(self.rules) or 1
+        precompute_share = 0.9
+
+        def report_local(t: float) -> None:
+            """``t`` in [0, 1] for this process only (``update`` maps it globally)."""
+            if scan_progress_callback:
+                scan_progress_callback(max(0.0, min(1.0, t)))
+
+        if edges is None:
+            edges = list_event_edges(
+                ocel,
+                progress_callback=(
+                    (lambda t: report_local(0.05 + 0.25 * t)) if scan_progress_callback else None
+                ),
+                should_cancel=should_cancel,
+            )
+            report_local(0.30)
+
         for ri, rule_data in enumerate(self.rules):
             if should_cancel and should_cancel():
                 raise RuntimeError("Processing cancelled")
             trace_rule = self._build_trace_rule(rule_data)
 
             def sub_cb(t: float, r: int = ri) -> None:
-                if scan_progress_callback:
-                    scan_progress_callback((r + t) / n_rules)
+                report_local(precompute_share * (r + t) / n_rules)
 
             raw_ids = trace_rule.get_traces(
                 ocel=ocel,
+                edges=edges,
                 scan_progress_callback=sub_cb if scan_progress_callback else None,
                 should_cancel=should_cancel,
             )
-            # Stable dict key + str ids so JSON / pm4py / pandas scalar ids all match.
             trace_key = (
                 trace_rule.trace_name
                 if trace_rule.trace_name is not None
                 else f"__trace_rule_{ri}"
             )
-            matches[trace_key] = {str(x) for x in raw_ids}
+            matches[trace_key] = set(raw_ids)
+
+        report_local(precompute_share)
         return matches
 
     def apply_rules(self, ocel, rule_matches, event):
         context = dict()
-        event_id = _json_event_id(event, ocel)
-        eid = None if event_id is None else str(event_id)
+        eid = canonical_event_id(_json_event_id(event, ocel))
         for trace_name, matched_event_ids in rule_matches.items():
             context[trace_name] = eid is not None and eid in matched_event_ids
         return context
@@ -279,19 +329,28 @@ class TraceProcess:
         ocel,
         event_log,
         deleted_processes,
+        edges=None,
         should_cancel=None,
         scan_progress_callback: Optional[Callable[[float], None]] = None,
     ):
         rule_matches = self._precompute_rule_matches(
             ocel=ocel,
+            edges=edges,
             should_cancel=should_cancel,
             scan_progress_callback=scan_progress_callback,
         )
-        for event in event_log.get("events") or []:
+        events = event_log.get("events") or []
+        n_events = len(events) or 1
+        stamp_share = 0.1
+        for ei, event in enumerate(events):
             if should_cancel and should_cancel():
                 raise RuntimeError("Processing cancelled")
+            if scan_progress_callback and ei % max(1, n_events // 50) == 0:
+                scan_progress_callback(0.9 + stamp_share * (ei / n_events))
             TraceProcess.clear_process_event(event=event, deleted_processes=deleted_processes)
             context = self.apply_rules(ocel=ocel, rule_matches=rule_matches, event=event)
             self.update_event(context=context, event=event)
 
+        if scan_progress_callback:
+            scan_progress_callback(1.0)
         self.update_objects(event_log.get("objects") or [])

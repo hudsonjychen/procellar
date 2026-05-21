@@ -5,6 +5,7 @@ import json
 import os
 import tempfile
 from .map import map_object_id_to_type
+from .edges import list_event_edges
 from .process import RuleProcess, TraceProcess, _ensure_event_log_structure
 
 def _load_json(path):
@@ -65,7 +66,6 @@ def _update_event_log(
     )
     ocel = _to_ocel(event_log) if has_trace_processes else None
     _progress(0.15)
-    _progress(0.40)
 
     total = len(process_data or []) or 1
     n_trace_targets = sum(
@@ -76,6 +76,24 @@ def _update_event_log(
         and len(p.get("traces") or []) > 0
         and ocel is not None
     )
+
+    shared_edges = None
+    edge_share = 0.28 if n_trace_targets else 0.0
+    if ocel is not None and n_trace_targets > 0:
+
+        def _edges_progress(t: float) -> None:
+            if scan_progress_callback:
+                scan_progress_callback(edge_share * t)
+
+        shared_edges = list_event_edges(
+            ocel,
+            progress_callback=_edges_progress if scan_progress_callback else None,
+            should_cancel=should_cancel,
+        )
+        if scan_progress_callback:
+            scan_progress_callback(edge_share)
+
+    _progress(0.40)
     trace_pass = 0
 
     for idx, p in enumerate(process_data or []):
@@ -111,14 +129,19 @@ def _update_event_log(
             )
             base_idx = trace_pass
 
+            rule_share = 1.0 - edge_share
+
             def wrapped_scan(t: float, base: int = base_idx) -> None:
                 if scan_progress_callback and n_trace_targets:
-                    scan_progress_callback((base + t) / n_trace_targets)
+                    scan_progress_callback(
+                        edge_share + rule_share * ((base + t) / n_trace_targets)
+                    )
 
             process.update(
                 ocel=ocel,
                 event_log=event_log,
                 deleted_processes=deleted_processes,
+                edges=shared_edges,
                 should_cancel=should_cancel,
                 scan_progress_callback=wrapped_scan if scan_progress_callback else None,
             )

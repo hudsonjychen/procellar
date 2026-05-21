@@ -1,13 +1,73 @@
 from collections import defaultdict
 from typing import Any, Callable, DefaultDict, Hashable, Iterable, List, Optional, Set, Tuple
 
+from .ids import canonical_event_id, canonical_event_id_set
 
-def _last_end_index(path: List[Hashable], end_set: Set[Hashable]) -> Optional[int]:
+
+def _build_outgoing(
+    edges: List[Tuple[Hashable, Hashable]],
+) -> DefaultDict[str, List[str]]:
+    """Directed adjacency on canonical event-id strings."""
+    outgoing: DefaultDict[str, List[str]] = defaultdict(list)
+    for u, v in edges:
+        cu = canonical_event_id(u)
+        cv = canonical_event_id(v)
+        if cu is None or cv is None or cu == cv:
+            continue
+        if cv not in outgoing[cu]:
+            outgoing[cu].append(cv)
+    return outgoing
+
+
+def _last_end_index(path: List[str], end_set: Set[str]) -> Optional[int]:
     last: Optional[int] = None
     for i, e in enumerate(path):
         if e in end_set:
             last = i
     return last
+
+
+def _dfs_branches(
+    outgoing: DefaultDict[str, List[str]],
+    end_set: Set[str],
+    prefix: List[str],
+    vis: Set[str],
+    nbrs: List[str],
+    global_events: Set[str],
+    tick: Callable[[], None],
+) -> None:
+    """Explore branches when out-degree > 1 (prefix is the path up to the branch node)."""
+    stack: List[List[Any]] = [
+        [list(prefix), set(vis), list(nbrs), 0],
+    ]
+    while stack:
+        tick()
+        fr = stack[-1]
+        path: List[str] = fr[0]
+        branch_vis: Set[str] = fr[1]
+        branch_nbrs: List[str] = fr[2]
+        advanced = False
+        while fr[3] < len(branch_nbrs):
+            tick()
+            nxt = branch_nbrs[fr[3]]
+            fr[3] += 1
+            if nxt in branch_vis:
+                continue
+            stack.append(
+                [
+                    path + [nxt],
+                    branch_vis | {nxt},
+                    list(outgoing.get(nxt, ())),
+                    0,
+                ]
+            )
+            advanced = True
+            break
+        if not advanced:
+            stack.pop()
+            le = _last_end_index(path, end_set)
+            if le is not None:
+                global_events.update(path[: le + 1])
 
 
 def scan_edges(
@@ -16,75 +76,75 @@ def scan_edges(
     end_events: Iterable[Hashable],
     progress_callback: Optional[Callable[[float], None]] = None,
     should_cancel: Optional[Callable[[], bool]] = None,
-) -> Set[Hashable]:
+) -> Set[str]:
     """
-    Walk the directed graph defined by ``edges`` from each start event in depth-first
-    order (each outgoing edge is explored in its own branch).
-
-    For each completed branch (no further outgoing edges to unvisited nodes, or only
-    cycle edges left):
-
-    - If no event on that path lies in ``end_events``, nothing from that branch is kept.
-    - Otherwise, every event id from the path's initial start through the **last**
-      occurrence of an end event on that path (inclusive) is added to a global set.
-
-    ``progress_callback`` receives ``[0.0, 1.0]`` while scanning (per completed start root).
-
-    Returns that global set of event ids.
+    Walk the graph from each start event. Uses fast single-successor chain walks
+    (typical for object timelines); full branch DFS only when out-degree > 1.
     """
     edges = edges or []
-    start_events = start_events or []
-    end_events = end_events or []
+    outgoing = _build_outgoing(edges)
+    end_set = canonical_event_id_set(end_events)
 
-    outgoing: DefaultDict[Hashable, List[Hashable]] = defaultdict(list)
-    for u, v in edges:
-        outgoing[u].append(v)
+    start_list: List[str] = []
+    for s in start_events or []:
+        cs = canonical_event_id(s)
+        if cs is not None and cs not in start_list:
+            start_list.append(cs)
 
-    end_set = set(end_events)
-    global_events: Set[Hashable] = set()
-
-    unique_starts = list(dict.fromkeys(start_events))
-    n_starts = len(unique_starts)
+    global_events: Set[str] = set()
+    n_starts = len(start_list)
 
     if progress_callback:
         progress_callback(0.0)
 
     ops = 0
 
-    def tick() -> None:
+    def tick(si: int = 0) -> None:
         nonlocal ops
         ops += 1
-        if should_cancel and ops % 4096 == 0 and should_cancel():
+        if should_cancel and ops % 8192 == 0 and should_cancel():
             raise RuntimeError("Processing cancelled")
+        if progress_callback and n_starts > 0 and ops % 2048 == 0:
+            progress_callback(min(1.0, (si + 0.25) / n_starts))
 
-    def commit_path(path: List[Hashable]) -> None:
-        le = _last_end_index(path, end_set)
-        if le is not None:
-            global_events.update(path[: le + 1])
+    for si, s in enumerate(start_list):
+        if progress_callback and n_starts > 0:
+            progress_callback(si / n_starts)
+        tick(si)
+        path: List[str] = [s]
+        vis: Set[str] = {s}
+        cur = s
+        branched = False
 
-    # Explicit stack (path, visited, neighbors, next_idx) — avoids RecursionError on long paths.
-    for si, s in enumerate(unique_starts):
-        tick()
-        stack: List[List[Any]] = [
-            [[s], {s}, list(outgoing.get(s, ())), 0],
-        ]
-        while stack:
-            tick()
-            fr = stack[-1]
-            path, vis, nbrs, _idx = fr[0], fr[1], fr[2], fr[3]
-            advanced = False
-            while fr[3] < len(nbrs):
-                tick()
-                nxt = nbrs[fr[3]]
-                fr[3] += 1
-                if nxt in vis:
-                    continue
-                stack.append([path + [nxt], vis | {nxt}, list(outgoing.get(nxt, ())), 0])
-                advanced = True
+        while True:
+            tick(si)
+            nbrs = outgoing.get(cur, ())
+            if not nbrs:
                 break
-            if not advanced:
-                stack.pop()
-                commit_path(path)
+            if len(nbrs) > 1:
+                _dfs_branches(
+                    outgoing,
+                    end_set,
+                    path,
+                    vis,
+                    nbrs,
+                    global_events,
+                    lambda: tick(si),
+                )
+                branched = True
+                break
+            nxt = nbrs[0]
+            if nxt in vis:
+                break
+            path.append(nxt)
+            vis.add(nxt)
+            cur = nxt
+
+        if not branched:
+            le = _last_end_index(path, end_set)
+            if le is not None:
+                global_events.update(path[: le + 1])
+
         if progress_callback and n_starts > 0:
             progress_callback((si + 1) / n_starts)
 

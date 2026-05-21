@@ -161,15 +161,19 @@ export default function ImportButton() {
           stopPolling();
           const dataRes = await fetch("http://localhost:5001/get_data");
           const data = await dataRes.json();
-          setFileInfo(data.fileInfo);
-          setObjectTypeList(data.objectTypes);
-          setActivityList(data.activities);
-          setObjectTypeOverview(data.objectTypeList);
-          setAttrMapList(data.attributes);
-          setProcesses(data.processList);
+          setFileInfo(data.fileInfo ?? {});
+          setObjectTypeList(Array.isArray(data.objectTypes) ? data.objectTypes : []);
+          setActivityList(Array.isArray(data.activities) ? data.activities : []);
+          setObjectTypeOverview(
+            Array.isArray(data.objectTypeList) ? data.objectTypeList : [],
+          );
+          setAttrMapList(Array.isArray(data.attributes) ? data.attributes : []);
+          setProcesses(Array.isArray(data.processList) ? data.processList : []);
 
-          const processData = data.processData;
-          const processAcList = processData.map((item) => ({ title: item.processName }));
+          const processData = Array.isArray(data.processData) ? data.processData : [];
+          const processAcList = processData.map((item) => ({
+            title: item.processName,
+          }));
           setProcessData(processData);
           setProcessStoreData(processData);
           setProcessAcList(processAcList);

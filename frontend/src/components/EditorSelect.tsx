@@ -117,7 +117,7 @@ export default function EditorSelect({
                 textAlign="center"
                 textColor="text.tertiary"
               >
-                Using start/end entities to build traces.
+                Using start/end entities to build rules.
               </Typography>
             </CardContent>
           </Card>

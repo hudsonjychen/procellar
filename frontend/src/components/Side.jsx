@@ -221,9 +221,8 @@ export default function Side() {
             <List sx={{ ml: 4.5 }}>
               {objectTypeOverview.length ? (
                 objectTypeOverview.map((item, index) => (
-                  <Box>
+                  <Box key={item.name}>
                     <ListItem
-                      key={item.name}
                       sx={{
                         display: "flex",
                         justifyContent: "space-between",

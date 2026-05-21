@@ -1,4 +1,5 @@
 from .entity import get_object_types, get_activities
+from .process import _trace_entity_list
 
 class CompatibilityError(Exception):
     pass
@@ -24,14 +25,14 @@ def compatibility_check(ocel, df):
         for trace in (process.get("traces") or []):
             if not isinstance(trace, dict):
                 continue
-            df_ots.update(list(trace.get("startOT") or []))
-            df_ots.update(list(trace.get("endOT") or []))
-            df_ots.update(list(trace.get("includeOT") or []))
-            df_ots.update(list(trace.get("excludeOT") or []))
-            df_acts.update(list(trace.get("startAct") or []))
-            df_acts.update(list(trace.get("endAct") or []))
-            df_acts.update(list(trace.get("includeAct") or []))
-            df_acts.update(list(trace.get("excludeAct") or []))
+            df_ots.update(_trace_entity_list(trace.get("startOT")))
+            df_ots.update(_trace_entity_list(trace.get("endOT")))
+            df_ots.update(_trace_entity_list(trace.get("includeOT")))
+            df_ots.update(_trace_entity_list(trace.get("excludeOT")))
+            df_acts.update(_trace_entity_list(trace.get("startAct")))
+            df_acts.update(_trace_entity_list(trace.get("endAct")))
+            df_acts.update(_trace_entity_list(trace.get("includeAct")))
+            df_acts.update(_trace_entity_list(trace.get("excludeAct")))
     
     object_types = get_object_types(ocel)
     activities = get_activities(ocel)

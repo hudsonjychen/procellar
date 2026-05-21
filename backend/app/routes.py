@@ -365,7 +365,10 @@ def process_data_async():
             _set_task(task_id, status="running", progress=5, message="Starting", scan_progress=None)
 
             def scan_cb(p: float):
-                _set_task(task_id, scan_progress=max(0, min(100, int(100 * p))))
+                _set_task(
+                    task_id,
+                    scan_progress=max(0, min(100, round(100 * p))),
+                )
 
             _run_process_data(
                 data,

@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Hashable, List, Optional, Set
+from typing import Callable, Dict, Hashable, List, Optional, Set, Tuple
 
 from pm4py.objects.ocel.obj import OCEL
 
@@ -47,7 +47,7 @@ class TraceRule:
             f"exclude_act={self.exclude_act!r}, "
             ")"
         )
-    
+
     def _match_events_by_entities(self, ocel: OCEL) -> Dict[str, Set[str]]:
         start_matches = match_events(
             ocel=ocel,
@@ -65,19 +65,17 @@ class TraceRule:
             "start": start_matches["start"],
             "end": end_matches["end"],
         }
-    
+
     def get_traces(
         self,
         ocel: OCEL,
+        edges: Optional[List] = None,
         scan_progress_callback: Optional[Callable[[float], None]] = None,
         should_cancel: Optional[Callable[[], bool]] = None,
     ) -> Set[Hashable]:
         """
-        Resolve matched event ids via the object-centric edge graph: ``list_event_edges``
-        plus ``scan_edges`` from start/end event sets (same start/end criteria as before).
-
-        ``scan_progress_callback`` receives values in ``[0.0, 1.0]`` for the combined
-        match + edge build + scan phases when provided.
+        1. ``match_events`` — start / end event ids.
+        2. ``scan_edges`` on pre-built edges (built once per process in ``TraceProcess``).
         """
         if scan_progress_callback:
             scan_progress_callback(0.0)
@@ -87,30 +85,20 @@ class TraceRule:
         end_event_ids = matched_events["end"]
 
         if scan_progress_callback:
-            scan_progress_callback(0.06)
+            scan_progress_callback(0.15)
 
         if should_cancel and should_cancel():
             raise RuntimeError("Processing cancelled")
 
-        edges = list_event_edges(
-            ocel,
-            progress_callback=(
-                (lambda t: scan_progress_callback(0.06 + 0.44 * t))
-                if scan_progress_callback
-                else None
-            ),
-            should_cancel=should_cancel,
-        )
-
-        if scan_progress_callback:
-            scan_progress_callback(0.5)
+        if edges is None:
+            edges = list_event_edges(ocel, should_cancel=should_cancel)
 
         result = scan_edges(
             edges,
             start_event_ids,
             end_event_ids,
             progress_callback=(
-                (lambda t: scan_progress_callback(0.5 + 0.5 * t))
+                (lambda t: scan_progress_callback(0.15 + 0.85 * t))
                 if scan_progress_callback
                 else None
             ),

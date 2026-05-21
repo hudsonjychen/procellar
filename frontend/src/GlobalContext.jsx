@@ -22,23 +22,29 @@ export const GlobalProvider = ({ children }) => {
     {/* operators for logic editor */}
     const [ops, setOps] = useState({});
 
-    {/* innitialization for ops {processName: []} */}
+    {/* Logic-editor operators between rules: { processName: ('and'|'or')[] } */}
     useEffect(() => {
-
-        setOps(prevOps => {
+        setOps((prevOps) => {
             const updatedOps = { ...prevOps };
 
-            processData.forEach(process => {
-                const key = process.processName;
+            (Array.isArray(processData) ? processData : []).forEach((process) => {
+                const key = process?.processName;
+                if (!key) return;
 
-                if (!prevOps[key] || prevOps[key].length !== process.rules.length - 1) {
-                    updatedOps[key] = Array.from({ length: process.rules.length - 1 }, () => 'or');
+                const rules = Array.isArray(process.rules) ? process.rules : null;
+                if (!rules) {
+                    return;
+                }
+
+                const opCount = Math.max(0, rules.length - 1);
+                if (!prevOps[key] || prevOps[key].length !== opCount) {
+                    updatedOps[key] = Array.from({ length: opCount }, () => "or");
                 }
             });
 
             return updatedOps;
         });
-    }, [processData])
+    }, [processData]);
 
     {/* below is for advanced logic editor */}
     {/* logic data */}
