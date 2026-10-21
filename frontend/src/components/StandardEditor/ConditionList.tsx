@@ -1,71 +1,53 @@
 import { Stack, Box, Select, Option, Input, IconButton } from "@mui/joy";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import React from "react";
-import { useEffect, useState } from "react";
-import {
-  ActionType,
-  Attribute,
-  AttributeMapList,
-  EntityList,
-  SelectedConditions,
-  SelectedEntities,
-} from "./types";
+import { AttributeMapList, Condition, DraftSelector, EntityType } from "./types";
 import { operatorMap, placeholderMap } from "./constants";
 
-interface ConditionEditorProps {
-  handleDelete: () => void;
-  action: ActionType;
-  id: number;
-  selectedConditions: SelectedConditions;
-  setSelectedConditions: React.Dispatch<
-    React.SetStateAction<SelectedConditions>
-  >;
+const encodeEntity = (type: EntityType, name: string) => `${type}::${name}`;
+const decodeEntity = (value: string) => {
+  const index = value.indexOf("::");
+  return {
+    type: value.slice(0, index) as EntityType,
+    entity: value.slice(index + 2),
+  };
+};
+
+interface ConditionRowProps {
+  selector: DraftSelector;
+  condition: Condition;
   attrMapList: AttributeMapList;
-  includeOT: EntityList;
-  includeAct: EntityList;
-  excludeOT: EntityList;
-  excludeAct: EntityList;
+  onChange: (patch: Partial<Condition>) => void;
+  onDelete: () => void;
 }
 
-const ConditionEditor = ({
-  handleDelete,
-  action,
-  id,
-  selectedConditions,
-  setSelectedConditions,
+const ConditionRow = ({
+  selector,
+  condition,
   attrMapList,
-  includeOT,
-  includeAct,
-  excludeOT,
-  excludeAct,
-}: ConditionEditorProps) => {
-  const condition = selectedConditions[action].find((item) => item.id === id);
-  const [attrOptions, setAttrOptions] = useState<Attribute[]>([]);
-  const [opOptions, setOpOptions] = useState<string[]>([]);
-  const [input, setInput] = useState<string>(condition?.value ?? "");
-
-  useEffect(() => {
-    if (condition?.entity) {
-      const matched = attrMapList.find(
-        (item) => item.name === condition?.entity,
-      );
-      if (matched) {
-        setAttrOptions(matched.attributes);
-      }
-    }
-  }, [condition?.entity]);
-
-  useEffect(() => {
-    if (condition?.attribute) {
-      const matched = attrOptions.find(
-        (item) => item.name === condition.attribute,
-      );
-      if (matched && operatorMap[matched?.type]) {
-        setOpOptions(operatorMap[matched.type]);
-      }
-    }
-  }, [condition?.attribute, attrOptions]);
+  onChange,
+  onDelete,
+}: ConditionRowProps) => {
+  const entityOptions = [
+    ...(selector.activity
+      ? [{ type: "activity" as EntityType, name: selector.activity }]
+      : []),
+    ...selector.objectTypes.map((name) => ({
+      type: "objectType" as EntityType,
+      name,
+    })),
+  ];
+  const attrOptions =
+    attrMapList.find(
+      (item) =>
+        item.name === condition.entity &&
+        item.type ===
+          (condition.type === "activity" ? "eventType" : "objectType"),
+    )?.attributes ?? [];
+  const attrType = attrOptions.find(
+    (item) => item.name === condition.attribute,
+  )?.type;
+  const opOptions = attrType ? (operatorMap[attrType] ?? []) : [];
 
   return (
     <Stack
@@ -73,9 +55,9 @@ const ConditionEditor = ({
       justifyContent="space-between"
       alignItems="center"
       spacing={1}
-      sx={{ pt: 1, pb: 1 }}
+      sx={{ pt: 0.5, pb: 0.5 }}
     >
-      <Box sx={{ width: 42, pl: 3 }}>
+      <Box sx={{ width: 24, display: "flex" }}>
         <FilterAltOutlinedIcon />
       </Box>
       {/* entity select */}
@@ -83,43 +65,40 @@ const ConditionEditor = ({
         placeholder={placeholderMap["entity"] || "Select..."}
         size="sm"
         sx={{ width: "8rem" }}
-        value={condition?.entity}
+        value={
+          condition.type && condition.entity
+            ? encodeEntity(condition.type, condition.entity)
+            : null
+        }
         onChange={(_, newValue) => {
-          const type = attrMapList.find((item) => item.name === newValue)?.type;
-          setSelectedConditions((prev) => ({
-            ...prev,
-            action: prev[action].map((item) =>
-              item.id === id ? { ...item, type: type, entity: newValue } : item,
-            ),
-          }));
+          if (!newValue) return;
+          const { type, entity } = decodeEntity(newValue);
+          onChange({
+            type,
+            entity,
+            attribute: undefined,
+            operator: undefined,
+          });
         }}
       >
-        {action === "include"
-          ? [...includeOT, ...includeAct].map((item) => (
-              <Option key={item} value={item}>
-                {item}
-              </Option>
-            ))
-          : [...excludeOT, ...excludeAct].map((item) => (
-              <Option key={item} value={item}>
-                {item}
-              </Option>
-            ))}
+        {entityOptions.map((item) => (
+          <Option
+            key={encodeEntity(item.type, item.name)}
+            value={encodeEntity(item.type, item.name)}
+          >
+            {item.name}
+          </Option>
+        ))}
       </Select>
       {/* attribute select */}
       <Select
         placeholder={placeholderMap["attribute"] || "Select..."}
         size="sm"
         sx={{ width: "8rem" }}
-        value={condition?.attribute}
-        onChange={(_, newValue) => {
-          setSelectedConditions((prev) => ({
-            ...prev,
-            action: prev[action].map((item) =>
-              item.id === id ? { ...item, attribute: newValue } : item,
-            ),
-          }));
-        }}
+        value={condition.attribute ?? null}
+        onChange={(_, newValue) =>
+          onChange({ attribute: newValue ?? undefined, operator: undefined })
+        }
       >
         {attrOptions
           .filter((item) => item && item.name)
@@ -134,15 +113,10 @@ const ConditionEditor = ({
         placeholder={placeholderMap["operator"] || "Select..."}
         size="sm"
         sx={{ width: "8rem" }}
-        value={condition?.operator}
-        onChange={(_, newValue) => {
-          setSelectedConditions((prev) => ({
-            ...prev,
-            action: prev[action].map((item) =>
-              item.id === id ? { ...item, operator: newValue } : item,
-            ),
-          }));
-        }}
+        value={condition.operator ?? null}
+        onChange={(_, newValue) =>
+          onChange({ operator: newValue ?? undefined })
+        }
       >
         {opOptions.map((item) => (
           <Option key={item} value={item}>
@@ -154,19 +128,10 @@ const ConditionEditor = ({
       <Input
         placeholder="value..."
         name="condition"
+        size="sm"
         sx={{ width: "8rem" }}
-        value={input}
-        onChange={(e) => {
-          setInput(e.target.value);
-        }}
-        onBlur={() => {
-          setSelectedConditions((prev) => ({
-            ...prev,
-            action: prev[action].map((item) =>
-              item.id === id ? { ...item, value: input } : item,
-            ),
-          }));
-        }}
+        value={condition.value ?? ""}
+        onChange={(e) => onChange({ value: e.target.value })}
       />
       <IconButton
         size="sm"
@@ -174,7 +139,7 @@ const ConditionEditor = ({
           borderRadius: "50%",
           backgroundColor: "neutral",
         }}
-        onClick={handleDelete}
+        onClick={onDelete}
       >
         <DeleteOutlineOutlinedIcon />
       </IconButton>
@@ -183,58 +148,34 @@ const ConditionEditor = ({
 };
 
 interface ConditionListProps {
-  items: number[];
-  setItems: React.Dispatch<React.SetStateAction<number[]>>;
-  action: ActionType;
-  selectedConditions: SelectedConditions;
-  setSelectedConditions: React.Dispatch<
-    React.SetStateAction<SelectedConditions>
-  >;
+  selector: DraftSelector;
   attrMapList: AttributeMapList;
-  includeOT: EntityList;
-  includeAct: EntityList;
-  excludeOT: EntityList;
-  excludeAct: EntityList;
+  onChange: (conditions: Condition[]) => void;
 }
 
 const ConditionList = ({
-  items,
-  setItems,
-  action,
-  selectedConditions,
-  setSelectedConditions,
+  selector,
   attrMapList,
-  includeOT,
-  includeAct,
-  excludeOT,
-  excludeAct,
+  onChange,
 }: ConditionListProps) => {
-  const handleDelete = (index: number, id: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
-    setSelectedConditions((prev) => {
-      const leftConditions = prev[action].filter((item) => item.id !== id);
-      return {
-        ...prev,
-        [action]: leftConditions,
-      };
-    });
-  };
-
   return (
     <Box>
-      {items.map((id, index) => (
-        <ConditionEditor
-          key={id + action}
-          handleDelete={() => handleDelete(index, id)}
-          action={action}
-          id={id}
-          selectedConditions={selectedConditions}
-          setSelectedConditions={setSelectedConditions}
+      {selector.conditions.map((condition) => (
+        <ConditionRow
+          key={condition.id}
+          selector={selector}
+          condition={condition}
           attrMapList={attrMapList}
-          includeOT={includeOT}
-          includeAct={includeAct}
-          excludeOT={excludeOT}
-          excludeAct={excludeAct}
+          onChange={(patch) =>
+            onChange(
+              selector.conditions.map((c) =>
+                c.id === condition.id ? { ...c, ...patch } : c,
+              ),
+            )
+          }
+          onDelete={() =>
+            onChange(selector.conditions.filter((c) => c.id !== condition.id))
+          }
         />
       ))}
     </Box>

@@ -1,0 +1,482 @@
+{
+  "version": "2.0",
+  "objectTypes": [
+    {
+      "name": "order",
+      "attributes": [
+        { "name": "order-id", "type": "string" }
+      ]
+    },
+    {
+      "name": "item",
+      "attributes": [
+        { "name": "product-name", "type": "string" }
+      ]
+    },
+    {
+      "name": "shipment",
+      "attributes": [
+        { "name": "tracking-number", "type": "string" }
+      ]
+    }
+  ],
+  "eventTypes": [
+    {
+      "name": "create-order",
+      "attributes": [
+        { "name": "total-items", "type": "integer" }
+      ]
+    },
+    {
+      "name": "order-confirmation",
+      "attributes": [
+        { "name": "confirmation-code", "type": "string" }
+      ]
+    },
+    {
+      "name": "package-prepared",
+      "attributes": [
+        { "name": "warehouse-id", "type": "string" }
+      ]
+    },
+    {
+      "name": "shipment-started",
+      "attributes": [
+        { "name": "logistics-provider", "type": "string" }
+      ]
+    },
+    {
+      "name": "shipment-delivered",
+      "attributes": [
+        { "name": "recipient", "type": "string" }
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "o1",
+      "type": "order",
+      "attributes": [
+        { "name": "order-id", "time": "2025-02-01T08:00:00Z", "value": "ORD-1001" }
+      ]
+    },
+    {
+      "id": "o2",
+      "type": "order",
+      "attributes": [
+        { "name": "order-id", "time": "2025-02-01T09:30:00Z", "value": "ORD-1002" }
+      ]
+    },
+    {
+      "id": "o3",
+      "type": "order",
+      "attributes": [
+        { "name": "order-id", "time": "2025-02-02T08:00:00Z", "value": "ORD-1003" }
+      ]
+    },
+    {
+      "id": "o4",
+      "type": "order",
+      "attributes": [
+        { "name": "order-id", "time": "2025-02-02T10:00:00Z", "value": "ORD-1004" }
+      ]
+    },
+    {
+      "id": "o5",
+      "type": "order",
+      "attributes": [
+        { "name": "order-id", "time": "2025-02-03T08:00:00Z", "value": "ORD-1005" }
+      ]
+    },
+    {
+      "id": "o6",
+      "type": "order",
+      "attributes": [
+        { "name": "order-id", "time": "2025-02-03T11:00:00Z", "value": "ORD-1006" }
+      ]
+    },
+    {
+      "id": "i1",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-01T08:00:00Z", "value": "Laptop" }
+      ]
+    },
+    {
+      "id": "i2",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-01T08:00:00Z", "value": "Mouse" }
+      ]
+    },
+    {
+      "id": "i3",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-01T08:00:00Z", "value": "Keyboard" }
+      ]
+    },
+    {
+      "id": "i4",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-01T09:30:00Z", "value": "Monitor" }
+      ]
+    },
+    {
+      "id": "i5",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-01T09:30:00Z", "value": "Webcam" }
+      ]
+    },
+    {
+      "id": "i6",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-02T08:00:00Z", "value": "Tablet" }
+      ]
+    },
+    {
+      "id": "i7",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-02T10:00:00Z", "value": "Headphones" }
+      ]
+    },
+    {
+      "id": "i8",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-02T10:00:00Z", "value": "USB-C Hub" }
+      ]
+    },
+    {
+      "id": "i9",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-03T08:00:00Z", "value": "SSD Drive" }
+      ]
+    },
+    {
+      "id": "i10",
+      "type": "item",
+      "attributes": [
+        { "name": "product-name", "time": "2025-02-03T11:00:00Z", "value": "Phone Case" }
+      ]
+    },
+    {
+      "id": "s1",
+      "type": "shipment",
+      "attributes": [
+        { "name": "tracking-number", "time": "2025-02-02T14:00:00Z", "value": "TRK-5001" }
+      ]
+    },
+    {
+      "id": "s2",
+      "type": "shipment",
+      "attributes": [
+        { "name": "tracking-number", "time": "2025-02-03T14:00:00Z", "value": "TRK-5002" }
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "shipment",
+      "attributes": [
+        { "name": "tracking-number", "time": "2025-02-04T14:00:00Z", "value": "TRK-5003" }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e01",
+      "type": "create-order",
+      "time": "2025-02-01T08:00:00Z",
+      "attributes": [{ "name": "total-items", "value": 3 }],
+      "relationships": [
+        { "objectId": "o1", "qualifier": "order" },
+        { "objectId": "i1", "qualifier": "item" },
+        { "objectId": "i2", "qualifier": "item" },
+        { "objectId": "i3", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e02",
+      "type": "order-confirmation",
+      "time": "2025-02-01T08:05:00Z",
+      "attributes": [{ "name": "confirmation-code", "value": "CONF-1001" }],
+      "relationships": [{ "objectId": "o1", "qualifier": "order" }]
+    },
+    {
+      "id": "e03",
+      "type": "package-prepared",
+      "time": "2025-02-01T12:00:00Z",
+      "attributes": [{ "name": "warehouse-id", "value": "WH-NORTH" }],
+      "relationships": [
+        { "objectId": "o1", "qualifier": "order" },
+        { "objectId": "i1", "qualifier": "item" },
+        { "objectId": "i2", "qualifier": "item" },
+        { "objectId": "i3", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e04",
+      "type": "shipment-started",
+      "time": "2025-02-02T14:00:00Z",
+      "attributes": [{ "name": "logistics-provider", "value": "FastExpress" }],
+      "relationships": [
+        { "objectId": "o1", "qualifier": "order" },
+        { "objectId": "s1", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e05",
+      "type": "shipment-delivered",
+      "time": "2025-02-03T09:00:00Z",
+      "attributes": [{ "name": "recipient", "value": "Alice" }],
+      "relationships": [
+        { "objectId": "o1", "qualifier": "order" },
+        { "objectId": "s1", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e06",
+      "type": "create-order",
+      "time": "2025-02-01T09:30:00Z",
+      "attributes": [{ "name": "total-items", "value": 2 }],
+      "relationships": [
+        { "objectId": "o2", "qualifier": "order" },
+        { "objectId": "i4", "qualifier": "item" },
+        { "objectId": "i5", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e07",
+      "type": "order-confirmation",
+      "time": "2025-02-01T09:35:00Z",
+      "attributes": [{ "name": "confirmation-code", "value": "CONF-1002" }],
+      "relationships": [{ "objectId": "o2", "qualifier": "order" }]
+    },
+    {
+      "id": "e08",
+      "type": "package-prepared",
+      "time": "2025-02-01T13:00:00Z",
+      "attributes": [{ "name": "warehouse-id", "value": "WH-NORTH" }],
+      "relationships": [
+        { "objectId": "o2", "qualifier": "order" },
+        { "objectId": "i4", "qualifier": "item" },
+        { "objectId": "i5", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e09",
+      "type": "shipment-started",
+      "time": "2025-02-02T14:30:00Z",
+      "attributes": [{ "name": "logistics-provider", "value": "FastExpress" }],
+      "relationships": [
+        { "objectId": "o2", "qualifier": "order" },
+        { "objectId": "s1", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e10",
+      "type": "shipment-delivered",
+      "time": "2025-02-03T10:00:00Z",
+      "attributes": [{ "name": "recipient", "value": "Bob" }],
+      "relationships": [
+        { "objectId": "o2", "qualifier": "order" },
+        { "objectId": "s1", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e11",
+      "type": "create-order",
+      "time": "2025-02-02T08:00:00Z",
+      "attributes": [{ "name": "total-items", "value": 1 }],
+      "relationships": [
+        { "objectId": "o3", "qualifier": "order" },
+        { "objectId": "i6", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e12",
+      "type": "order-confirmation",
+      "time": "2025-02-02T08:05:00Z",
+      "attributes": [{ "name": "confirmation-code", "value": "CONF-1003" }],
+      "relationships": [{ "objectId": "o3", "qualifier": "order" }]
+    },
+    {
+      "id": "e13",
+      "type": "package-prepared",
+      "time": "2025-02-02T12:00:00Z",
+      "attributes": [{ "name": "warehouse-id", "value": "WH-EAST" }],
+      "relationships": [
+        { "objectId": "o3", "qualifier": "order" },
+        { "objectId": "i6", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e14",
+      "type": "shipment-started",
+      "time": "2025-02-03T14:00:00Z",
+      "attributes": [{ "name": "logistics-provider", "value": "GlobalPost" }],
+      "relationships": [
+        { "objectId": "o3", "qualifier": "order" },
+        { "objectId": "s2", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e15",
+      "type": "shipment-delivered",
+      "time": "2025-02-04T09:00:00Z",
+      "attributes": [{ "name": "recipient", "value": "Carol" }],
+      "relationships": [
+        { "objectId": "o3", "qualifier": "order" },
+        { "objectId": "s2", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e16",
+      "type": "create-order",
+      "time": "2025-02-02T10:00:00Z",
+      "attributes": [{ "name": "total-items", "value": 2 }],
+      "relationships": [
+        { "objectId": "o4", "qualifier": "order" },
+        { "objectId": "i7", "qualifier": "item" },
+        { "objectId": "i8", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e17",
+      "type": "order-confirmation",
+      "time": "2025-02-02T10:05:00Z",
+      "attributes": [{ "name": "confirmation-code", "value": "CONF-1004" }],
+      "relationships": [{ "objectId": "o4", "qualifier": "order" }]
+    },
+    {
+      "id": "e18",
+      "type": "package-prepared",
+      "time": "2025-02-02T13:00:00Z",
+      "attributes": [{ "name": "warehouse-id", "value": "WH-EAST" }],
+      "relationships": [
+        { "objectId": "o4", "qualifier": "order" },
+        { "objectId": "i7", "qualifier": "item" },
+        { "objectId": "i8", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e19",
+      "type": "shipment-started",
+      "time": "2025-02-03T14:30:00Z",
+      "attributes": [{ "name": "logistics-provider", "value": "GlobalPost" }],
+      "relationships": [
+        { "objectId": "o4", "qualifier": "order" },
+        { "objectId": "s2", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e20",
+      "type": "shipment-delivered",
+      "time": "2025-02-04T10:00:00Z",
+      "attributes": [{ "name": "recipient", "value": "Dan" }],
+      "relationships": [
+        { "objectId": "o4", "qualifier": "order" },
+        { "objectId": "s2", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e21",
+      "type": "create-order",
+      "time": "2025-02-03T08:00:00Z",
+      "attributes": [{ "name": "total-items", "value": 1 }],
+      "relationships": [
+        { "objectId": "o5", "qualifier": "order" },
+        { "objectId": "i9", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e22",
+      "type": "order-confirmation",
+      "time": "2025-02-03T08:05:00Z",
+      "attributes": [{ "name": "confirmation-code", "value": "CONF-1005" }],
+      "relationships": [{ "objectId": "o5", "qualifier": "order" }]
+    },
+    {
+      "id": "e23",
+      "type": "package-prepared",
+      "time": "2025-02-03T12:00:00Z",
+      "attributes": [{ "name": "warehouse-id", "value": "WH-SOUTH" }],
+      "relationships": [
+        { "objectId": "o5", "qualifier": "order" },
+        { "objectId": "i9", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e24",
+      "type": "shipment-started",
+      "time": "2025-02-04T14:00:00Z",
+      "attributes": [{ "name": "logistics-provider", "value": "QuickShip" }],
+      "relationships": [
+        { "objectId": "o5", "qualifier": "order" },
+        { "objectId": "s3", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e25",
+      "type": "shipment-delivered",
+      "time": "2025-02-05T09:00:00Z",
+      "attributes": [{ "name": "recipient", "value": "Eve" }],
+      "relationships": [
+        { "objectId": "o5", "qualifier": "order" },
+        { "objectId": "s3", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e26",
+      "type": "create-order",
+      "time": "2025-02-03T11:00:00Z",
+      "attributes": [{ "name": "total-items", "value": 1 }],
+      "relationships": [
+        { "objectId": "o6", "qualifier": "order" },
+        { "objectId": "i10", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e27",
+      "type": "order-confirmation",
+      "time": "2025-02-03T11:05:00Z",
+      "attributes": [{ "name": "confirmation-code", "value": "CONF-1006" }],
+      "relationships": [{ "objectId": "o6", "qualifier": "order" }]
+    },
+    {
+      "id": "e28",
+      "type": "package-prepared",
+      "time": "2025-02-03T15:00:00Z",
+      "attributes": [{ "name": "warehouse-id", "value": "WH-SOUTH" }],
+      "relationships": [
+        { "objectId": "o6", "qualifier": "order" },
+        { "objectId": "i10", "qualifier": "item" }
+      ]
+    },
+    {
+      "id": "e29",
+      "type": "shipment-started",
+      "time": "2025-02-04T14:30:00Z",
+      "attributes": [{ "name": "logistics-provider", "value": "QuickShip" }],
+      "relationships": [
+        { "objectId": "o6", "qualifier": "order" },
+        { "objectId": "s3", "qualifier": "shipment" }
+      ]
+    },
+    {
+      "id": "e30",
+      "type": "shipment-delivered",
+      "time": "2025-02-05T10:00:00Z",
+      "attributes": [{ "name": "recipient", "value": "Frank" }],
+      "relationships": [
+        { "objectId": "o6", "qualifier": "order" },
+        { "objectId": "s3", "qualifier": "shipment" }
+      ]
+    }
+  ]
+}

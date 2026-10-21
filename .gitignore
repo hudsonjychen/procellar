@@ -28,3 +28,5 @@ dist-ssr
 __pycache__/
 /backend/app/__pycache__
 *.pyc
+
+rust/

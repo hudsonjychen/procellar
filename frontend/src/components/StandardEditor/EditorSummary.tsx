@@ -1,68 +1,60 @@
+import { Fragment, ReactNode } from "react";
 import { Stack, Typography } from "@mui/material";
 import TipsAndUpdatesOutlinedIcon from "@mui/icons-material/TipsAndUpdatesOutlined";
-import { EntityList, SelectedEntities } from "./types";
+import { DraftSelectors, DraftSelector } from "./types";
+import { isEmptySelector } from "./selectors";
 
 interface EditorSummaryProps {
-  includeOT: EntityList;
-  includeAct: EntityList;
-  excludeOT: EntityList;
-  excludeAct: EntityList;
+  selectors: DraftSelectors;
 }
 
-export default function EditorSummary({
-  includeOT,
-  includeAct,
-  excludeOT,
-  excludeAct,
-}: EditorSummaryProps) {
-  const allEmpty =
-    includeOT.length +
-      includeAct.length +
-      excludeOT.length +
-      excludeAct.length ===
-    0;
+const joinNodes = (nodes: ReactNode[], separator: string) =>
+  nodes.map((node, i) => (
+    <Fragment key={i}>
+      {i > 0 && separator}
+      {node}
+    </Fragment>
+  ));
 
-  const buildSummary = () => {
-    const parts = [];
+const describeSelector = (selector: DraftSelector) => {
+  const objectTypes = joinNodes(
+    selector.objectTypes.map((ot) => <strong>{ot}</strong>),
+    ", and ",
+  );
+  if (selector.activity && selector.objectTypes.length > 0) {
+    return (
+      <>
+        events of activity <strong>{selector.activity}</strong> involving object
+        type(s) {objectTypes}
+      </>
+    );
+  }
+  if (selector.activity) {
+    return (
+      <>
+        events of activity <strong>{selector.activity}</strong>
+      </>
+    );
+  }
+  return <>events involving object type(s) {objectTypes}</>;
+};
 
-    if (includeOT.length > 0 || includeAct.length > 0) {
-      const includeParts = [];
+export default function EditorSummary({ selectors }: EditorSummaryProps) {
+  const include = selectors.include.filter((s) => !isEmptySelector(s));
+  const exclude = selectors.exclude.filter((s) => !isEmptySelector(s));
+  const allEmpty = include.length + exclude.length === 0;
 
-      if (includeOT.length > 0) {
-        includeParts.push(
-          `events involving object type(s) of <strong>${includeOT.join(", and ")}</strong>`,
-        );
-      }
-
-      if (includeAct.length > 0) {
-        includeParts.push(
-          `events classified under activity type(s) <strong>${includeAct.join(", or ")}</strong>`,
-        );
-      }
-
-      parts.push(`Will include ${includeParts.join(" or ")}`);
-    }
-
-    if (excludeOT.length > 0 || excludeAct.length > 0) {
-      const excludeParts = [];
-
-      if (excludeOT.length > 0) {
-        excludeParts.push(
-          `events involving object type(s) <strong>${excludeOT.join(", and ")}</strong>`,
-        );
-      }
-
-      if (excludeAct.length > 0) {
-        excludeParts.push(
-          `events classified under activity type(s) <strong>${excludeAct.join(", or ")}</strong>`,
-        );
-      }
-
-      parts.push(`Will exclude ${excludeParts.join(" or ")}`);
-    }
-
-    return parts.join(". ") + ".";
-  };
+  const parts: ReactNode[] = [];
+  if (include.length > 0) {
+    parts.push(
+      <>Will include {joinNodes(include.map(describeSelector), ", or ")}</>,
+    );
+  }
+  if (exclude.length > 0) {
+    parts.push(
+      <>Will exclude {joinNodes(exclude.map(describeSelector), ", or ")}</>,
+    );
+  }
 
   return (
     <Stack
@@ -79,7 +71,9 @@ export default function EditorSummary({
           events in this section.
         </Typography>
       ) : (
-        <Typography dangerouslySetInnerHTML={{ __html: buildSummary() }} />
+        <Typography>
+          {joinNodes(parts, ". ")}.
+        </Typography>
       )}
     </Stack>
   );

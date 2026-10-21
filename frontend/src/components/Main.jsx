@@ -18,8 +18,6 @@ import { useProcessStore } from "../stores/processStore";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import { grey } from "@mui/material/colors";
 import { useGlobal } from "../GlobalContext";
-import SelectCard from "./AdvancedEditor/SelectBar";
-import { useState } from "react";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import FlagCircleIcon from "@mui/icons-material/FlagCircle";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -205,6 +203,19 @@ export default function Main() {
     </Box>
   );
 
+  const chipSx = (color) => ({
+    border: "1.6px solid",
+    fontWeight: "bold",
+    borderColor: `${color}.300`,
+    color: `${color}.500`,
+    backgroundColor: "transparent",
+    boxShadow: "xs",
+    transition: "all 0.2s",
+    "&:hover": {
+      backgroundColor: `${color}.50`,
+    },
+  });
+
   const EntityRow = ({ label, items, icon, color }) => {
     if (!items || items.length === 0) return null;
     return (
@@ -231,18 +242,7 @@ export default function Main() {
             variant="outlined"
             size="lg"
             startDecorator={icon}
-            sx={{
-              border: "1.6px solid",
-              fontWeight: "bold",
-              borderColor: `${color}.300`,
-              color: `${color}.500`,
-              backgroundColor: "transparent",
-              boxShadow: "xs",
-              transition: "all 0.2s",
-              "&:hover": {
-                backgroundColor: `${color}.50`,
-              },
-            }}
+            sx={chipSx(color)}
           >
             {entity}
           </Chip>
@@ -251,11 +251,76 @@ export default function Main() {
     );
   };
 
+  const SelectorRow = ({ label, selector, color }) => {
+    const conditions = selector.conditions ?? [];
+    return (
+      <Box sx={{ mb: 0.5 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          flexWrap="wrap"
+          useFlexGap
+        >
+          <Box sx={{ display: "flex", width: 100 }}>
+            <Typography
+              level="body-sm"
+              sx={{ color: "neutral.500", fontWeight: "md" }}
+            >
+              {label}
+            </Typography>
+          </Box>
+          {selector.activity && (
+            <Chip
+              variant="outlined"
+              size="lg"
+              startDecorator={<ActivityIcon />}
+              sx={chipSx(color)}
+            >
+              {selector.activity}
+            </Chip>
+          )}
+          {(selector.objectTypes ?? []).map((entity) => (
+            <Chip
+              key={entity}
+              variant="outlined"
+              size="lg"
+              startDecorator={<ObjectIcon />}
+              sx={chipSx(color)}
+            >
+              {entity}
+            </Chip>
+          ))}
+        </Stack>
+        {conditions.map((c, i) => (
+          <Typography
+            key={i}
+            level="body-xs"
+            startDecorator={<FilterAltOutlinedIcon sx={{ fontSize: "md" }} />}
+            sx={{ color: "neutral.500", ml: "108px", mt: 0.5 }}
+          >
+            {c.entity}.{c.attribute} {c.operator} {c.value}
+          </Typography>
+        ))}
+      </Box>
+    );
+  };
+
+  const SelectorRows = ({ selectors, color }) =>
+    selectors.map((selector, index) => (
+      <SelectorRow
+        key={index}
+        label={index === 0 ? `Selector ${index + 1}` : `or Selector ${index + 1}`}
+        selector={selector}
+        color={color}
+      />
+    ));
+
   const TraceCard = ({ trace }) => {
-    const hasInclude =
-      trace.includeOT?.length > 0 || trace.includeAct?.length > 0;
-    const hasExclude =
-      trace.excludeOT?.length > 0 || trace.excludeAct?.length > 0;
+    const include = trace.include ?? [];
+    const exclude = trace.exclude ?? [];
+    const hasInclude = include.length > 0;
+    const hasExclude = exclude.length > 0;
 
     return (
       <Box
@@ -305,18 +370,7 @@ export default function Main() {
             icon={<PlayCircleIcon />}
             color="primary"
           >
-            <EntityRow
-              label="Objects"
-              items={trace.startOT}
-              icon={<ObjectIcon />}
-              color="primary"
-            />
-            <EntityRow
-              label="Activities"
-              items={trace.startAct}
-              icon={<ActivityIcon />}
-              color="primary"
-            />
+            <SelectorRows selectors={trace.start ?? []} color="primary" />
           </TimelineNode>
 
           {hasInclude && (
@@ -325,18 +379,7 @@ export default function Main() {
               icon={<TaskAltIcon />}
               color="success"
             >
-              <EntityRow
-                label="Objects"
-                items={trace.includeOT}
-                icon={<ObjectIcon />}
-                color="success"
-              />
-              <EntityRow
-                label="Activities"
-                items={trace.includeAct}
-                icon={<ActivityIcon />}
-                color="success"
-              />
+              <SelectorRows selectors={include} color="success" />
             </TimelineNode>
           )}
 
@@ -346,18 +389,7 @@ export default function Main() {
               icon={<BlockIcon />}
               color="danger"
             >
-              <EntityRow
-                label="Objects"
-                items={trace.excludeOT}
-                icon={<ObjectIcon />}
-                color="danger"
-              />
-              <EntityRow
-                label="Activities"
-                items={trace.excludeAct}
-                icon={<ActivityIcon />}
-                color="danger"
-              />
+              <SelectorRows selectors={exclude} color="danger" />
             </TimelineNode>
           )}
 
@@ -367,18 +399,7 @@ export default function Main() {
             color="primary"
             isLast={true}
           >
-            <EntityRow
-              label="Objects"
-              items={trace.endOT}
-              icon={<ObjectIcon />}
-              color="primary"
-            />
-            <EntityRow
-              label="Activities"
-              items={trace.endAct}
-              icon={<ActivityIcon />}
-              color="primary"
-            />
+            <SelectorRows selectors={trace.end ?? []} color="primary" />
           </TimelineNode>
         </Card>
 
@@ -392,12 +413,10 @@ export default function Main() {
   };
 
   const RuleCard = ({ rule }) => {
-    const hasInclude =
-      rule.includeOT?.entities?.length > 0 ||
-      rule.includeAct?.entities?.length > 0;
-    const hasExclude =
-      rule.excludeOT?.entities?.length > 0 ||
-      rule.excludeAct?.entities?.length > 0;
+    const include = rule.include ?? [];
+    const exclude = rule.exclude ?? [];
+    const hasInclude = include.length > 0;
+    const hasExclude = exclude.length > 0;
 
     return (
       <Box
@@ -449,18 +468,7 @@ export default function Main() {
               color="success"
               isLast={!hasExclude}
             >
-              <EntityRow
-                label="Objects"
-                items={rule.includeOT?.entities}
-                icon={<ObjectIcon />}
-                color="success"
-              />
-              <EntityRow
-                label="Activities"
-                items={rule.includeAct?.entities}
-                icon={<ActivityIcon />}
-                color="success"
-              />
+              <SelectorRows selectors={include} color="success" />
             </TimelineNode>
           )}
 
@@ -471,18 +479,7 @@ export default function Main() {
               color="danger"
               isLast={true}
             >
-              <EntityRow
-                label="Objects"
-                items={rule.excludeOT?.entities}
-                icon={<ObjectIcon />}
-                color="danger"
-              />
-              <EntityRow
-                label="Activities"
-                items={rule.excludeAct?.entities}
-                icon={<ActivityIcon />}
-                color="danger"
-              />
+              <SelectorRows selectors={exclude} color="danger" />
             </TimelineNode>
           )}
         </Card>
@@ -528,9 +525,6 @@ export default function Main() {
       </Box>
     );
   };
-
-  const [checkedOTList, setCheckedOTList] = useState([]);
-  const [checkedActList, setCheckedActList] = useState([]);
 
   return (
     <Sheet

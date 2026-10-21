@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { ProcessData, ProcessNames } from './types'
+import { EntitySelector, ProcessData, ProcessNames } from './types'
 
 interface ProcessStore {
     /** processData stores process data */
@@ -25,14 +25,10 @@ interface ProcessStore {
         sourceTraceName: string
         traceName: string
         parentProcess: string
-        startOT: string[]
-        startAct: string[]
-        endOT: string[]
-        endAct: string[]
-        includeOT: string[]
-        includeAct: string[]
-        excludeOT: string[]
-        excludeAct: string[]
+        start: EntitySelector[]
+        end: EntitySelector[]
+        include: EntitySelector[]
+        exclude: EntitySelector[]
         requestId: number
     } | null
     setTraceEditPayload: (payload: ProcessStore['traceEditPayload']) => void

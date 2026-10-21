@@ -2,15 +2,15 @@ import { IconButton } from '@mui/joy'
 import Add from '@mui/icons-material/Add'
 
 interface AddButtonProps {
-    setItems: React.Dispatch<React.SetStateAction<number[]>>
+    onClick: () => void
 }
 
-export default function AddButton({ setItems }: AddButtonProps) {
+export default function AddButton({ onClick }: AddButtonProps) {
     return (
         <IconButton
             size="sm"
             sx={{ borderRadius: '50%', backgroundColor: 'neutral' }}
-            onClick={() => setItems((prev) => [...prev, Date.now()])}
+            onClick={onClick}
         >
             <Add />
         </IconButton>

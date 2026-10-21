@@ -1,7 +1,9 @@
-from typing import Callable, Hashable, List, Optional, Set, Tuple
+from typing import Callable, Dict, Hashable, List, Optional, Set, Tuple
 
 import pandas as pd
 from pm4py.objects.ocel.obj import OCEL
+
+from .ids import canonical_event_id
 
 
 def _business_relations(ocel: OCEL) -> pd.DataFrame:
@@ -81,3 +83,57 @@ def list_event_edges(
         progress_callback(1.0)
 
     return sorted(edges)
+
+
+def build_object_timelines(
+    ocel: OCEL,
+    progress_callback: Optional[Callable[[float], None]] = None,
+    should_cancel: Optional[Callable[[], bool]] = None,
+) -> Dict[str, List[str]]:
+    """
+    Per-object **timeline** of canonical event ids, ordered by (timestamp, event id).
+
+    Each business object (non-``process`` links) maps to the time-ordered list of events
+    that reference it. This is the basis for *single-entity* trace flow: a trace follows
+    one object instance from its start event to a later end event on its own timeline,
+    so reused resource objects can never bridge unrelated cases.
+    """
+    if progress_callback:
+        progress_callback(0.0)
+    if should_cancel and should_cancel():
+        raise RuntimeError("Processing cancelled")
+
+    rel = _business_relations(ocel)
+    eid_col = ocel.event_id_column
+    oid_col = ocel.object_id_column
+    ts_col = ocel.event_timestamp
+
+    rel_df = rel[[eid_col, oid_col]].dropna(subset=[eid_col, oid_col])
+    if rel_df.empty:
+        if progress_callback:
+            progress_callback(1.0)
+        return {}
+
+    event_times = ocel.events.set_index(eid_col, drop=False)[ts_col]
+    rel_df = rel_df.drop_duplicates(subset=[eid_col, oid_col]).copy()
+    rel_df["_ts"] = rel_df[eid_col].map(event_times)
+    rel_df["_eid_sort"] = rel_df[eid_col].astype(str)
+
+    timelines: Dict[str, List[str]] = {}
+    grouped = rel_df.groupby(oid_col, sort=False)
+    n_groups = grouped.ngroups
+    step = max(1, n_groups // 80)
+
+    for gi, (oid, grp) in enumerate(grouped, start=1):
+        if should_cancel and should_cancel():
+            raise RuntimeError("Processing cancelled")
+        if progress_callback and (gi % step == 0 or gi == n_groups):
+            progress_callback(gi / n_groups)
+        ordered = grp.sort_values(by=["_ts", "_eid_sort"], kind="mergesort")[eid_col].tolist()
+        timeline = [canonical_event_id(e) for e in ordered]
+        timelines[str(oid)] = [e for e in timeline if e is not None]
+
+    if progress_callback:
+        progress_callback(1.0)
+
+    return timelines

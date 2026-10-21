@@ -8,30 +8,27 @@ export type ConditionMap = Record<string, Condition>;
 
 export type EntityList = string[];
 
-export interface RuleBlock {
-  entities: string[];
-  condition: {
-    entity: string;
-    attribute: string;
-    operator: Operator;
-    value: string;
-  }[];
+export interface SelectorCondition {
+  entityType: EntityType;
+  entity: string;
+  attribute: string;
+  operator: Operator;
+  value: string;
 }
 
+/** Matches events of `activity` (if set) that are related to every type in `objectTypes`. */
+export interface Selector {
+  objectTypes: string[];
+  activity: string | null;
+  conditions: SelectorCondition[];
+}
+
+/** Selectors within include / exclude are combined with OR. */
 export interface RuleData {
   ruleName: string;
   parentProcess: string;
-  includeOT: RuleBlock;
-  includeAct: RuleBlock;
-  excludeOT: RuleBlock;
-  excludeAct: RuleBlock;
-}
-
-export interface SelectedEntities {
-  includeOT: string[];
-  includeAct: string[];
-  excludeOT: string[];
-  excludeAct: string[];
+  include: Selector[];
+  exclude: Selector[];
 }
 
 export interface Condition {
@@ -43,9 +40,16 @@ export interface Condition {
   value?: string;
 }
 
-export interface SelectedConditions {
-  include: Condition[];
-  exclude: Condition[];
+export interface DraftSelector {
+  id: number;
+  objectTypes: string[];
+  activity: string | null;
+  conditions: Condition[];
+}
+
+export interface DraftSelectors {
+  include: DraftSelector[];
+  exclude: DraftSelector[];
 }
 
 export interface RuleInfo {

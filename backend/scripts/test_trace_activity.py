@@ -46,10 +46,13 @@ print("events columns:", list(log.events.columns))
 print(log.events)
 print("relations columns:", list(log.relations.columns))
 
-m_start = match_events(log, activities=["Create"], match_type="start")
-m_end = match_events(log, activities=["Ship"], match_type="end")
+start = [{"objectTypes": [], "activity": "Create"}]
+end = [{"objectTypes": [], "activity": "Ship"}]
+
+m_start = match_events(log, start, match_type="start")
+m_end = match_events(log, end, match_type="end")
 print("match start:", m_start)
 print("match end:", m_end)
 
-tr = TraceRule("p", "t", [], ["Create"], [], ["Ship"], [], [], [], [])
+tr = TraceRule("p", "t", start, end)
 print("trace ids:", tr.get_traces(log))

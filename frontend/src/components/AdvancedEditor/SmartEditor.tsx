@@ -13,15 +13,19 @@ import {
 import { ErrorAlert } from "./Alert";
 import { ErrorBoundary, FallbackUI } from "./ErrorBoundary";
 import ProcessNameInput from "./ProcessNameInput";
-import { RuleInfo, SelectedEntities, RuleData, TraceData } from "./types";
+import { DraftSelectors, RuleInfo, TraceData, TraceSlot } from "./types";
 import { useProcessStore } from "../../stores/processStore";
 import { useDataStore } from "../../stores/dataStore";
 import RuleNameInput from "./RuleNameInput";
 import HelpOutlinedIcon from "@mui/icons-material/HelpOutlined";
-import SelectCard from "./SelectBar";
+import SelectorList from "./SelectorList";
 import { useEffect, useRef, useState } from "react";
-import EntityChip from "./EntityChip";
 import ConnectorArrow from "./ConnectorArrow";
+import {
+  emptyDraftSelectors,
+  toDraftSelectors,
+  toTraceSelectors,
+} from "./selectors";
 
 interface SmartEditorProps {
   open: boolean;
@@ -36,6 +40,16 @@ interface SmartEditorProps {
 const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 };
+
+const SELECTOR_HINT = (
+  <>
+    A selector matches events of its activity (at most one)
+    <br />
+    that are related to all of its object types.
+    <br />
+    Multiple selectors are combined with OR.
+  </>
+);
 
 export default function SmartEditor({
   open,
@@ -57,40 +71,25 @@ export default function SmartEditor({
   const objectTypeList = useDataStore((state) => state.objectTypeList);
   const activityList = useDataStore((state) => state.activityList);
 
-  const [checkedStartOTList, setCheckedStartOTList] = useState<string[]>([]);
-  const [checkedStartActList, setCheckedStartActList] = useState<string[]>([]);
-  const [checkedEndOTList, setCheckedEndOTList] = useState<string[]>([]);
-  const [checkedEndActList, setCheckedEndActList] = useState<string[]>([]);
-
-  const [includeOTList, setIncludeOTList] = useState<string[]>([]);
-  const [includeActList, setIncludeActList] = useState<string[]>([]);
-  const [excludeOTList, setExcludeOTList] = useState<string[]>([]);
-  const [excludeActList, setExcludeActList] = useState<string[]>([]);
+  const [selectors, setSelectors] =
+    useState<DraftSelectors>(emptyDraftSelectors);
   const [alertText, setAlertText] = useState(
-    "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+    "Please provide a process name, a unique rule name, and add at least one start and one end selector with entities before saving.",
   );
 
-  const { ruleName, parentProcess } = ruleInfo;
-  const allEmptyStart =
-    checkedStartOTList.length + checkedStartActList.length === 0;
-  const allEmptyEnd = checkedEndOTList.length + checkedEndActList.length === 0;
-  const noName = ruleName.trim() === "" || parentProcess?.title.trim();
+  const traceSelectors = {
+    start: toTraceSelectors(selectors.start),
+    end: toTraceSelectors(selectors.end),
+    include: toTraceSelectors(selectors.include),
+    exclude: toTraceSelectors(selectors.exclude),
+  };
 
   const clearEditor = () => {
     setRuleInfo({
       ruleName: "",
       parentProcess: { title: "" },
     });
-
-    setCheckedStartOTList([]);
-    setCheckedStartActList([]);
-    setCheckedEndOTList([]);
-    setCheckedEndActList([]);
-
-    setIncludeOTList([]);
-    setIncludeActList([]);
-    setExcludeOTList([]);
-    setExcludeActList([]);
+    setSelectors(emptyDraftSelectors());
   };
 
   useEffect(() => {
@@ -99,96 +98,94 @@ export default function SmartEditor({
       ruleName: traceEditPayload.traceName,
       parentProcess: { title: traceEditPayload.parentProcess },
     });
-    setCheckedStartOTList([...(traceEditPayload.startOT ?? [])]);
-    setCheckedStartActList([...(traceEditPayload.startAct ?? [])]);
-    setCheckedEndOTList([...(traceEditPayload.endOT ?? [])]);
-    setCheckedEndActList([...(traceEditPayload.endAct ?? [])]);
-    setIncludeOTList([...(traceEditPayload.includeOT ?? [])]);
-    setIncludeActList([...(traceEditPayload.includeAct ?? [])]);
-    setExcludeOTList([...(traceEditPayload.excludeOT ?? [])]);
-    setExcludeActList([...(traceEditPayload.excludeAct ?? [])]);
+    setSelectors({
+      start: toDraftSelectors(traceEditPayload.start),
+      end: toDraftSelectors(traceEditPayload.end),
+      include: toDraftSelectors(traceEditPayload.include),
+      exclude: toDraftSelectors(traceEditPayload.exclude),
+    });
   }, [traceEditPayload, setRuleInfo]);
 
   const handleSave = () => {
     const processName = ruleInfo.parentProcess?.title?.trim() || "";
     const trimmedTraceName = ruleInfo.ruleName.trim();
-    if (!processName || !trimmedTraceName || allEmptyStart || allEmptyEnd) {
+    if (
+      !processName ||
+      !trimmedTraceName ||
+      traceSelectors.start.length === 0 ||
+      traceSelectors.end.length === 0
+    ) {
       setAlertText(
-        "Please provide a process name, a unique rule name, and select at least one entity before saving.",
+        "Please provide a process name, a unique rule name, and add at least one start and one end selector with entities before saving.",
       );
       setShowAlert(true);
-    } else {
-      const newTrace: TraceData = {
-        traceName: trimmedTraceName,
-        parentProcess: processName,
-        startOT: checkedStartOTList,
-        startAct: checkedStartActList,
-        endOT: checkedEndOTList,
-        endAct: checkedEndActList,
-        includeOT: includeOTList,
-        includeAct: includeActList,
-        excludeOT: excludeOTList,
-        excludeAct: excludeActList,
-      };
-      const baseProcessData = traceEditPayload
-        ? processData.map((process) => {
-            if (
-              process.processName === traceEditPayload.sourceProcessName &&
-              "traces" in process
-            ) {
-              return {
+      return;
+    }
+
+    const newTrace: TraceData = {
+      traceName: trimmedTraceName,
+      parentProcess: processName,
+      ...traceSelectors,
+    };
+    const baseProcessData = traceEditPayload
+      ? processData.map((process) =>
+          process.processName === traceEditPayload.sourceProcessName &&
+          "traces" in process
+            ? {
                 ...process,
                 traces: (process.traces ?? []).filter(
-                  (trace) => trace.traceName !== traceEditPayload.sourceTraceName,
+                  (trace) =>
+                    trace.traceName !== traceEditPayload.sourceTraceName,
                 ),
-              };
-            }
-            return process;
-          })
-        : processData;
+              }
+            : process,
+        )
+      : processData;
 
-      const existingIndex = baseProcessData.findIndex(
-        (process) => process.processName === processName,
-      );
-      if (existingIndex !== -1) {
-        const existingProcess = baseProcessData.find(
-          (process) => process.processName === processName,
+    const existingProcess = baseProcessData.find(
+      (process) => process.processName === processName,
+    );
+    if (existingProcess) {
+      if ("rules" in existingProcess) {
+        setAlertText(
+          "A process that contains standard rules cannot contain trace-based rules.",
         );
-        if (!existingProcess) return;
-        if ("rules" in existingProcess) {
-          setAlertText(
-            "A process that contains standard rules cannot contain trace-based rules.",
-          );
-          setShowAlert(true);
-          return;
-        }
-        const updatedExistingProcess = {
-          ...existingProcess,
-          traces:
-            "traces" in existingProcess
-              ? [...(existingProcess.traces ?? []), newTrace]
-              : [newTrace],
-        };
-        const updatedProcesses = baseProcessData.filter(
-          (process) => process.processName !== processName,
-        );
-        setProcessData([...updatedProcesses, updatedExistingProcess]);
-      } else {
-        const processes = [...baseProcessData];
-        setProcessData([
-          ...processes,
-          {
-            processName,
-            imported: false,
-            traces: [newTrace],
-            relations: {},
-          },
-        ]);
+        setShowAlert(true);
+        return;
       }
-      setOpen(false);
-      clearEditor();
-      setTraceEditPayload(null);
+      if (
+        (existingProcess.traces ?? []).some(
+          (trace) => trace.traceName === trimmedTraceName,
+        )
+      ) {
+        setAlertText("Rule name must be unique within the same process.");
+        setShowAlert(true);
+        return;
+      }
+      setProcessData([
+        ...baseProcessData.filter(
+          (process) => process.processName !== processName,
+        ),
+        {
+          ...existingProcess,
+          traces: [...(existingProcess.traces ?? []), newTrace],
+        },
+      ]);
+    } else {
+      setProcessData([
+        ...baseProcessData,
+        {
+          processName,
+          imported: false,
+          traces: [newTrace],
+          relations: {},
+        },
+      ]);
     }
+    setShowAlert(false);
+    setOpen(false);
+    clearEditor();
+    setTraceEditPayload(null);
   };
 
   const handleCloseEditor = () => {
@@ -201,11 +198,21 @@ export default function SmartEditor({
   const startTextRef = useRef<HTMLSpanElement>(null);
   const endTextRef = useRef<HTMLSpanElement>(null);
 
+  const slotList = (slot: TraceSlot) => (
+    <SelectorList
+      selectors={selectors[slot]}
+      onChange={(next) => setSelectors((prev) => ({ ...prev, [slot]: next }))}
+      objectTypeList={objectTypeList}
+      activityList={activityList}
+      color={
+        slot === "include" ? "success" : slot === "exclude" ? "danger" : "primary"
+      }
+      size={slot === "include" || slot === "exclude" ? "sm" : "md"}
+    />
+  );
+
   return (
-    <Modal
-      open={open}
-      onClose={handleCloseEditor}
-    >
+    <Modal open={open} onClose={handleCloseEditor}>
       <ModalDialog sx={{ display: "flex", width: "560px", overflowY: "auto" }}>
         <ErrorAlert
           showAlert={showAlert}
@@ -260,97 +267,50 @@ export default function SmartEditor({
 
               <Stack
                 direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                sx={{ pt: 1, pb: 1 }}
+                spacing={2}
+                alignItems="flex-start"
+                sx={{ pt: 1, pb: 2 }}
               >
-                <Stack direction="row" alignItems="center" sx={{ width: 86 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{ width: 86, mt: 1 }}
+                >
                   <Typography level="title-md" ref={startTextRef}>
                     Start
                   </Typography>
-
-                  <Tooltip
-                    variant="outlined"
-                    title={
-                      "Select object types and/or activities as start of the process."
-                    }
-                  >
-                    <HelpOutlinedIcon fontSize="small" sx={{ color: "#999" }} />
+                  <Tooltip variant="outlined" title={SELECTOR_HINT}>
+                    <HelpOutlinedIcon
+                      fontSize="small"
+                      sx={{ color: "#999", ml: 0.5 }}
+                    />
                   </Tooltip>
                 </Stack>
-                <Stack sx={{ width: 320 }}>
-                  <SelectCard
-                    objectTypeList={objectTypeList}
-                    activityList={activityList}
-                    checkedOTList={checkedStartOTList}
-                    setCheckedOTList={setCheckedStartOTList}
-                    checkedActList={checkedStartActList}
-                    setCheckedActList={setCheckedStartActList}
-                  />
-                </Stack>
+                {slotList("start")}
               </Stack>
 
               <Stack
                 direction="row"
-                useFlexGap
-                spacing={1}
-                sx={{ ml: 19, alignItems: "flex-start", flexWrap: "wrap" }}
-              >
-                {checkedStartOTList.map((item) => (
-                  <EntityChip entityType="objectType" label={item} />
-                ))}
-
-                {checkedStartActList.map((item) => (
-                  <EntityChip entityType="activity" label={item} />
-                ))}
-              </Stack>
-
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                spacing={6}
+                spacing={2}
+                alignItems="flex-start"
                 sx={{ pt: 1, pb: 1 }}
               >
-                <Stack direction="row" alignItems="center" sx={{ width: 86 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  sx={{ width: 86, mt: 1 }}
+                >
                   <Typography level="title-md" ref={endTextRef}>
                     End
                   </Typography>
-
-                  <Tooltip
-                    variant="outlined"
-                    title={
-                      "Select object types and/or activities as end of the process."
-                    }
-                  >
-                    <HelpOutlinedIcon fontSize="small" sx={{ color: "#999" }} />
+                  <Tooltip variant="outlined" title={SELECTOR_HINT}>
+                    <HelpOutlinedIcon
+                      fontSize="small"
+                      sx={{ color: "#999", ml: 0.5 }}
+                    />
                   </Tooltip>
                 </Stack>
-                <Stack sx={{ width: 320 }}>
-                  <SelectCard
-                    objectTypeList={objectTypeList}
-                    activityList={activityList}
-                    checkedOTList={checkedEndOTList}
-                    setCheckedOTList={setCheckedEndOTList}
-                    checkedActList={checkedEndActList}
-                    setCheckedActList={setCheckedEndActList}
-                  />
-                </Stack>
-              </Stack>
-
-              <Stack
-                direction="row"
-                useFlexGap
-                spacing={1}
-                sx={{ ml: 19, alignItems: "flex-start", flexWrap: "wrap" }}
-              >
-                {checkedEndOTList.map((item) => (
-                  <EntityChip entityType="objectType" label={item} />
-                ))}
-
-                {checkedEndActList.map((item) => (
-                  <EntityChip entityType="activity" label={item} />
-                ))}
+                {slotList("end")}
               </Stack>
             </Box>
 
@@ -363,143 +323,39 @@ export default function SmartEditor({
                 size="md"
                 sx={{ borderRadius: "lg", borderStyle: "dashed" }}
               >
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Stack direction="row" alignItems="center" sx={{ width: 86 }}>
+                <Stack direction="row" spacing={2} alignItems="flex-start">
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    sx={{ width: 86, mt: 0.5 }}
+                  >
                     <Typography level="title-sm">Include</Typography>
-                    <Tooltip
-                      variant="outlined"
-                      title={
-                        <>
-                          Multiple object types are combined with AND.
-                          <br />
-                          Multiple activities are combined with OR.
-                        </>
-                      }
-                    >
+                    <Tooltip variant="outlined" title={SELECTOR_HINT}>
                       <HelpOutlinedIcon
                         fontSize="small"
-                        sx={{ color: "#999" }}
+                        sx={{ color: "#999", ml: 0.5 }}
                       />
                     </Tooltip>
                   </Stack>
-                  <Stack sx={{ width: 310 }}>
-                    <SelectCard
-                      objectTypeList={objectTypeList}
-                      activityList={activityList}
-                      checkedOTList={includeOTList}
-                      setCheckedOTList={setIncludeOTList}
-                      checkedActList={includeActList}
-                      setCheckedActList={setIncludeActList}
-                      buttonSize="sm"
-                    />
-                  </Stack>
+                  {slotList("include")}
                 </Stack>
-                {includeOTList.length > 0 && (
+
+                <Stack direction="row" spacing={2} alignItems="flex-start">
                   <Stack
                     direction="row"
-                    useFlexGap
-                    spacing={1}
-                    sx={{ ml: 18, mt: 0.5, flexWrap: "wrap", alignItems: "flex-start" }}
+                    alignItems="center"
+                    sx={{ width: 86, mt: 0.5 }}
                   >
-                    {includeOTList.map((item) => (
-                      <EntityChip
-                        entityType="objectType"
-                        label={item}
-                        color="success"
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {includeActList.length > 0 && (
-                  <Stack
-                    direction="row"
-                    useFlexGap
-                    spacing={1}
-                    sx={{ ml: 18, mt: 0.5, flexWrap: "wrap", alignItems: "flex-start" }}
-                  >
-                    {includeActList.map((item) => (
-                      <EntityChip
-                        entityType="activity"
-                        label={item}
-                        color="success"
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Stack direction="row" alignItems="center" sx={{ width: 86 }}>
                     <Typography level="title-sm">Exclude</Typography>
-                    <Tooltip
-                      variant="outlined"
-                      title={
-                        <>
-                          Multiple object types are combined with AND.
-                          <br />
-                          Multiple activities are combined with OR.
-                        </>
-                      }
-                    >
+                    <Tooltip variant="outlined" title={SELECTOR_HINT}>
                       <HelpOutlinedIcon
                         fontSize="small"
-                        sx={{ color: "#999" }}
+                        sx={{ color: "#999", ml: 0.5 }}
                       />
                     </Tooltip>
                   </Stack>
-                  <Stack sx={{ width: 310 }}>
-                    <SelectCard
-                      objectTypeList={objectTypeList}
-                      activityList={activityList}
-                      checkedOTList={excludeOTList}
-                      setCheckedOTList={setExcludeOTList}
-                      checkedActList={excludeActList}
-                      setCheckedActList={setExcludeActList}
-                      buttonSize="sm"
-                    />
-                  </Stack>
+                  {slotList("exclude")}
                 </Stack>
-                {excludeOTList.length > 0 && (
-                  <Stack
-                    direction="row"
-                    useFlexGap
-                    spacing={1}
-                    sx={{ ml: 18, mt: 0.5, flexWrap: "wrap", alignItems: "flex-start" }}
-                  >
-                    {excludeOTList.map((item) => (
-                      <EntityChip
-                        entityType="objectType"
-                        label={item}
-                        color="danger"
-                      />
-                    ))}
-                  </Stack>
-                )}
-
-                {excludeActList.length > 0 && (
-                  <Stack
-                    direction="row"
-                    useFlexGap
-                    spacing={1}
-                    sx={{ ml: 18, mt: 0.5, flexWrap: "wrap", alignItems: "flex-start" }}
-                  >
-                    {excludeActList.map((item) => (
-                      <EntityChip
-                        entityType="activity"
-                        label={item}
-                        color="danger"
-                      />
-                    ))}
-                  </Stack>
-                )}
               </Card>
             </Box>
 

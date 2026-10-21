@@ -1,35 +1,36 @@
 interface Condition {
+  entityType: "objectType" | "activity";
   entity: string;
   attribute: string;
   operator: "==" | "!=" | ">" | ">=" | "<" | "<=" | "in" | "not in";
   value: string;
 }
 
-interface EntitiesWithCondition {
-  entities: string[];
-  condition: Condition[];
+interface Selector {
+  objectTypes: string[];
+  activity: string | null;
+  conditions: Condition[];
 }
 
 interface Rule {
   ruleName: string;
   parentProcess: string;
-  includeOT: EntitiesWithCondition;
-  includeAct: EntitiesWithCondition;
-  excludeOT: EntitiesWithCondition;
-  excludeAct: EntitiesWithCondition;
+  include: Selector[];
+  exclude: Selector[];
+}
+
+interface EntitySelector {
+  objectTypes: string[];
+  activity: string | null;
 }
 
 interface Trace {
   traceName: string;
   parentProcess: string;
-  startOT: string[];
-  startAct: string[];
-  endOT: string[];
-  endAct: string[];
-  includeOT: string[];
-  includeAct: string[];
-  excludeOT: string[];
-  excludeAct: string[];
+  start: EntitySelector[];
+  end: EntitySelector[];
+  include: EntitySelector[];
+  exclude: EntitySelector[];
 }
 
 type Relation =
@@ -62,3 +63,5 @@ export type ProcessData<T extends ProcessR | ProcessT = ProcessR | ProcessT> =
   T[];
 
 export type ProcessNames = ProcessName[];
+
+export type { EntitySelector };

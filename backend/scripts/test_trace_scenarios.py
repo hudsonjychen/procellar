@@ -18,7 +18,7 @@ app = types.ModuleType("app")
 app_algo = types.ModuleType("app.algo")
 sys.modules["app"] = app
 sys.modules["app.algo"] = app_algo
-for name in ("ids", "entity", "edges", "match", "scan", "trace"):
+for name in ("ids", "entity", "edges", "selector", "match", "scan", "trace"):
     path = os.path.join(ALGO, f"{name}.py")
     spec = importlib.util.spec_from_file_location(f"app.algo.{name}", path)
     mod = importlib.util.module_from_spec(spec)
@@ -26,20 +26,14 @@ for name in ("ids", "entity", "edges", "match", "scan", "trace"):
     spec.loader.exec_module(mod)
 
 TraceRule = sys.modules["app.algo.trace"].TraceRule
+selector_mod = sys.modules["app.algo.selector"]
+SelectorFormatError = selector_mod.SelectorFormatError
+normalize_entity_selector = selector_mod.normalize_entity_selector
 
 
-def _trace_entity_list(value):
-    if value is None:
-        return []
-    if isinstance(value, str):
-        s = value.strip()
-        return [s] if s else []
-    if isinstance(value, list):
-        return [str(x).strip() for x in value if x is not None and str(x).strip()]
-    if isinstance(value, dict):
-        ent = value.get("entities")
-        return _trace_entity_list(ent) if isinstance(ent, list) else []
-    return []
+def sel(object_types=(), activity=None):
+    """One selector: events of ``activity`` related to all of ``object_types``."""
+    return {"objectTypes": list(object_types), "activity": activity}
 
 
 def load_ocel(data):
@@ -115,48 +109,102 @@ def check(name, got, expected_subset, forbidden=None):
 log = load_ocel(SIMPLE)
 
 # 1) Activity-only
-r1 = TraceRule("p", "act", [], ["Create"], [], ["Ship"], [], [], [], [])
+r1 = TraceRule("p", "act", [sel(activity="Create")], [sel(activity="Ship")])
 check("activity-only", r1.get_traces(log), {"e2", "e4"})
 
 # 2) OT-only (order lifecycle segment from first order event to last)
-r2 = TraceRule("p", "ot", ["order"], [], ["order"], [], [], [], [], [])
+r2 = TraceRule("p", "ot", [sel(["order"])], [sel(["order"])])
 ids2 = r2.get_traces(log)
 # From e2 (first order-only? e1 also has order) - e1,e2,e4 on order timeline
 check("ot-only-order", ids2, {"e2", "e4"}, forbidden=set())  # e1 may appear if path from e1
 
 # 3) Mixed start: order + Create, end: order + Ship
-r3 = TraceRule("p", "mix", ["order"], ["Create"], ["order"], ["Ship"], [], [], [], [])
+r3 = TraceRule(
+    "p", "mix", [sel(["order"], "Create")], [sel(["order"], "Ship")]
+)
 check("mixed-ot-act", r3.get_traces(log), {"e2", "e4"})
 
 # 4) Mixed both OTs on start (order+item on same event) - only e1 has both
-r4 = TraceRule("p", "mix2", ["order", "item"], ["Register"], ["order"], ["Ship"], [], [], [], [])
+r4 = TraceRule(
+    "p", "mix2", [sel(["order", "item"], "Register")], [sel(["order"], "Ship")]
+)
 check("mixed-multi-ot-start", r4.get_traces(log), {"e1", "e2", "e4"})  # path e1->? order edges e1-e2-e4
 
-# 5) Payload normalization (entities wrapper)
-payload = {
-    "startOT": {"entities": ["order"]},
-    "startAct": ["Create"],
-    "endOT": {"entities": ["order"]},
-    "endAct": ["Ship"],
-}
+# 5) Several start selectors are OR'd: Pack reaches nothing, Create reaches Ship
 r5 = TraceRule(
     "p",
-    "norm",
-    _trace_entity_list(payload["startOT"]),
-    _trace_entity_list(payload["startAct"]),
-    _trace_entity_list(payload["endOT"]),
-    _trace_entity_list(payload["endAct"]),
-    [],
-    [],
-    [],
-    [],
+    "or-start",
+    [sel(activity="Pack"), sel(activity="Create")],
+    [sel(activity="Ship")],
 )
-check("entities-wrapper", r5.get_traces(log), {"e2", "e4"})
+check("or-start-selectors", r5.get_traces(log), {"e2", "e4"})
 
 # 6) No graph path: start on item timeline only, end on order only
-r6 = TraceRule("p", "disconnected", [], ["Pack"], [], ["Create"], [], [], [], [])
+r6 = TraceRule("p", "disconnected", [sel(activity="Pack")], [sel(activity="Create")])
 ids6 = r6.get_traces(log)
 check("disconnected-act", ids6, set(), forbidden={"e2", "e3", "e4"})
+
+# 7) Include activity filter on path Create -> Ship
+r7 = TraceRule(
+    "p",
+    "inc-act",
+    [sel(activity="Create")],
+    [sel(activity="Ship")],
+    include=[sel(activity="Create")],
+)
+check("include-act-create", r7.get_traces(log), {"e2"}, forbidden={"e4"})
+
+# 8) Exclude activity filter removes Ship from path
+r8 = TraceRule(
+    "p",
+    "exc-act",
+    [sel(activity="Create")],
+    [sel(activity="Ship")],
+    exclude=[sel(activity="Ship")],
+)
+check("exclude-act-ship", r8.get_traces(log), {"e2"}, forbidden={"e4"})
+
+# 9) Include OT filter keeps only events related to item
+r9 = TraceRule(
+    "p",
+    "inc-ot",
+    [sel(["order", "item"], "Register")],
+    [sel(["order"], "Ship")],
+    include=[sel(["item"])],
+)
+check("include-ot-item", r9.get_traces(log), {"e1"}, forbidden={"e2", "e4"})
+
+# 10) Exclude OT filter removes events that also relate to item
+r10 = TraceRule(
+    "p",
+    "exc-ot",
+    [sel(["order", "item"], "Register")],
+    [sel(["order"], "Ship")],
+    exclude=[sel(["item"])],
+)
+check("exclude-ot-item", r10.get_traces(log), {"e2", "e4"}, forbidden={"e1"})
+
+# 11) Empty include/exclude leaves path unchanged
+r11 = TraceRule("p", "no-filter", [sel(activity="Create")], [sel(activity="Ship")])
+check("no-include-exclude", r11.get_traces(log), {"e2", "e4"})
+
+# 12) Include selector is AND inside: Register is the only order+item event
+r12 = TraceRule(
+    "p",
+    "inc-and",
+    [sel(["order", "item"], "Register")],
+    [sel(["order"], "Ship")],
+    include=[sel(["order", "item"])],
+)
+check("include-selector-and", r12.get_traces(log), {"e1"}, forbidden={"e2", "e4"})
+
+# 13) A selector holds at most one activity
+try:
+    normalize_entity_selector({"objectTypes": [], "activity": ["Create", "Ship"]})
+    failures.append("multi-activity: expected SelectorFormatError")
+    print("FAIL multi-activity: no error raised")
+except SelectorFormatError as e:
+    print(f"OK   multi-activity rejected: {e}")
 
 if failures:
     print("\n--- FAILURES ---")

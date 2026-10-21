@@ -1,0 +1,2682 @@
+{
+  "version": "2.0",
+  "objectTypes": [
+    {
+      "name": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "return",
+      "attributes": [
+        {
+          "name": "rma-id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "eventTypes": [
+    {
+      "name": "create-order",
+      "attributes": [
+        {
+          "name": "total-items",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "name": "order-confirmation",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "order-cancelled",
+      "attributes": [
+        {
+          "name": "reason",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "invoice-issued",
+      "attributes": [
+        {
+          "name": "amount",
+          "type": "float"
+        }
+      ]
+    },
+    {
+      "name": "package-prepared",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "shipment-started",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "shipment-delivered",
+      "attributes": [
+        {
+          "name": "recipient",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "return-initiated",
+      "attributes": [
+        {
+          "name": "reason",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "return-completed",
+      "attributes": [
+        {
+          "name": "refund-amount",
+          "type": "float"
+        }
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "i1",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-01T08:00:00Z",
+          "value": "Laptop"
+        }
+      ]
+    },
+    {
+      "id": "i2",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-01T08:00:00Z",
+          "value": "Mouse"
+        }
+      ]
+    },
+    {
+      "id": "i3",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-01T08:00:00Z",
+          "value": "Keyboard"
+        }
+      ]
+    },
+    {
+      "id": "i4",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-01T08:00:00Z",
+          "value": "Monitor"
+        }
+      ]
+    },
+    {
+      "id": "i5",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-01T08:00:00Z",
+          "value": "Webcam"
+        }
+      ]
+    },
+    {
+      "id": "i6",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-01T08:00:00Z",
+          "value": "Tablet"
+        }
+      ]
+    },
+    {
+      "id": "i7",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-02T08:00:00Z",
+          "value": "Headphones"
+        }
+      ]
+    },
+    {
+      "id": "i8",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-02T08:00:00Z",
+          "value": "USB-C Hub"
+        }
+      ]
+    },
+    {
+      "id": "i9",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-02T08:00:00Z",
+          "value": "SSD Drive"
+        }
+      ]
+    },
+    {
+      "id": "i10",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-02T08:00:00Z",
+          "value": "Phone Case"
+        }
+      ]
+    },
+    {
+      "id": "i11",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-02T08:00:00Z",
+          "value": "Docking Station"
+        }
+      ]
+    },
+    {
+      "id": "i12",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-02T08:00:00Z",
+          "value": "Printer"
+        }
+      ]
+    },
+    {
+      "id": "i13",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-03T08:00:00Z",
+          "value": "Scanner"
+        }
+      ]
+    },
+    {
+      "id": "i14",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-03T08:00:00Z",
+          "value": "Router"
+        }
+      ]
+    },
+    {
+      "id": "i15",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-03T08:00:00Z",
+          "value": "Speaker"
+        }
+      ]
+    },
+    {
+      "id": "i16",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-03T08:00:00Z",
+          "value": "Microphone"
+        }
+      ]
+    },
+    {
+      "id": "i17",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-03T08:00:00Z",
+          "value": "Graphics Tablet"
+        }
+      ]
+    },
+    {
+      "id": "i18",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-03T08:00:00Z",
+          "value": "Smart Watch"
+        }
+      ]
+    },
+    {
+      "id": "i19",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-04T08:00:00Z",
+          "value": "Power Bank"
+        }
+      ]
+    },
+    {
+      "id": "i20",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-04T08:00:00Z",
+          "value": "Cable Kit"
+        }
+      ]
+    },
+    {
+      "id": "i21",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-04T08:00:00Z",
+          "value": "Desk Lamp"
+        }
+      ]
+    },
+    {
+      "id": "i22",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-04T08:00:00Z",
+          "value": "Ergo Chair"
+        }
+      ]
+    },
+    {
+      "id": "i23",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-04T08:00:00Z",
+          "value": "Standing Desk"
+        }
+      ]
+    },
+    {
+      "id": "i24",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-04T08:00:00Z",
+          "value": "External GPU"
+        }
+      ]
+    },
+    {
+      "id": "i25",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-05T08:00:00Z",
+          "value": "NAS Drive"
+        }
+      ]
+    },
+    {
+      "id": "i26",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-05T08:00:00Z",
+          "value": "Smart Plug"
+        }
+      ]
+    },
+    {
+      "id": "i27",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-05T08:00:00Z",
+          "value": "Fitness Band"
+        }
+      ]
+    },
+    {
+      "id": "i28",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-05T08:00:00Z",
+          "value": "E-Reader"
+        }
+      ]
+    },
+    {
+      "id": "i29",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-05T08:00:00Z",
+          "value": "Action Camera"
+        }
+      ]
+    },
+    {
+      "id": "i30",
+      "type": "item",
+      "attributes": [
+        {
+          "name": "product-name",
+          "time": "2025-03-05T08:00:00Z",
+          "value": "Drone"
+        }
+      ]
+    },
+    {
+      "id": "s1",
+      "type": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "time": "2025-03-10T10:00:00Z",
+          "value": "TRK-8001"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "type": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "time": "2025-03-10T10:00:00Z",
+          "value": "TRK-8002"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "time": "2025-03-10T10:00:00Z",
+          "value": "TRK-8003"
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "type": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "time": "2025-03-10T10:00:00Z",
+          "value": "TRK-8004"
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "type": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "time": "2025-03-10T10:00:00Z",
+          "value": "TRK-8005"
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "type": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "time": "2025-03-10T10:00:00Z",
+          "value": "TRK-8006"
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "type": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "time": "2025-03-10T10:00:00Z",
+          "value": "TRK-8007"
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "type": "shipment",
+      "attributes": [
+        {
+          "name": "tracking-number",
+          "time": "2025-03-10T10:00:00Z",
+          "value": "TRK-8008"
+        }
+      ]
+    },
+    {
+      "id": "ret1",
+      "type": "return",
+      "attributes": [
+        {
+          "name": "rma-id",
+          "time": "2025-03-15T10:00:00Z",
+          "value": "RMA-9001"
+        }
+      ]
+    },
+    {
+      "id": "ret2",
+      "type": "return",
+      "attributes": [
+        {
+          "name": "rma-id",
+          "time": "2025-03-15T10:00:00Z",
+          "value": "RMA-9002"
+        }
+      ]
+    },
+    {
+      "id": "ret3",
+      "type": "return",
+      "attributes": [
+        {
+          "name": "rma-id",
+          "time": "2025-03-15T10:00:00Z",
+          "value": "RMA-9003"
+        }
+      ]
+    },
+    {
+      "id": "o1",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-01T08:00:00Z",
+          "value": "ORD-2001"
+        }
+      ]
+    },
+    {
+      "id": "inv1",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-01T08:10:00Z",
+          "value": "INV-2001"
+        }
+      ]
+    },
+    {
+      "id": "inv2",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-01T08:10:00Z",
+          "value": "INV-2002"
+        }
+      ]
+    },
+    {
+      "id": "o2",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-01T09:00:00Z",
+          "value": "ORD-2002"
+        }
+      ]
+    },
+    {
+      "id": "inv3",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-01T09:10:00Z",
+          "value": "INV-2003"
+        }
+      ]
+    },
+    {
+      "id": "o3",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-02T10:00:00Z",
+          "value": "ORD-2003"
+        }
+      ]
+    },
+    {
+      "id": "inv4",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-02T10:10:00Z",
+          "value": "INV-2004"
+        }
+      ]
+    },
+    {
+      "id": "o4",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-02T11:00:00Z",
+          "value": "ORD-2004"
+        }
+      ]
+    },
+    {
+      "id": "o5",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-03T08:00:00Z",
+          "value": "ORD-2005"
+        }
+      ]
+    },
+    {
+      "id": "inv5",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-03T08:10:00Z",
+          "value": "INV-2005"
+        }
+      ]
+    },
+    {
+      "id": "inv6",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-03T08:10:00Z",
+          "value": "INV-2006"
+        }
+      ]
+    },
+    {
+      "id": "o6",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-03T09:00:00Z",
+          "value": "ORD-2006"
+        }
+      ]
+    },
+    {
+      "id": "inv7",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-03T09:10:00Z",
+          "value": "INV-2007"
+        }
+      ]
+    },
+    {
+      "id": "o7",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-04T10:00:00Z",
+          "value": "ORD-2007"
+        }
+      ]
+    },
+    {
+      "id": "inv8",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-04T10:10:00Z",
+          "value": "INV-2008"
+        }
+      ]
+    },
+    {
+      "id": "o8",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-04T11:00:00Z",
+          "value": "ORD-2008"
+        }
+      ]
+    },
+    {
+      "id": "inv9",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-04T11:10:00Z",
+          "value": "INV-2009"
+        }
+      ]
+    },
+    {
+      "id": "inv10",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-04T11:10:00Z",
+          "value": "INV-2010"
+        }
+      ]
+    },
+    {
+      "id": "o9",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-05T08:00:00Z",
+          "value": "ORD-2009"
+        }
+      ]
+    },
+    {
+      "id": "o10",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-05T09:00:00Z",
+          "value": "ORD-2010"
+        }
+      ]
+    },
+    {
+      "id": "inv11",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-05T09:10:00Z",
+          "value": "INV-2011"
+        }
+      ]
+    },
+    {
+      "id": "o11",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-06T10:00:00Z",
+          "value": "ORD-2011"
+        }
+      ]
+    },
+    {
+      "id": "inv12",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-06T10:10:00Z",
+          "value": "INV-2012"
+        }
+      ]
+    },
+    {
+      "id": "inv13",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-06T10:10:00Z",
+          "value": "INV-2013"
+        }
+      ]
+    },
+    {
+      "id": "inv14",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-06T10:10:00Z",
+          "value": "INV-2014"
+        }
+      ]
+    },
+    {
+      "id": "o12",
+      "type": "order",
+      "attributes": [
+        {
+          "name": "order-id",
+          "time": "2025-03-06T11:00:00Z",
+          "value": "ORD-2012"
+        }
+      ]
+    },
+    {
+      "id": "inv15",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-06T11:10:00Z",
+          "value": "INV-2015"
+        }
+      ]
+    },
+    {
+      "id": "inv16",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-06T11:10:00Z",
+          "value": "INV-2016"
+        }
+      ]
+    },
+    {
+      "id": "inv17",
+      "type": "invoice",
+      "attributes": [
+        {
+          "name": "invoice-number",
+          "time": "2025-03-06T11:10:00Z",
+          "value": "INV-2017"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e001",
+      "type": "create-order",
+      "time": "2025-03-01T08:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 3
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o1",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i1",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i2",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i3",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e002",
+      "type": "order-confirmation",
+      "time": "2025-03-01T08:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2001"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o1",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e003",
+      "type": "invoice-issued",
+      "time": "2025-03-01T08:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 51.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o1",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv1",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e004",
+      "type": "invoice-issued",
+      "time": "2025-03-01T08:15:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 52.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o1",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv2",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e005",
+      "type": "package-prepared",
+      "time": "2025-03-01T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-NORTH"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o1",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i1",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i2",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i3",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e006",
+      "type": "shipment-started",
+      "time": "2025-03-02T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "FastExpress"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o1",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s1",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e007",
+      "type": "shipment-delivered",
+      "time": "2025-03-03T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-1"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o1",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s1",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e008",
+      "type": "create-order",
+      "time": "2025-03-01T09:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 2
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o2",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i4",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i5",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e009",
+      "type": "order-confirmation",
+      "time": "2025-03-01T09:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2002"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o2",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e010",
+      "type": "invoice-issued",
+      "time": "2025-03-01T09:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 53.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o2",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv3",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e011",
+      "type": "package-prepared",
+      "time": "2025-03-01T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-EAST"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o2",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i4",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i5",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e012",
+      "type": "shipment-started",
+      "time": "2025-03-02T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "FastExpress"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o2",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s1",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e013",
+      "type": "shipment-delivered",
+      "time": "2025-03-03T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-2"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o2",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s1",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e014",
+      "type": "create-order",
+      "time": "2025-03-02T10:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 3
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o3",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i6",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i7",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i8",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e015",
+      "type": "order-confirmation",
+      "time": "2025-03-02T10:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2003"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o3",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e016",
+      "type": "invoice-issued",
+      "time": "2025-03-02T10:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 54.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o3",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv4",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e017",
+      "type": "package-prepared",
+      "time": "2025-03-02T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-SOUTH"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o3",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i6",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i7",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i8",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e018",
+      "type": "shipment-started",
+      "time": "2025-03-03T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "GlobalPost"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o3",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s2",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e019",
+      "type": "shipment-delivered",
+      "time": "2025-03-04T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-3"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o3",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s2",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e020",
+      "type": "create-order",
+      "time": "2025-03-02T11:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 2
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o4",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i9",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i10",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e021",
+      "type": "order-confirmation",
+      "time": "2025-03-02T11:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2004"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o4",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e022",
+      "type": "order-cancelled",
+      "time": "2025-03-02T11:30:00Z",
+      "attributes": [
+        {
+          "name": "reason",
+          "value": "Customer requested cancellation"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o4",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e023",
+      "type": "create-order",
+      "time": "2025-03-03T08:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 2
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o5",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i11",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i12",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e024",
+      "type": "order-confirmation",
+      "time": "2025-03-03T08:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2005"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o5",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e025",
+      "type": "invoice-issued",
+      "time": "2025-03-03T08:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 55.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o5",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv5",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e026",
+      "type": "invoice-issued",
+      "time": "2025-03-03T08:15:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 56.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o5",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv6",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e027",
+      "type": "package-prepared",
+      "time": "2025-03-03T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-NORTH"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o5",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i11",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i12",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e028",
+      "type": "shipment-started",
+      "time": "2025-03-04T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "GlobalPost"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o5",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s2",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e029",
+      "type": "shipment-delivered",
+      "time": "2025-03-05T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-5"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o5",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s2",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e030",
+      "type": "create-order",
+      "time": "2025-03-03T09:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 3
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o6",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i13",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i14",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i15",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e031",
+      "type": "order-confirmation",
+      "time": "2025-03-03T09:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2006"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o6",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e032",
+      "type": "invoice-issued",
+      "time": "2025-03-03T09:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 57.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o6",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv7",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e033",
+      "type": "package-prepared",
+      "time": "2025-03-03T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-EAST"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o6",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i13",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i14",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i15",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e034",
+      "type": "shipment-started",
+      "time": "2025-03-04T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "FastExpress"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o6",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s3",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e035",
+      "type": "shipment-delivered",
+      "time": "2025-03-05T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-6"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o6",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s3",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e036",
+      "type": "create-order",
+      "time": "2025-03-04T10:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 2
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o7",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i16",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i17",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e037",
+      "type": "order-confirmation",
+      "time": "2025-03-04T10:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2007"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o7",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e038",
+      "type": "invoice-issued",
+      "time": "2025-03-04T10:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 58.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o7",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv8",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e039",
+      "type": "package-prepared",
+      "time": "2025-03-04T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-SOUTH"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o7",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i16",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i17",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e040",
+      "type": "shipment-started",
+      "time": "2025-03-05T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "FastExpress"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o7",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s3",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e041",
+      "type": "shipment-delivered",
+      "time": "2025-03-06T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-7"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o7",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s3",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e042",
+      "type": "return-initiated",
+      "time": "2025-03-07T09:00:00Z",
+      "attributes": [
+        {
+          "name": "reason",
+          "value": "Defective unit"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o7",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i16",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "ret1",
+          "qualifier": "return"
+        }
+      ]
+    },
+    {
+      "id": "e043",
+      "type": "return-completed",
+      "time": "2025-03-07T14:00:00Z",
+      "attributes": [
+        {
+          "name": "refund-amount",
+          "value": 79.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o7",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i16",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "ret1",
+          "qualifier": "return"
+        },
+        {
+          "objectId": "s8",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e044",
+      "type": "create-order",
+      "time": "2025-03-04T11:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 3
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i18",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i19",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i20",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e045",
+      "type": "order-confirmation",
+      "time": "2025-03-04T11:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2008"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e046",
+      "type": "invoice-issued",
+      "time": "2025-03-04T11:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 59.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv9",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e047",
+      "type": "invoice-issued",
+      "time": "2025-03-04T11:15:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 60.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv10",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e048",
+      "type": "package-prepared",
+      "time": "2025-03-04T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-WEST"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i18",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i19",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i20",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e049",
+      "type": "shipment-started",
+      "time": "2025-03-05T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "QuickShip"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s4",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e050",
+      "type": "shipment-delivered",
+      "time": "2025-03-06T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-8"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s4",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e051",
+      "type": "return-initiated",
+      "time": "2025-03-07T09:00:00Z",
+      "attributes": [
+        {
+          "name": "reason",
+          "value": "Wrong item shipped"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i18",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "ret2",
+          "qualifier": "return"
+        }
+      ]
+    },
+    {
+      "id": "e052",
+      "type": "return-completed",
+      "time": "2025-03-07T14:00:00Z",
+      "attributes": [
+        {
+          "name": "refund-amount",
+          "value": 79.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o8",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i18",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "ret2",
+          "qualifier": "return"
+        },
+        {
+          "objectId": "s8",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e053",
+      "type": "create-order",
+      "time": "2025-03-05T08:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 2
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o9",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i21",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i22",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e054",
+      "type": "order-confirmation",
+      "time": "2025-03-05T08:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2009"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o9",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e055",
+      "type": "order-cancelled",
+      "time": "2025-03-05T08:30:00Z",
+      "attributes": [
+        {
+          "name": "reason",
+          "value": "Customer requested cancellation"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o9",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e056",
+      "type": "create-order",
+      "time": "2025-03-05T09:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 3
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o10",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i23",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i24",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i25",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e057",
+      "type": "order-confirmation",
+      "time": "2025-03-05T09:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2010"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o10",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e058",
+      "type": "invoice-issued",
+      "time": "2025-03-05T09:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 61.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o10",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv11",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e059",
+      "type": "package-prepared",
+      "time": "2025-03-05T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-EAST"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o10",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i23",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i24",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i25",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e060",
+      "type": "shipment-started",
+      "time": "2025-03-06T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "GlobalPost"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o10",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s5",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e061",
+      "type": "shipment-delivered",
+      "time": "2025-03-07T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-10"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o10",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s5",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e062",
+      "type": "create-order",
+      "time": "2025-03-06T10:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 3
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o11",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i26",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i27",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i28",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e063",
+      "type": "order-confirmation",
+      "time": "2025-03-06T10:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2011"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o11",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e064",
+      "type": "invoice-issued",
+      "time": "2025-03-06T10:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 62.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o11",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv12",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e065",
+      "type": "invoice-issued",
+      "time": "2025-03-06T10:15:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 63.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o11",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv13",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e066",
+      "type": "invoice-issued",
+      "time": "2025-03-06T10:20:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 64.99000000000001
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o11",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv14",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e067",
+      "type": "package-prepared",
+      "time": "2025-03-06T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-SOUTH"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o11",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i26",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i27",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i28",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e068",
+      "type": "shipment-started",
+      "time": "2025-03-07T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "QuickShip"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o11",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s6",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e069",
+      "type": "shipment-delivered",
+      "time": "2025-03-08T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-11"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o11",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s6",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e070",
+      "type": "create-order",
+      "time": "2025-03-06T11:00:00Z",
+      "attributes": [
+        {
+          "name": "total-items",
+          "value": 2
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i29",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i30",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e071",
+      "type": "order-confirmation",
+      "time": "2025-03-06T11:05:00Z",
+      "attributes": [
+        {
+          "name": "confirmation-code",
+          "value": "CONF-2012"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        }
+      ]
+    },
+    {
+      "id": "e072",
+      "type": "invoice-issued",
+      "time": "2025-03-06T11:10:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 65.99000000000001
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv15",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e073",
+      "type": "invoice-issued",
+      "time": "2025-03-06T11:15:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 66.99000000000001
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv16",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e074",
+      "type": "invoice-issued",
+      "time": "2025-03-06T11:20:00Z",
+      "attributes": [
+        {
+          "name": "amount",
+          "value": 67.99000000000001
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "inv17",
+          "qualifier": "invoice"
+        }
+      ]
+    },
+    {
+      "id": "e075",
+      "type": "package-prepared",
+      "time": "2025-03-06T14:00:00Z",
+      "attributes": [
+        {
+          "name": "warehouse-id",
+          "value": "WH-WEST"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i29",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "i30",
+          "qualifier": "item"
+        }
+      ]
+    },
+    {
+      "id": "e076",
+      "type": "shipment-started",
+      "time": "2025-03-07T10:00:00Z",
+      "attributes": [
+        {
+          "name": "logistics-provider",
+          "value": "EuroLogistics"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s7",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e077",
+      "type": "shipment-delivered",
+      "time": "2025-03-08T15:00:00Z",
+      "attributes": [
+        {
+          "name": "recipient",
+          "value": "Customer-12"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "s7",
+          "qualifier": "shipment"
+        }
+      ]
+    },
+    {
+      "id": "e078",
+      "type": "return-initiated",
+      "time": "2025-03-09T09:00:00Z",
+      "attributes": [
+        {
+          "name": "reason",
+          "value": "Customer changed mind"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i29",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "ret3",
+          "qualifier": "return"
+        }
+      ]
+    },
+    {
+      "id": "e079",
+      "type": "return-completed",
+      "time": "2025-03-09T14:00:00Z",
+      "attributes": [
+        {
+          "name": "refund-amount",
+          "value": 79.99
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "o12",
+          "qualifier": "order"
+        },
+        {
+          "objectId": "i29",
+          "qualifier": "item"
+        },
+        {
+          "objectId": "ret3",
+          "qualifier": "return"
+        },
+        {
+          "objectId": "s8",
+          "qualifier": "shipment"
+        }
+      ]
+    }
+  ]
+}

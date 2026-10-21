@@ -1,6 +1,134 @@
 import ast
-from typing import List
+from typing import List, Optional, Tuple
 import operator
+
+from .selector import (
+    SelectorFormatError,
+    entity_name as _entity_name,
+    normalize_entity_selector,
+    selector_entities,
+)
+
+
+def _normalize_condition(raw, object_types: List[str], activity: Optional[str]) -> Optional[dict]:
+    if not isinstance(raw, dict):
+        return None
+    entity = _entity_name(raw.get("entity"))
+    attribute = _entity_name(raw.get("attribute"))
+    op = raw.get("operator")
+    value = raw.get("value")
+    if not entity or not attribute or op is None or value is None:
+        return None
+
+    entity_type = raw.get("entityType")
+    if entity_type not in ("objectType", "activity"):
+        entity_type = "activity" if entity == activity else "objectType"
+    if entity_type == "activity" and entity != activity:
+        return None
+    if entity_type == "objectType" and entity not in object_types:
+        return None
+
+    return {
+        "entityType": entity_type,
+        "entity": entity,
+        "attribute": attribute,
+        "operator": op,
+        "value": str(value),
+    }
+
+
+def normalize_selector(raw) -> Optional[dict]:
+    """
+    Normalize one rule selector, i.e. an entity selector plus attribute ``conditions``.
+
+    Returns ``None`` for selectors without any entity.
+    """
+    selector = normalize_entity_selector(raw)
+    if selector is None:
+        return None
+
+    object_types = selector["objectTypes"]
+    activity = selector["activity"]
+    conditions = [
+        c
+        for c in (
+            _normalize_condition(cond, object_types, activity)
+            for cond in (raw.get("conditions") or [])
+        )
+        if c is not None
+    ]
+    return {"objectTypes": object_types, "activity": activity, "conditions": conditions}
+
+
+def normalize_rule(raw) -> dict:
+    """Normalize a standard rule; only the ``include`` / ``exclude`` selector format is accepted."""
+    if not isinstance(raw, dict):
+        raise SelectorFormatError("Each rule must be an object")
+
+    rule_name = raw.get("ruleName")
+    for key in ("include", "exclude"):
+        if raw.get(key) is not None and not isinstance(raw.get(key), list):
+            raise SelectorFormatError(
+                f"Rule '{rule_name}': '{key}' must be a list of selectors"
+            )
+    if raw.get("include") is None and raw.get("exclude") is None:
+        raise SelectorFormatError(
+            f"Rule '{rule_name}' uses an unsupported format; expected 'include' / 'exclude' selector lists"
+        )
+
+    normalized = {
+        "ruleName": rule_name,
+        "parentProcess": raw.get("parentProcess"),
+    }
+    for key in ("include", "exclude"):
+        selectors = [normalize_selector(s) for s in (raw.get(key) or [])]
+        normalized[key] = [s for s in selectors if s is not None]
+    return normalized
+
+
+def rule_entities(rule: dict) -> Tuple[set, set]:
+    """Object types and activities referenced by a normalized rule."""
+    return selector_entities(rule.get("include"), rule.get("exclude"))
+
+
+class Selector:
+    """
+    Matches an event when its activity equals ``activity`` (if set), it is related to
+    every object type in ``object_types``, and all attribute ``conditions`` hold.
+    """
+
+    def __init__(self, object_types: List[str], activity: Optional[str], conditions: List[dict]):
+        self.object_types = list(object_types or [])
+        self.activity = activity
+        self.ot_conditions = [c for c in (conditions or []) if c["entityType"] == "objectType"]
+        self.act_conditions = [c for c in (conditions or []) if c["entityType"] == "activity"]
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Selector":
+        return cls(
+            object_types=data.get("objectTypes") or [],
+            activity=data.get("activity"),
+            conditions=data.get("conditions") or [],
+        )
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"object_types={self.object_types!r}, "
+            f"activity={self.activity!r}, "
+            f"conditions={self.ot_conditions + self.act_conditions!r})"
+        )
+
+    def matches(self, event, rel_oid, rel_ot, object_type_map, object_attr_map) -> bool:
+        if self.activity is not None and event.get("type") != self.activity:
+            return False
+        if any(ot not in rel_ot for ot in self.object_types):
+            return False
+        return (
+            Rule._check_ot_condition(self.ot_conditions, rel_oid, object_type_map, object_attr_map)
+            and Rule._check_act_condition(self.act_conditions, event)
+        )
+
 
 class Rule:
     OPERATORS = {
@@ -20,42 +148,33 @@ class Rule:
         self,
         parent_process: str,
         rule_name: str,
-        include_ot: List[str],
-        include_ot_cond: List[str],
-        exclude_ot: List[str],
-        exclude_ot_cond: List[str],
-        include_act: List[str],
-        include_act_cond: List[str],
-        exclude_act: List[str],
-        exclude_act_cond: List[str],
+        include: List[Selector],
+        exclude: List[Selector],
     ):
         self.parent_process = parent_process
         self.rule_name = rule_name
-        # JSON may use null for empty lists; never store None where we iterate.
-        self.include_ot = list(include_ot or [])
-        self.include_ot_cond = list(include_ot_cond or [])
-        self.exclude_ot = list(exclude_ot or [])
-        self.exclude_ot_cond = list(exclude_ot_cond or [])
-        self.include_act = list(include_act or [])
-        self.include_act_cond = list(include_act_cond or [])
-        self.exclude_act = list(exclude_act or [])
-        self.exclude_act_cond = list(exclude_act_cond or [])
+        self.include = list(include or [])
+        self.exclude = list(exclude or [])
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Rule":
+        rule = normalize_rule(data)
+        return cls(
+            parent_process=rule["parentProcess"],
+            rule_name=rule["ruleName"],
+            include=[Selector.from_dict(s) for s in rule["include"]],
+            exclude=[Selector.from_dict(s) for s in rule["exclude"]],
+        )
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
             f"parent_process={self.parent_process!r}, "
             f"rule_name={self.rule_name!r}, "
-            f"include_ot={self.include_ot!r}, "
-            f"include_ot_cond={self.include_ot_cond!r}, "
-            f"exclude_ot={self.exclude_ot!r}, "
-            f"exclude_ot_cond={self.exclude_ot_cond!r}, "
-            f"include_act={self.include_act!r}, "
-            f"include_act_cond={self.include_act_cond!r}, "
-            f"exclude_act={self.exclude_act!r}, "
-            f"exclude_act_cond={self.exclude_act_cond!r})"
+            f"include={self.include!r}, "
+            f"exclude={self.exclude!r})"
         )
-    
+
     @classmethod
     def _value_convert(cls, value_str):
         try:
@@ -75,45 +194,37 @@ class Rule:
         return op
 
     @staticmethod
-    def _check_ot_condition(conds, object_type_map, object_attr_map, event):
+    def _check_ot_condition(conds, rel_oid, object_type_map, object_attr_map):
         context = []
-        conds = conds or []
-        if len(conds) > 0:
-            for cond in conds:
-                for rel in (event.get("relationships") or []):
-                    if object_type_map.get(rel.get('objectId')) == cond['entity']:
-                        for attr in object_attr_map.get(rel.get('objectId'), []):
-                            if attr['name'] == cond['attribute']:
-                                op = Rule._operator_convert(cond['operator'])
-                                val = Rule._value_convert(cond['value'])
-                                try:
-                                    context.append(op(attr['value'], val))
-                                except TypeError:
-                                    context.append(True)
-        if len(context) > 0:
-            return all(context)
-        else:
-            return True
-    
+        for cond in conds or []:
+            for oid in rel_oid:
+                if object_type_map.get(oid) != cond['entity']:
+                    continue
+                for attr in object_attr_map.get(oid, []):
+                    if attr['name'] == cond['attribute']:
+                        op = Rule._operator_convert(cond['operator'])
+                        val = Rule._value_convert(cond['value'])
+                        try:
+                            context.append(op(attr['value'], val))
+                        except TypeError:
+                            context.append(True)
+        return all(context)
+
     @staticmethod
     def _check_act_condition(conds, event):
         context = []
-        conds = conds or []
-        if len(conds) > 0:
-            for cond in conds:
-                if event['type'] == cond['entity']:
-                    for attr in (event.get("attributes") or []):
-                        if attr['name'] == cond['attribute']:
-                            op = Rule._operator_convert(cond['operator'])
-                            val = Rule._value_convert(cond['operator'])
-                            try:
-                                context.append(op(attr['value'], val))
-                            except TypeError:
-                                context.append(True)
-        if len(context) > 0:
-            return all(context)
-        else:
-            return True
+        for cond in conds or []:
+            if event.get('type') != cond['entity']:
+                continue
+            for attr in (event.get("attributes") or []):
+                if attr['name'] == cond['attribute']:
+                    op = Rule._operator_convert(cond['operator'])
+                    val = Rule._value_convert(cond['value'])
+                    try:
+                        context.append(op(attr['value'], val))
+                    except TypeError:
+                        context.append(True)
+        return all(context)
 
     def check_event(self, object_type_map, object_attr_map, event):
         rel_oid = [
@@ -121,32 +232,19 @@ class Rule:
             for rel in (event.get("relationships") or [])
             if rel.get("qualifier") != "process"
         ]
-        rel_ot = [object_type_map[oid] for oid in rel_oid if oid in object_type_map]
+        rel_ot = {object_type_map[oid] for oid in rel_oid if oid in object_type_map}
 
-        # check if all statements are empty, if so, return false
-        if all(not lst for lst in [self.include_ot, self.exclude_ot, self.include_act, self.exclude_act]):
+        # a rule without any selector matches nothing
+        if not self.include and not self.exclude:
             return False
 
         # check if the process has existed in the event, if so, return false
         if self.parent_process in rel_oid:
             return False
-        
-        # include statements
-        if not self.include_ot and not self.include_act:
-            include_pass = True
-        else:
-            include_pass = (
-                (self.include_ot and all(ot in rel_ot for ot in self.include_ot) and self._check_ot_condition(self.include_ot_cond, object_type_map, object_attr_map, event)) or
-                (self.include_act and event['type'] in self.include_act and self._check_act_condition(self.include_act_cond, event))
-            )
-        
-        # exclude statements
-        if not self.exclude_ot and not self.exclude_act:
-            exclude_pass = False
-        else:
-            exclude_pass = (
-                (self.exclude_ot and all(ot in rel_ot for ot in self.exclude_ot) and self._check_ot_condition(self.exclude_ot_cond, object_type_map, object_attr_map, event)) or
-                (self.exclude_act and event['type'] in self.exclude_act and self._check_act_condition(self.exclude_act_cond, event))
-            )
-        
+
+        args = (event, rel_oid, rel_ot, object_type_map, object_attr_map)
+        # selectors within include / exclude are combined with OR
+        include_pass = not self.include or any(s.matches(*args) for s in self.include)
+        exclude_pass = any(s.matches(*args) for s in self.exclude)
+
         return include_pass and not exclude_pass

@@ -4,21 +4,27 @@ import json
 import os
 import sys
 import tempfile
+import types
 
 import pm4py
 
 ALGO = os.path.join(os.path.dirname(__file__), "..", "app", "algo")
 
+sys.modules.setdefault("app", types.ModuleType("app"))
+sys.modules.setdefault("app.algo", types.ModuleType("app.algo"))
+
 
 def _load(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
+    spec = importlib.util.spec_from_file_location(f"app.algo.{name}", path)
     mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
+    sys.modules[f"app.algo.{name}"] = mod
     spec.loader.exec_module(mod)
     return mod
 
 
+edges = _load("ids", os.path.join(ALGO, "ids.py"))
 edges = _load("edges", os.path.join(ALGO, "edges.py"))
+selector_mod = _load("selector", os.path.join(ALGO, "selector.py"))
 match_mod = _load("match", os.path.join(ALGO, "match.py"))
 scan_mod = _load("scan", os.path.join(ALGO, "scan.py"))
 trace_mod = _load("trace", os.path.join(ALGO, "trace.py"))
@@ -59,10 +65,13 @@ print("event_id_column:", log.event_id_column)
 print("event_activity:", log.event_activity)
 print(log.events[[log.event_id_column, log.event_activity]])
 
-m_start = match_events(log, activities=["Create"], match_type="start")
-m_end = match_events(log, activities=["Ship"], match_type="end")
+start = [{"objectTypes": [], "activity": "Create"}]
+end = [{"objectTypes": [], "activity": "Ship"}]
+
+m_start = match_events(log, start, match_type="start")
+m_end = match_events(log, end, match_type="end")
 print("match start:", m_start)
 print("match end:", m_end)
 
-tr = TraceRule("p", "t", [], ["Create"], [], ["Ship"], [], [], [], [])
+tr = TraceRule("p", "t", start, end)
 print("trace ids:", tr.get_traces(log))

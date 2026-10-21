@@ -6,62 +6,28 @@
             {
                 "ruleName": "rule1",
                 "parentProcess": "order management",
-                "includeOT": {
-                    "entities": ["order", "item"],
-                    "condition": []
-                },
-                "includeAct": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeAct": {
-                    "entities": ["order cancelled"],
-                    "condition": []
-                }
+                "include": [
+                    { "objectTypes": ["order", "item"], "activity": null, "conditions": [] }
+                ],
+                "exclude": [
+                    { "objectTypes": [], "activity": "order cancelled", "conditions": [] }
+                ]
             },
             {
                 "ruleName": "rule2",
                 "parentProcess": "order management",
-                "includeOT": {
-                    "entities": ["shipment", "item"],
-                    "condition": []
-                },
-                "includeAct": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeAct": {
-                    "entities": [],
-                    "condition": []
-                }
+                "include": [
+                    { "objectTypes": ["shipment", "item"], "activity": null, "conditions": [] }
+                ],
+                "exclude": []
             },
             {
                 "ruleName": "rule3",
                 "parentProcess": "order management",
-                "includeOT": {
-                    "entities": [],
-                    "condition": []
-                },
-                "includeAct": {
-                    "entities": [],
-                    "condition": []
-                },
-                "excludeOT": {
-                    "entities": ["order", "shipment"],
-                    "condition": []
-                },
-                "excludeAct": {
-                    "entities": [],
-                    "condition": []
-                }
+                "include": [],
+                "exclude": [
+                    { "objectTypes": ["order", "shipment"], "activity": null, "conditions": [] }
+                ]
             }
         ],
         "relations": {

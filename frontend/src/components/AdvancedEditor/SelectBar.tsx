@@ -15,24 +15,26 @@ import {
   Box,
 } from "@mui/joy";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 interface SelectCardProps {
   objectTypeList: string[];
   activityList: string[];
-  checkedOTList: string[];
-  setCheckedOTList: React.Dispatch<React.SetStateAction<string[]>>;
-  checkedActList: string[];
-  setCheckedActList: React.Dispatch<React.SetStateAction<string[]>>;
+  objectTypes: string[];
+  activity: string | null;
+  onChange: (next: { objectTypes: string[]; activity: string | null }) => void;
   buttonSize?: "sm" | "md" | "lg";
 }
+
+const POPUP_WIDTH = 320;
+const POPUP_MAX_HEIGHT = 400;
 
 export default function SelectCard({
   objectTypeList,
   activityList,
-  checkedOTList,
-  setCheckedOTList,
-  checkedActList,
-  setCheckedActList,
+  objectTypes,
+  activity,
+  onChange,
   buttonSize = "md",
 }: SelectCardProps) {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -40,18 +42,43 @@ export default function SelectCard({
     "objectType",
   );
   const [open, setOpen] = React.useState(false);
+  const [position, setPosition] = React.useState({ left: 0, top: 0 });
 
-  const currentList =
-    entityType === "objectType" ? checkedOTList : checkedActList;
-  const setCurrentList =
-    entityType === "objectType" ? setCheckedOTList : setCheckedActList;
   const currentEntities =
     entityType === "objectType" ? objectTypeList : activityList;
+  const isChecked = (item: string) =>
+    entityType === "objectType" ? objectTypes.includes(item) : activity === item;
+
+  const handleOpen = () => {
+    const button = buttonRef.current;
+    if (button) {
+      const buttonRect = button.getBoundingClientRect();
+      const dialogRect = button
+        .closest('[role="dialog"]')
+        ?.getBoundingClientRect();
+      const left = (dialogRect?.right ?? buttonRect.right) + 16;
+      setPosition({
+        left: Math.max(0, Math.min(left, window.innerWidth - POPUP_WIDTH - 16)),
+        top: Math.max(
+          16,
+          Math.min(buttonRect.top, window.innerHeight - POPUP_MAX_HEIGHT - 16),
+        ),
+      });
+    }
+    setOpen(true);
+  };
 
   const handleClick = (item: string) => {
-    setCurrentList((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
-    );
+    if (entityType === "objectType") {
+      onChange({
+        activity,
+        objectTypes: objectTypes.includes(item)
+          ? objectTypes.filter((i) => i !== item)
+          : [...objectTypes, item],
+      });
+    } else {
+      onChange({ objectTypes, activity: activity === item ? null : item });
+    }
   };
 
   return (
@@ -60,7 +87,7 @@ export default function SelectCard({
         ref={buttonRef}
         variant="outlined"
         color="neutral"
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         sx={{ borderRadius: "lg" }}
         size={buttonSize}
       >
@@ -84,9 +111,11 @@ export default function SelectCard({
           sx={{
             borderRadius: "lg",
             m: 0,
+            width: POPUP_WIDTH,
             position: "absolute",
-            left: (buttonRef.current?.getBoundingClientRect().right ?? 0) + 152,
-            top: buttonRef.current?.getBoundingClientRect().top ?? 0,
+            transform: "none",
+            left: position.left,
+            top: position.top,
           }}
         >
           <Box
@@ -146,6 +175,21 @@ export default function SelectCard({
                   />
                 ))}
               </RadioGroup>
+
+              <Typography
+                level="body-xs"
+                textColor={
+                  entityType === "objectType" && objectTypes.length > 1
+                    ? "warning.600"
+                    : "text.tertiary"
+                }
+                startDecorator={<InfoOutlinedIcon sx={{ fontSize: "md" }} />}
+                sx={{ alignItems: "flex-start" }}
+              >
+                {entityType === "objectType"
+                  ? "Selecting multiple object types means the selected events must be related to all of them."
+                  : "At most one activity can be selected per selector."}
+              </Typography>
             </Stack>
           </Box>
 
@@ -162,9 +206,7 @@ export default function SelectCard({
                 <ListItem key={item}>
                   <ListItemButton onClick={() => handleClick(item)}>
                     <ListItemContent>{item}</ListItemContent>
-                    {currentList.includes(item) && (
-                      <CheckRoundedIcon color="primary" />
-                    )}
+                    {isChecked(item) && <CheckRoundedIcon color="primary" />}
                   </ListItemButton>
                 </ListItem>
               ))}

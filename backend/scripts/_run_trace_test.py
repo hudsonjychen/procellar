@@ -17,7 +17,7 @@ app_algo = types.ModuleType("app.algo")
 sys.modules["app"] = app
 sys.modules["app.algo"] = app_algo
 
-for name in ("ids", "entity", "edges", "match", "scan", "trace"):
+for name in ("ids", "entity", "edges", "selector", "match", "scan", "trace"):
     path = os.path.join(ALGO, f"{name}.py")
     spec = importlib.util.spec_from_file_location(f"app.algo.{name}", path)
     mod = importlib.util.module_from_spec(spec)
@@ -62,7 +62,12 @@ with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encodin
 log = pm4py.read_ocel2_json(path)
 os.remove(path)
 
-rule = TraceRule("proc", "t1", [], ["Create"], [], ["Ship"], [], [], [], [])
+rule = TraceRule(
+    "proc",
+    "t1",
+    [{"objectTypes": [], "activity": "Create"}],
+    [{"objectTypes": [], "activity": "Ship"}],
+)
 ids = rule.get_traces(log)
 print("matched (edges+scan):", ids)
 assert "e2" in ids and "e3" in ids, ids

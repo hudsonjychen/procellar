@@ -3,43 +3,28 @@ export interface RuleInfo {
   parentProcess: { title: string; inputValue?: string } | null;
 }
 
-export interface SelectedEntities {
-  includeOT: string[];
-  includeAct: string[];
-  excludeOT: string[];
-  excludeAct: string[];
+/** Matches events of `activity` (if set) that are related to every type in `objectTypes`. */
+export interface Selector {
+  objectTypes: string[];
+  activity: string | null;
 }
 
-export interface RuleData {
-  ruleName: string;
-  parentProcess: string;
-  includeOT: RuleBlock;
-  includeAct: RuleBlock;
-  excludeOT: RuleBlock;
-  excludeAct: RuleBlock;
-}
-
+/** Selectors within start / end / include / exclude are combined with OR. */
 export interface TraceData {
   traceName: string;
   parentProcess: string;
-  startOT: string[];
-  startAct: string[];
-  endOT: string[];
-  endAct: string[];
-  includeOT: string[];
-  includeAct: string[];
-  excludeOT: string[];
-  excludeAct: string[];
+  start: Selector[];
+  end: Selector[];
+  include: Selector[];
+  exclude: Selector[];
 }
 
-export interface RuleBlock {
-  entities: string[];
-  condition: {
-    entity: string;
-    attribute: string;
-    operator: Operator;
-    value: string;
-  }[];
+export type TraceSlot = "start" | "end" | "include" | "exclude";
+
+export interface DraftSelector extends Selector {
+  id: number;
 }
+
+export type DraftSelectors = Record<TraceSlot, DraftSelector[]>;
 
 export type Operator = "==" | "!=" | ">" | ">=" | "<" | "<=" | "in" | "not in";

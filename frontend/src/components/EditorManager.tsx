@@ -3,12 +3,11 @@ import React from "react";
 import { useEffect, useState } from "react";
 import NewButton from "./NewButton";
 import StandardEditor from "./StandardEditor/StandardEditor";
+import { RuleInfo, DraftSelectors } from "./StandardEditor/types";
 import {
-  RuleInfo,
-  SelectedConditions,
-  ActionType,
-  EntityList,
-} from "./StandardEditor/types";
+  emptyDraftSelectors,
+  toDraftSelectors,
+} from "./StandardEditor/selectors";
 import ConditionEditor from "./StandardEditor/ConditionEditor";
 import { useProcessStore } from "../stores/processStore";
 import SmartEditor from "./AdvancedEditor/SmartEditor";
@@ -29,21 +28,14 @@ function EditorManager() {
   const [advancedEditorOpen, setAdvancedEditorOpen] = useState<boolean>(false);
   const [showAlert, setShowAlert] = useState<boolean>(false);
 
-  const [includeOT, setIncludeOT] = useState<EntityList>([]);
-  const [includeAct, setIncludeAct] = useState<EntityList>([]);
-  const [excludeOT, setExcludeOT] = useState<EntityList>([]);
-  const [excludeAct, setExcludeAct] = useState<EntityList>([]);
+  const [selectors, setSelectors] =
+    useState<DraftSelectors>(emptyDraftSelectors);
 
   const [ruleInfo, setRuleInfo] = useState<RuleInfo>({
     ruleName: "",
     parentProcess: { title: "" },
   });
 
-  const [selectedConditions, setSelectedConditions] =
-    useState<SelectedConditions>({
-      include: [{ id: 0 }],
-      exclude: [{ id: 0 }],
-    });
   const [editingSource, setEditingSource] = useState<{
     processName: string;
     ruleName: string;
@@ -104,42 +96,9 @@ function EditorManager() {
       ruleName: matchedRule.ruleName,
       parentProcess: { title: matchedRule.parentProcess },
     });
-    setIncludeOT([...(matchedRule.includeOT?.entities ?? [])]);
-    setIncludeAct([...(matchedRule.includeAct?.entities ?? [])]);
-    setExcludeOT([...(matchedRule.excludeOT?.entities ?? [])]);
-    setExcludeAct([...(matchedRule.excludeAct?.entities ?? [])]);
-
-    const mapConditions = (
-      conditions: {
-        entity: string;
-        attribute: string;
-        operator: string;
-        value: string;
-      }[],
-      type: "objectType" | "activity",
-      idOffset: number,
-    ) =>
-      conditions.map((condition, index) => ({
-        id: idOffset + index,
-        type,
-        entity: condition.entity,
-        attribute: condition.attribute,
-        operator: condition.operator,
-        value: condition.value,
-      }));
-
-    const includeConditions = [
-      ...mapConditions(matchedRule.includeOT?.condition ?? [], "objectType", 0),
-      ...mapConditions(matchedRule.includeAct?.condition ?? [], "activity", 1000),
-    ];
-    const excludeConditions = [
-      ...mapConditions(matchedRule.excludeOT?.condition ?? [], "objectType", 2000),
-      ...mapConditions(matchedRule.excludeAct?.condition ?? [], "activity", 3000),
-    ];
-
-    setSelectedConditions({
-      include: includeConditions.length ? includeConditions : [{ id: 0 }],
-      exclude: excludeConditions.length ? excludeConditions : [{ id: 0 }],
+    setSelectors({
+      include: toDraftSelectors(matchedRule.include),
+      exclude: toDraftSelectors(matchedRule.exclude),
     });
 
     setEditingSource({
@@ -161,12 +120,7 @@ function EditorManager() {
       parentProcess: { title: "" },
     });
 
-    setIncludeOT([]);
-    setIncludeAct([]);
-    setExcludeOT([]);
-    setExcludeAct([]);
-
-    setSelectedConditions({ include: [{ id: 0 }], exclude: [{ id: 0 }] });
+    setSelectors(emptyDraftSelectors());
     setEditingSource(null);
     setTraceEditPayloadStore(null);
   };
@@ -195,14 +149,8 @@ function EditorManager() {
         setShowAlert={setShowAlert}
         ruleInfo={ruleInfo}
         setRuleInfo={setRuleInfo}
-        includeOT={includeOT}
-        includeAct={includeAct}
-        setIncludeOT={setIncludeOT}
-        setIncludeAct={setIncludeAct}
-        excludeOT={excludeOT}
-        excludeAct={excludeAct}
-        setExcludeOT={setExcludeOT}
-        setExcludeAct={setExcludeAct}
+        selectors={selectors}
+        setSelectors={setSelectors}
         editingSource={editingSource}
         handleCancel={handleCancel}
       />
@@ -214,16 +162,8 @@ function EditorManager() {
         setShowAlert={setShowAlert}
         ruleInfo={ruleInfo}
         setRuleInfo={setRuleInfo}
-        includeOT={includeOT}
-        includeAct={includeAct}
-        setIncludeOT={setIncludeOT}
-        setIncludeAct={setIncludeAct}
-        excludeOT={excludeOT}
-        excludeAct={excludeAct}
-        setExcludeOT={setExcludeOT}
-        setExcludeAct={setExcludeAct}
-        selectedConditions={selectedConditions}
-        setSelectedConditions={setSelectedConditions}
+        selectors={selectors}
+        setSelectors={setSelectors}
         editingSource={editingSource}
         handleCancel={handleCancel}
       />

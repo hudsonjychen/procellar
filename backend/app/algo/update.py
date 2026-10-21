@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional, Set
 
 import pm4py
 import json
@@ -6,30 +6,53 @@ import os
 import tempfile
 from .map import map_object_id_to_type
 from .edges import list_event_edges
+from .match import build_event_to_object_types
+from .scan import build_incoming, build_outgoing
 from .process import RuleProcess, TraceProcess, _ensure_event_log_structure
+
 
 def _load_json(path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 def _save_json(data, path):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
 
 def _get_map(path):
     return map_object_id_to_type(pm4py.read_ocel2_json(path))
 
 
-def _to_ocel(event_log):
+def prepare_event_log_for_processing(event_log, deleted_processes):
+    """Normalize JSON and drop deleted process objects before a single pm4py read."""
+    _ensure_event_log_structure(event_log)
+    RuleProcess.update_object_types(event_log.get("objectTypes") or [])
+    RuleProcess.clear_process_objects(
+        objects=event_log.get("objects"),
+        deleted_processes=deleted_processes,
+    )
+
+
+def ocel_from_event_log(event_log):
+    """Parse OCEL2 JSON dict via pm4py (compact temp file, one read per export)."""
     temp_path = None
     try:
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json", encoding="utf-8") as temp:
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".json", encoding="utf-8"
+        ) as temp:
             json.dump(event_log, temp, ensure_ascii=False)
             temp_path = temp.name
         return pm4py.read_ocel2_json(temp_path)
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
+
+
+def _to_ocel(event_log):
+    """Backward-compatible alias."""
+    return ocel_from_event_log(event_log)
 
 
 def _update_event_log(
@@ -41,6 +64,7 @@ def _update_event_log(
     progress_callback=None,
     should_cancel=None,
     scan_progress_callback: Optional[Callable[[float], None]] = None,
+    ocel=None,
 ):
     def _progress(value):
         if progress_callback:
@@ -49,13 +73,7 @@ def _update_event_log(
     if should_cancel and should_cancel():
         raise RuntimeError("Processing cancelled")
 
-    _ensure_event_log_structure(event_log)
-
-    RuleProcess.update_object_types(event_log["objectTypes"])
-    RuleProcess.clear_process_objects(
-        objects=event_log["objects"],
-        deleted_processes=deleted_processes,
-    )
+    prepare_event_log_for_processing(event_log, deleted_processes)
     _progress(0.05)
 
     has_trace_processes = any(
@@ -64,7 +82,9 @@ def _update_event_log(
         and len(p.get("traces") or []) > 0
         for p in (process_data or [])
     )
-    ocel = _to_ocel(event_log) if has_trace_processes else None
+
+    if has_trace_processes and ocel is None:
+        ocel = ocel_from_event_log(event_log)
     _progress(0.15)
 
     total = len(process_data or []) or 1
@@ -78,6 +98,13 @@ def _update_event_log(
     )
 
     shared_edges = None
+    shared_outgoing = None
+    shared_incoming = None
+    shared_event_to_object_types: Optional[Dict[str, Set[str]]] = None
+    trace_rule_cache: Dict = {}
+    trace_scan_cache: Dict = {}
+    reachability_cache: Dict = {}
+
     edge_share = 0.28 if n_trace_targets else 0.0
     if ocel is not None and n_trace_targets > 0:
 
@@ -90,6 +117,9 @@ def _update_event_log(
             progress_callback=_edges_progress if scan_progress_callback else None,
             should_cancel=should_cancel,
         )
+        shared_outgoing = build_outgoing(shared_edges)
+        shared_incoming = build_incoming(shared_outgoing)
+        shared_event_to_object_types = build_event_to_object_types(ocel)
         if scan_progress_callback:
             scan_progress_callback(edge_share)
 
@@ -102,8 +132,6 @@ def _update_event_log(
         if not isinstance(p, dict) or "processName" not in p:
             continue
 
-        # Use non-empty lists only. JSON often has ``"rules": null`` alongside traces; ``"rules" in p``
-        # would wrongly pick RuleProcess with zero rules so no event ever gets a process link.
         rules_list = p.get("rules")
         traces_list = p.get("traces")
         use_rules = isinstance(rules_list, list) and len(rules_list) > 0
@@ -128,7 +156,6 @@ def _update_event_log(
                 rules=traces_list,
             )
             base_idx = trace_pass
-
             rule_share = 1.0 - edge_share
 
             def wrapped_scan(t: float, base: int = base_idx) -> None:
@@ -142,11 +169,18 @@ def _update_event_log(
                 event_log=event_log,
                 deleted_processes=deleted_processes,
                 edges=shared_edges,
+                outgoing=shared_outgoing,
+                incoming=shared_incoming,
+                event_to_object_types=shared_event_to_object_types,
+                trace_rule_cache=trace_rule_cache,
+                trace_scan_cache=trace_scan_cache,
+                reachability_cache=reachability_cache,
                 should_cancel=should_cancel,
                 scan_progress_callback=wrapped_scan if scan_progress_callback else None,
             )
             trace_pass += 1
         _progress(0.40 + 0.60 * ((idx + 1) / total))
+
 
 def update(
     object_type_map,
@@ -157,6 +191,7 @@ def update(
     progress_callback=None,
     should_cancel=None,
     scan_progress_callback: Optional[Callable[[float], None]] = None,
+    ocel=None,
 ):
     _update_event_log(
         object_type_map=object_type_map,
@@ -167,4 +202,5 @@ def update(
         progress_callback=progress_callback,
         should_cancel=should_cancel,
         scan_progress_callback=scan_progress_callback,
+        ocel=ocel,
     )

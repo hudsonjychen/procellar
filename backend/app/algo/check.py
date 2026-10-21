@@ -1,5 +1,7 @@
 from .entity import get_object_types, get_activities
-from .process import _trace_entity_list
+from .process import normalize_trace, trace_entities
+from .rule import normalize_rule, rule_entities
+from .selector import SelectorFormatError
 
 class CompatibilityError(Exception):
     pass
@@ -11,29 +13,18 @@ def compatibility_check(ocel, df):
     for process in df or []:
         if not isinstance(process, dict):
             continue
-        for rule in (process.get("rules") or []):
-            if not isinstance(rule, dict):
-                continue
-            inc_ot = rule.get("includeOT") or {}
-            exc_ot = rule.get("excludeOT") or {}
-            inc_act = rule.get("includeAct") or {}
-            exc_act = rule.get("excludeAct") or {}
-            df_ots.update(list(inc_ot.get("entities") or []))
-            df_ots.update(list(exc_ot.get("entities") or []))
-            df_acts.update(list(inc_act.get("entities") or []))
-            df_acts.update(list(exc_act.get("entities") or []))
-        for trace in (process.get("traces") or []):
-            if not isinstance(trace, dict):
-                continue
-            df_ots.update(_trace_entity_list(trace.get("startOT")))
-            df_ots.update(_trace_entity_list(trace.get("endOT")))
-            df_ots.update(_trace_entity_list(trace.get("includeOT")))
-            df_ots.update(_trace_entity_list(trace.get("excludeOT")))
-            df_acts.update(_trace_entity_list(trace.get("startAct")))
-            df_acts.update(_trace_entity_list(trace.get("endAct")))
-            df_acts.update(_trace_entity_list(trace.get("includeAct")))
-            df_acts.update(_trace_entity_list(trace.get("excludeAct")))
-    
+        try:
+            for rule in (process.get("rules") or []):
+                rule_ots, rule_acts = rule_entities(normalize_rule(rule))
+                df_ots.update(rule_ots)
+                df_acts.update(rule_acts)
+            for trace in (process.get("traces") or []):
+                trace_ots, trace_acts = trace_entities(normalize_trace(trace))
+                df_ots.update(trace_ots)
+                df_acts.update(trace_acts)
+        except SelectorFormatError as e:
+            raise CompatibilityError(str(e)) from e
+
     object_types = get_object_types(ocel)
     activities = get_activities(ocel)
 

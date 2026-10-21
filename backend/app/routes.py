@@ -12,8 +12,11 @@ import traceback
 
 from app.algo.entity import get_activities, get_object_count_list, get_object_types, get_processes
 from app.algo.map import map_object_id_to_type, map_attribute, map_attribute_to_object
-from app.algo.update import update
+from app.algo.update import update, prepare_event_log_for_processing, ocel_from_event_log
 from app.algo.check import compatibility_check, CompatibilityError
+from app.algo.process import normalize_trace
+from app.algo.rule import normalize_rule
+from app.algo.selector import SelectorFormatError
 from .cache import (
     cachedFile,
     cachedFileInfo,
@@ -53,6 +56,16 @@ def _validate_process_data(data):
 
         if rules_ok and traces_ok:
             return "Each process must include only one of 'rules' or 'traces'"
+
+        try:
+            if rules_ok:
+                for rule in rules_list:
+                    normalize_rule(rule)
+            else:
+                for trace in traces_list:
+                    normalize_trace(trace)
+        except SelectorFormatError as e:
+            return str(e)
 
     return None
 
@@ -182,14 +195,8 @@ def _run_process_data(
     if progress_callback:
         progress_callback(10, "Reading OCEL")
 
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json", encoding="utf-8") as temp:
-        json.dump(file, temp, ensure_ascii=False)
-        temp_path = temp.name
-    try:
-        log = pm4py.read_ocel2_json(temp_path)
-    finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+    prepare_event_log_for_processing(fileCopy, deleted_processes)
+    log = ocel_from_event_log(fileCopy)
 
     if should_cancel and should_cancel():
         raise RuntimeError("Processing cancelled")
@@ -212,6 +219,7 @@ def _run_process_data(
         ),
         should_cancel=should_cancel,
         scan_progress_callback=scan_progress_callback,
+        ocel=log,
     )
     cachedDeletedProcesses.clear()
     cachedDeletedProcesses.extend(deleted_processes)
